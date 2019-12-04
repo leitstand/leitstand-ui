@@ -19,14 +19,15 @@ A typical controller configuration contains the following properties:
 The controller configuration is bound to the `ViewController` instance.
 By that the controller configuration has access to the convenience methods provided by the `ViewController`.
 The most frequently controller methods are
+- `this.location` to read the current location including query parameters.
 - `this.getViewModel` to read the view model and extract the data to be passed to the REST API.
-- `this.navigate` to navigate to a different view
-- `this.reload` to update the current view.
+- `this.navigate` to navigate to a different view.
+- `this.reload` to reload the current view.
 
 More details about the `ViewController` methods and the configuration object can be found in the controller JSDoc.
 
-A controller is created in a factory method.
-The factory method creates the resource and the controller.
+A controller is created by a factory method.
+The factory method creates the resource and the view controller.
 
 
 
