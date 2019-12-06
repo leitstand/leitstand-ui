@@ -238,4 +238,4 @@ let webhooksView = {
 };
 ```
 
-The next tutorial discusses how to manage an existing webhook.							  
+The next tutorial discusses how to [manage an existing webhook](details_tutorial.md).							  

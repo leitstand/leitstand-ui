@@ -5,7 +5,7 @@ This tutorial discusses how to add a list view. The next tutorials explain how t
 
 The tutorial is based on the Leitstand webhook management UI and explains the implementation of the webhook list shown below:
 
-![Webhook list view](webhooks.png "Webhooks list view") 
+![Webhook list view](assets/webhooks.png "Webhooks list view") 
 
 All code listings are taken from the Leitstand UI.
 
@@ -19,8 +19,10 @@ The first step is to implement a client to access the webhooks resource through 
 The webhooks resource endpoint is `/api/v1/webhooks` and accepts an optional `filter` parameter to query webhooks by their name.
 
 ```ES6
+import {Resource} from '/ui/js/client.js';
+
 /**
- * Collection of configured webhooks.
+ * Webhook collection
  */
 export class Webhooks extends Resource {
 
@@ -133,7 +135,7 @@ The `#` walks down the object hierarchy and creates a new context to read the pr
 If the specified property is an array, the section is executed for each array item.
 The template renders a blankslate if the `hooks` array is empty or does no exist.
 
-![No webhooks found](webhooks_blankslate.png "No webhooks found.") 
+![No webhooks found](assets/webhooks_blankslate.png "No webhooks found.") 
 
 The Mustache instructions are put into HTML comments to preserve a valid HTML syntax.
 
@@ -146,6 +148,9 @@ The view model consists of three properties:
 Moreover, the controller implements the filter function, that applies the current filter to the list view by means of reloading the view with the new filter expression.
 
 ```ES6
+import {Controller,Menu} from '/ui/js/ui.js';
+
+
 let webhooksController = function() {
   let hooks = new Webhooks();
   return new Controller({
@@ -186,4 +191,4 @@ Therefore, the `webhooks.html` template is bound to the webhooks view declaratio
 export const menu = new Menu({'webhooks.html':webhooksView});							  
 ```
 
-The next tutorial discusses [how to add a new webhook](./add_tutorial.md).							  
+The next tutorial discusses how to [add a new webhook](./add_tutorial.md).							  
