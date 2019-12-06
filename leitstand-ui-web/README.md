@@ -7,7 +7,7 @@ The Leitstand UI obeys the Model-View-Controller pattern as illustrated below.
 
 ![Model View Controller](assets/ui-mvc.png "Model View Controller principle") 
 
-The [controllers](controllers.md) form the centerpieces of the UI. 
+The [controllers](controller.md) form the centerpieces of the UI. 
 A controller invokes the [REST-API](resources.md), translates the server-side resource into the view model, 
 passes the view model to the [view template](templates.md) to render the view and 
 processes all events fired from controls on the view.
