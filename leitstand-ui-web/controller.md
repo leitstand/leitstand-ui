@@ -14,7 +14,7 @@ The menu is exported to get registered in the Leitstand menu.
 ## Controller
 
 The `Controller` class provides the controller functionality and is parameterized by a single JSON object representing the controller configuration.
-The minimal configuration consists merely of the [resource](resource.md) the controller should invoke.
+The minimal configuration consists merely of the [resource](resources.md) the controller should invoke.
 A typical controller configuration contains the following properties:
 - `resource`, the main `Resource` the controller is operating on. The controller invokes the `load` method of the declared resource to initialize the view. 
 - `viewModel`, an optional callback to translate the resource entity into the view model.
@@ -62,7 +62,7 @@ let webhooksController = function() {
   });
 };
 ```
-The controller instantiates the Webhooks [resource](resource.md) and creates the controller.
+The controller instantiates the Webhooks [resource](resources.md) and creates the controller.
 The view model contains the returned hooks, 
 a mapping function to translate the `enabled` flag into a state with values `UP` or `DOWN`,
 and the currently applied filter.
