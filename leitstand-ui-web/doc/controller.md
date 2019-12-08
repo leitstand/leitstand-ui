@@ -79,7 +79,7 @@ export const menu = new Menu(...);
 The menu differentiates between _single_ views and _master-detail_ views.
 
 ### Single View
-A menu entry of a single view consists of the view template as key and the controller factory method as value.
+A menu entry of a single view consists of the view template as key and the controller as value.
 
 ```ES6
 export const menu = new Menu('message-history.html':webhookHistory());
@@ -96,8 +96,8 @@ A detail page can either have its own controller or use the controller of the ma
 
 A menu entry of a master-detail view uses the master-view template as key and a descriptor object of the master-detail pages as value.
 The master-detail page descriptor has `master` and a `detail` property.
-The `master` property contains the factory method of the master view controller.
-The `detail` property is an associative array with the detail view template as key and the factory method of the detail view controller as value. 
+The `master` property contains the controller of the master view.
+The `detail` property is an associative array with the detail view template as key and the controller of the detail view as value. 
 
 ```ES6
 let webhooksView = {
