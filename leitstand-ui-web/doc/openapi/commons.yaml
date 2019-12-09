@@ -1,0 +1,105 @@
+components:
+  responses:
+    VoidSuccess:
+      description: The operation was successful but the response entity is empty. Typically used to report the successful deletion of resources.
+
+    BadRequest:
+      description: The request is syntactially incorrect and cannot be processed by the server. This error typically reports a malformed JSON request entity.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/Message"
+
+    Unauthorized:
+      description: The request does not contain valid authorization data.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/Message"
+    
+    Forbidden:
+      description: The caller has insufficient privileges to access the requested resource.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/Message"
+    
+    NotFound:
+      description: The requested entity does not exist. The response entity conveys messages with details.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/Message"
+    
+    ElementNotFound:
+      description: The requested element does not exist. The response entity conveys messages with details.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/Message"
+   
+    Conflict:
+      description: The request cannot be satisfied due to a detected conflict.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/Message"
+    
+    UnprocessableEntity:
+      description: The request entity was syntcatically correct but cannot be processed due to semantical errors.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/Message"
+
+    InternalServerError:
+      description: The server was not able to process the request because of an internal server error, for example if the server cannot connect to the database.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/Message"
+  schemas:
+    Message:
+      description: A message to express an error, a warning or to provide general information of an operation outcome.
+      type: object
+      readOnly: true
+      required:
+      - severity
+      - reason
+      - message
+      properties:
+        severity:
+          description: The severity level of this message.
+          type: string
+          enum:
+          - ERROR
+          - WARNING
+          - INFO
+        reason: 
+          description: A 8-digit message reason code which allows to understand why the message was created.
+          type: string
+        message:
+          description: The status details in a human-friendly format.
+          type: string
+        property:
+          description: An optional property name which is set when the message is related to a property of the request entity.
+          type: string
+        value:
+          description: The value of the invalid request entity property. Omitted when the property value is null or undefined.
+          type: string

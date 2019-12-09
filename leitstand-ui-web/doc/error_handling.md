@@ -4,7 +4,7 @@
 The Leistand UI error handling relies on the HTTP status code and status messages returned by the REST API. 
 The REST API uses the HTTP Status Code in combination with optional status messages to explain the outcome of an API invocation. A status message is a JSON object and contains the following attributes:
 
-- `severity`, the message severity which is either `ERROR`, `WARNING`, or `INFORMATION`.
+- `severity`, the message severity which is either `ERROR`, `WARNING`, or `INFO`.
 - `reason`, a unique, 8-digit reason code which allows to understand why the message was created.
 - `message`, the status details in a human-friendly format
 - `property`, an optional property name which is set when the message is related to a property of the request entity.
