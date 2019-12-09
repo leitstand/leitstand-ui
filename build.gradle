@@ -1,0 +1,87 @@
+plugins {
+    // Activate sonarqube plugin to run static code analysis
+    id "org.sonarqube" version "2.7.1"
+}
+
+def allTestCoverageFile = "$buildDir/jacoco/allTestCoverage.exec"
+allprojects {
+
+    task version(type: Exec) {
+        println 'Resolve version for project ' + project.getName()
+        def stdout = new ByteArrayOutputStream()
+        def rc = exec {
+            commandLine 'git', 'describe', '--tags'
+            standardOutput = stdout
+            ignoreExitValue true
+        }
+        if (rc.exitValue == 0) {
+            version = stdout.toString().trim()
+        } else {
+            println 'WARNING: No version information available. Version defaults to 0.0.0-develop'
+            version = '0.0.0-develop'
+        }
+        println 'Project version: ' + version
+        project.setVersion(version)
+    }
+
+    group = 'io.leitstand.inventory'
+    // Activate jacoco for all modules to measure unit test code coverage
+    apply plugin: 'jacoco'
+    apply plugin: 'java'
+    apply plugin: 'maven-publish'
+
+    repositories {
+        maven {
+            name = "Github"
+            url = "https://maven.pkg.github.com/leitstand/artifacts"
+            credentials {
+                username = findProperty("github.download.username")
+                password = findProperty("github.download.token")
+            }
+        }
+        jcenter()
+        mavenLocal()
+    }
+    publishing {
+        repositories {
+            mavenLocal()
+            if (project.hasProperty('github')) {
+                maven {
+                    name = "Github"
+                    url = uri("https://maven.pkg.github.com/leitstand/artifacts")
+                    credentials {
+                        username = findProperty("github.upload.username")
+                        password = findProperty("github.upload.token")
+                    }
+                }
+            }
+        }
+    }
+}
+
+jacoco {
+    toolVersion = '0.8.1'
+    reportsDir = file('$buildDir/customJacocoReportDir')
+}
+
+task jacocoMerge(type: JacocoMerge){
+   destinationFile = file(allTestCoverageFile)
+   executionData = project.fileTree(dir:'.',include:'**/build/jacoco/test.exec')
+}
+
+sonarqube {
+    properties {
+        property 'sonar.sourceEncoding', 'UTF-8'
+    	property 'sonar.jacoco.reportPaths', allTestCoverageFile
+    }
+}
+
+subprojects {
+    sonarqube {
+        properties {
+            property 'sonar.sources', 'src/main/java'
+            property 'sonar.jacoco.reportPaths', allTestCoverageFile
+        }
+    }
+}
+

@@ -1,0 +1,38 @@
+plugins {
+    id 'java-library'
+    id 'eclipse-wtp'
+}
+
+dependencies {
+    compile 'io.leitstand:leitstand-commons:' + findProperty("versions.leitstand-commons")
+    compile 'io.leitstand.security:leitstand-auth:' + findProperty("versions.leitstand-security")
+
+    compileOnly 'javax:javaee-api:8.0'
+    compileOnly 'org.postgresql:postgresql:42.2.5'
+
+    testCompile 'junit:junit:4.12'
+    testCompile 'io.leitstand:leitstand-test:' + findProperty("versions.leitstand-commons")
+    testCompile 'org.eclipse.persistence:eclipselink:2.7.1'
+    testCompile 'javax.xml.bind:jaxb-api:2.3.0'
+    testCompile 'org.hibernate:hibernate-validator:4.2.0.Final'
+    testCompile 'org.mockito:mockito-all:1.8.4'
+    testCompile 'org.glassfish.jersey.core:jersey-client:2.6'
+    testCompile 'com.h2database:h2:1.4.200'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    archiveClassifier = 'sources'
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            artifactId = 'leitstand-ui-model'
+            version = project.getVersion()
+            from components.java
+            artifact sourcesJar
+
+        }
+    }
+}
