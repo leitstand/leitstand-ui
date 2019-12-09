@@ -1,7 +1,8 @@
 # Add New Entity Tutorial
 
 This tutorial is the second of a series of tutorials that explains how to extend the Leitstand UI.
-The first tutorial explained how to display a list of entities, using the webhooks list view as an example. This tutorial explains how to add a new webhook.
+The [first tutorial](listview_tutorial.md) explained how to display a list of entities, using the webhooks list view as an example. 
+This tutorial explains how to add a new webhook.
 
 ## Webhooks Resource
 The `Webhooks` resource introduced in the first tutorial provides a `addHook` method to add a new webhook.

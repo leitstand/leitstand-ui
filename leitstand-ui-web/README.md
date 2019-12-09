@@ -29,7 +29,7 @@ A module has full control of the screen real estate below the main menu tabs.
 Controllers, view templates, and client libraries are located in the same git repository as the REST service implementation.
 Consequently UI and REST services receive the same version tags which helps to avoid compatibility issues.
 
-The UI server hosts common UI resources, like the UI javascript libraries, the CSS files, error pages, login form, as well as the [main menu configuration and module descriptors](modules.md). 
+The UI server hosts common UI resources, like the UI javascript libraries, the CSS files, error pages, login form, as well as the [main menu configuration and module descriptors](doc/module.md). 
 
 ![UI Modules](doc/assets/ui-modules.png "UI Modules") 
 
@@ -46,7 +46,7 @@ A UI module can assemble views from different containers.
 This is the reason why module descriptors are loaded from the UI server rather than from the container.
 
 ## Error Handling and Input Validation
-The [Leitstand UI error handling](doc/error-handling.md) relies on the status messages returned by the REST API.
+The [Leitstand UI error handling](doc/error_handling.md) relies on the status messages returned by the REST API.
 
 ## Authentication and Authorization
 The Leitstand UI uses a role-based authorization model.

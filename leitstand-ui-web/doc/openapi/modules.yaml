@@ -1,0 +1,178 @@
+openapi: "3.0.0"
+info:
+  title: Leitstand UI Modules API
+  description: Access Leistand UI module descriptors
+  version: 0.7.0
+  contact:
+    name: Martin Steger
+    email: martin@rtbrick.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+tags:
+- name: Module
+  description: Leitstand UI module configuration API
+
+paths:
+  /ui/modules/:
+    get:
+      tags:
+      - Module
+      description: Returns a list of deployed modules to render the main menu.
+      responses:
+        200:
+          description: A collection of matching images  
+          content:
+            application/json:
+              schema:
+                type: array
+                items: 
+                   $ref: "#/components/schemas/MainMenuItem"
+        500:
+          $ref: "commons.yaml#/components/responses/InternalServerError"
+  /ui/modules/{module}:
+    get:
+      tags:
+      - Module
+      description: Returns the module descriptor for the specified module.
+      parameters:
+      - in: path
+        name: module
+        required: true
+        schema:
+          type: string
+          description: The module name.
+      responses:
+        200:
+          description: The settings of the requested image.  
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModuleDescriptor"
+        500:
+          $ref: "commons.yaml#/components/responses/InternalServerError"
+# The components section contains a set of named Schema Objects.  Each schema
+# object describes a reusable data type, which can be reference by name.
+# TODO Add required to all components    
+components:
+  responses:
+    ModuleNotFound:
+      description: The requested module does not exist.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "commons.yaml#/components/schemas/Message"
+  schemas:
+    MainMenuItem:
+      description: Main menu item of a Leitstand UI menu item.
+      type: object
+      readOnly: true
+      properties:
+        module:
+          type: string
+          description: The module name.
+        title:
+          type: string
+          description: The module title.
+        subtitle:
+          type: string
+          description: The module subtitle.
+        label:
+          type: string
+          description: The module menu item label.
+        path:
+          type: string
+          description: The path to the module welcome page
+        position:
+          type: string
+          description: A hint where to position the main menu item.
+          enum:
+          - left
+          - right
+        rolesAllowed:
+          type: array
+          description: A list of roles allowed to access the module 
+          items:
+            type: string
+    
+    ModuleApplication:
+      description: Leitstand UI application descriptor
+      type: object
+      properties:
+        application:
+          type: string
+          description: The application name
+        controller:
+          type: string
+          description: The controller file name.
+        defer:
+          type: boolean
+          description: Whether the application resources should be loaded eagerly or on demand.
+    
+    ModuleDescriptor:
+      description: Leitstand UI module descriptor
+      type: object
+      readOnly: true
+      properties:
+        module:
+          type: string
+          description: the module name
+        applications:
+          description: List of module applications.
+          type: array
+          items:
+            $ref: "#/components/schemas/ModuleApplication"
+        navigation:
+          description: The module navigation configuration.
+          type: array
+          items:
+            $ref: "#/components/schemas/ModuleMenu"
+    
+    ModuleMenu:
+      description: Leitstand UI module menu descriptor
+      type: object
+      properties:
+        menu:
+          type: string
+          description: The menu name.
+        label:
+          type: string
+          description: The menu label.
+        title: 
+          type: string
+          description: The menu title.
+        requires:
+          type: array
+          description: Optional array of names of properties that must be present in the view model to show this menu.
+          items:
+            type: string
+        query:
+          type: object
+          description: Optional query parameters to be added when selecting a view from the menu.
+        items:
+          type: array
+          description: The menu items.
+          items:
+            $ref: '#/components/schema/ModuleMenuItem'
+    
+    ModuleMenuItem:
+      description: Leitstand UI module menu item descriptor
+      type: object
+      properties:
+        item: 
+          type: string
+          description: The name of the menu item.
+        label:
+          type: string
+          description: The label of the menu item.
+        title:
+          type: string
+          description: The title of the menu item.
+        view:
+          type: string
+          description: The path to the view template.
+        query:
+          type: object
+          description: Optional query parameters to be added when selecting a view from the menu. Overrides conflicting menu query parameters.

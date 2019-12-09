@@ -30,7 +30,7 @@ The browser loads the module descriptor from `/api/v1/ui/modules/{module}` where
 The basic structure of module descriptor is outline below:
 
 - `name`, the module name
-- `applications`, optinal list of module applications. 
+- `applications`, optional list of module applications. 
    Unlisted applications are loaded on demand.
   * `app`, the application name
   * `controller`, the controller name. Defaults to `controller.js`.
@@ -44,7 +44,7 @@ The basic structure of module descriptor is outline below:
      - the property name
    * `query`, optional query parameters, that have to be added to every view in this menu. The key is the parameter name, the value is the parameter value. The value is either a static value or an epxression to read the value from the view model (i.e. `group: "{{group_id}}"` reads the `group_id` property from the view model as value of the `group` query parameter).
    * `items`, the menu items
-     * `name`, the name of the menu item
+     * `item`, the name of the menu item
      * `label`, the label of the menu item. Again the label can either be static text or derived from view model properties.
      * `title`, the title of the label menu item, displayed as tooltip
      * `view`, the path to the view template.
