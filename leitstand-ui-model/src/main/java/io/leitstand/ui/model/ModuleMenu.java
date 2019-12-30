@@ -114,6 +114,28 @@ public class ModuleMenu {
 		}
 		
 		/**
+		 * Sets the view property matchers that must be satisfied to enable this menu item.
+		 * @param matchers the property matchers that have to be satisfied
+		 * @return a reference to this builder to continue with object creation
+		 */
+		public Builder withViewModel(ViewModelProperty.Builder... matchers) {
+			return withViewModel(stream(matchers)
+							 	 .map(ViewModelProperty.Builder::build)
+							 	 .collect(toList()));
+		}
+		
+		/**
+		 * Sets the view property matchers that must be satisfied to enable this menu item.
+		 * @param matchers the property matchers that have to be satisfied
+		 * @return a reference to this builder to continue with object creation
+		 */
+		public Builder withViewModel(List<ViewModelProperty> matchers) {
+			assertNotInvalidated(getClass(), menu);
+			menu.viewModel = unmodifiableList(new ArrayList<>(matchers));
+			return this;
+		}
+		
+		/**
 		 * Sets the builders of the menu items of this menu.
 		 * @param builder - all menu item builders
 		 * @return a reference to this builder to continue with object creation
@@ -169,6 +191,8 @@ public class ModuleMenu {
 	private Map<String,String> query = emptyMap();
 	private Set<String> requires = emptySet();
  	private List<ModuleMenuItem> items = emptyList();
+ 	private List<ViewModelProperty> viewModel = emptyList();
+
 
  	/**
  	 * Returns the name of this menu.
@@ -205,12 +229,22 @@ public class ModuleMenu {
 	}
 	
 	/**
-	 * Returns a set of properties that must be present in the current view model to activate this menu.
-	 * @return the view model properties to enabled this menu.
+	 * Returns a set of properties that must be present in the current view model to enable this menu.
+	 * @return the view model properties to enable this menu.
 	 */
 	public Set<String> getRequires() {
 		return unmodifiableSet(requires);
 	}
+
+	/**
+	 * Returns the view model property matchers that must be satisfied to enable this menu.
+	 * @return the view model property matchers to enable this menu. 
+	 * 		   Returns an empty list if no matchers are specified.
+	 */
+	public List<ViewModelProperty> getViewModel() {
+		return viewModel;
+	}
+
 	
 	/**
 	 * Returns a list of all menu items.
@@ -219,6 +253,7 @@ public class ModuleMenu {
 	public List<ModuleMenuItem> getItems() {
 		return unmodifiableList(items);
 	}
+	
  	
 
 	

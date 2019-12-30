@@ -32,7 +32,7 @@ public class LogoutResource {
 								  request.getUserPrincipal(), 
 								  e.getMessage()));
 		}
-		return temporaryRedirect(URI.create("/login/login.html")).build();
+		return temporaryRedirect(URI.create("/ui/login/login.html")).build();
 	}
 	
 

@@ -18,7 +18,7 @@ import io.leitstand.ui.model.MainMenuItem;
 import io.leitstand.ui.model.MainMenuService;
 
 /**
- * Provides readonly access to the EMS {@link MainMenu}.
+ * Provides readonly access to the Leitstand {@link MainMenu}.
  * 
  * @see MainMenuService
  * @see MainMenu

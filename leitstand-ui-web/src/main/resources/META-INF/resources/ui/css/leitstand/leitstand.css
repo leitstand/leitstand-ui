@@ -1,0 +1,864 @@
+/*
+ * (c) RtBrick, Inc - All rights reserved, 2015 - 2017
+ */
+ 
+/*--------------------------------------------------------*/
+/* Primer accessibility enhancements */
+/*--------------------------------------------------------*/
+
+/* Declare menu items as list items.*/
+nav li {
+	list-style-type: none;
+	display: block;
+	border-bottom:1px solid #eee;
+	margin: 0;
+	padding:0;
+}
+
+nav li:last-child {
+	list-style-type: none;
+	display: block;
+	border-bottom:none;
+	margin: 0;
+	padding:0;
+}
+
+.form-group.flattened div.label {
+	line-height: 32px
+}
+
+.form-group div.label h4 {
+	margin: 4px 0 0
+}
+
+.form-group div.label h4.is-error {
+	color: #bd2c00
+}
+
+.form-group div.label h4.is-success {
+	color: #55a532
+}
+
+.form-group div.label h4+.note {
+	margin-top: 0
+}
+
+.form-group.required div.input label::after {
+	padding-left: 5px;
+	color: #bd2c00;
+	content: "*"
+}
+
+.hfields .form-group div.input label {
+	display: inline-block;
+	margin: 5px 0 0;
+	color: #666
+}
+
+.hfields .form-group div.input img {
+	position: relative;
+	top: -2px
+}
+
+.form-group div.input {
+	margin: 0 0 6px
+} 
+
+/*--------------------------------------------------------*/
+/* Common UI styles */
+/*--------------------------------------------------------*/
+
+
+/* Heading of login and error pages.*/
+.auth-form h1, 
+.error-page h1 {
+	background-image: url('/ui/images/logo.png');
+	background-position: center;
+	background-repeat: no-repeat;
+	font-weight: 300;
+	padding-top: 240px;
+	text-align: center;
+}
+
+.auth-form .flash-messages {
+	margin-top: 15px; /** Increase margin for login error messages */
+}
+
+/* Header section */
+.header {
+	background-image: url('/ui/images/header/logo.png'); /* Header uses intentionally a different logo!*/
+	background-position: right;
+	background-repeat: no-repeat;
+	background-size:200px;
+	min-height: 80px;
+	margin: -5px 0px;
+}
+
+/* Hidden mustache template, that is rendered in the background before being displayed.*/
+.mustache-template{
+	display:none;
+}
+
+/** A hidden element that is displayed dynamically by the controller.*/
+.hidden{
+	visibility:hidden;
+}
+
+/** Containers for columns to display elements from left to right.*/
+.row {
+	padding: 10px 0px;
+	clear:both;
+}
+
+#page-container .row {
+	margin: 0px -10px;
+}
+
+/* Messagebox for popup messages such as a date-picker, for example.*/ 
+.messagebox-container{
+	position: relative;
+}
+
+.messagebox{
+	position: absolute;
+	left: 20px;
+	top: 20px;
+}
+
+/** Fieldsets to group input elements.*/
+fieldset{
+	margin-top: 5px; /* Adjust top margin.*/
+}
+
+/** General table styles.*/
+table {
+	width: 100%;
+}
+/** Hide caption, it is intended for screen readers only.*/
+caption {
+	display:none;
+}
+
+/** List styles.*/
+table.list thead th {
+	border-collapse: collapse;
+	border-left: 1px solid #EFEFEF;
+	padding: 0.25em;
+}
+
+table.list thead th:FIRST-CHILD {
+	border-collapse: collapse;
+	border-left: 1px solid white;
+	padding: 0.25em;
+}
+
+table.list th.check, 
+table.list td.check {
+	width: 2%
+}
+
+table.list th.tiny, 
+table.list td.tiny {
+	width: 8%
+}
+
+table.list th.extra-small, 
+table.list td.extra-small {
+	width: 12.5%
+}
+
+
+table.list th.small,
+table.list td.small{
+	width: 25%;	
+}
+
+table.list th.medium,
+table.list td.medium {
+	width: 50%;
+}
+
+table.list th.large,
+table.list td.large {
+	width: 75%;
+}
+
+table.list th.text,
+table.list td.text {
+	text-align: left;
+}
+
+table.list th.key,
+table.list td.key {
+	text-align: right;
+	padding-right: 10px;
+}
+
+table.list th.value,
+table.list td.value {
+	text-align: right;
+	padding-left: 10px;
+}
+
+table.list th.metric,
+table.list td.metric {
+	text-align: center;
+}
+
+table.list>tbody>tr, table.list>thead>tr {
+	border-bottom: 1px solid #EFEFEF;
+}
+
+table.list>tbody>tr:hover{
+	border-bottom: 1px solid #EFEFEF;
+	background-color: #EFEFEF;
+}
+
+table.list>tbody>tr>td {
+	text-align:center;
+	padding: 5px
+}
+
+table.list tbody td>button{
+	margin:0;
+}
+
+table.list tfoot tr td{
+	padding-top: 10px;
+}
+
+table.list button[disabled]{
+	display:none;
+}
+
+th.top,
+td.top {
+	vertical-align: top;
+}
+
+/* List item details style (for master detail views, where master is a list view and detail view is a second view).*/
+table.details thead{
+	display:none;
+}
+
+table.details  td{
+	padding: 1em;
+	border: 1px solid #d8d8d8;
+	table-layout:fixed;
+	max-width: 600px; /* CSS hack to make overflow for code blocks work. Safari and Chrome ignore the actual value and use available space*/
+}
+table.details {
+	margin-bottom: 12px;
+}
+
+table.details th,
+table.details td:nth-child(2n-1){
+	text-align: left;
+	font-weight:normal;
+	padding: 1em;
+	border: 1px solid #d8d8d8;
+	color: #767676;
+	width: 15%;
+}
+table.details td ol {
+	list-style-type: none;
+}
+
+table.details td ul {
+	list-style-type: square;
+	margin-left: 15px;
+}
+
+table.details td code {
+	margin: -1em;
+	border: none;
+}
+
+table.details td span{
+	max-width: 10em; /* Limit with of state elements*/
+	text-align:center;
+}
+
+/* Tags and tag editor styles.*/
+ul.tags,
+ol.tags {
+	display:inline-block;
+	vertical-align: middle;
+}
+
+ul.tags li,
+ol.tags li{
+	display:inline;
+	background-color: #2d5c9b; /*#4078c0;*/
+	list-style-type: none;
+	padding: 2px 5px;
+	margin: 0px 5px;
+	color: white;
+	font-weight: bold;
+}
+
+.tag-editor ol.tags{
+	display: inline;	
+	vertical-align: middle;
+}
+
+.tag-editor ol.tags li.tag{
+	display:inline;
+	background-color: white; 
+	list-style-type: none;
+	margin: 0px 3px;
+	position: relative;
+}
+
+.tag-editor ol.tags li.tag{
+	position:relative;
+	background-color: #2d5c9b; /*#4078c0; */
+	display: inline-block;
+	height: 26px;
+	border-radius: 3px;
+	margin-right: 10px;
+	padding: 5px;
+	margin-top: 10px;
+}
+
+.tag-editor ol.tags li span{
+	margin-right: 30px;
+	display: inline-block;
+	vertical-align: middle;
+	margin-top: -4px;
+}
+
+.tag-editor ol.tags li.tag button{
+	position:absolute;
+	top: 0;
+	right: 0;
+	border-radius: 0px 3px 3px 0px;
+}
+
+.tag-editor span{
+	display: inline-block;
+	margin-top: 10px;
+}
+
+.tag-editor span button{
+	border-radius: 0px 3px 3px 0px;
+	position: absolute;
+	top: -1px;
+	right: 0px;
+}
+
+.tag-editor span input{
+	width: 100%;
+	display: block;
+	border-radius: 3px;
+	border: 1px solid #e5e5e5;
+	padding: 7px 30px 7px 8px;
+	width: 7em;
+	display:inline-block; 
+	vertical-align: middle; 
+	height: 26px;
+	padding-right: 30px;
+	margin-top: -1px;
+}
+
+/** Image and package details*/
+div.image,
+div.package{
+	margin: 20px 0px;
+}
+
+div.package span:nth-child(2n-1){
+	font-weight:normal;
+	color: #767676;
+}
+
+div.package span:nth-child(2n){
+	font-weight:bold;
+	padding-left: 1.5em;
+	font-size: 1.2em;
+}
+
+div.package ol{
+	margin:0;
+	padding:0;
+}
+
+div.package li{
+	list-style-type: none;
+	display:block;
+	float:left;
+	padding: 1em;
+	border: 1px solid #d8d8d8;
+	margin-left: -1px;
+	margin-bottom: -1px;
+}
+
+div.image .details,
+div.package .details{
+	clear:both;
+}
+
+
+
+/* Administrative, operational, task and event states */
+.UP,
+.OPERATIONAL,
+.CONFIRM,
+.FINISHED,
+.COMPLETED,
+.RELEASE,
+.STARTED,
+.PASSED,
+.VALID,
+.config.ACTIVE,
+.admin.ACTIVE,
+.bgp.ESTABLISHED,
+.ENABLED,
+.administrative .ACTIVE,
+.platform .ACTIVE {
+	background-color:#308720; /*#8bc34a;*/
+	color: white;
+	font-weight: bold;
+	padding: 2px 5px;
+	border-radius: 2px;
+	font-size: 8pt;
+	display:block;
+	text-align: center;
+}
+
+
+.DETACHED,
+.TIMEOUT {
+	background-color:#62248a;
+	color: white;
+	font-weight: bold;
+	padding: 2px 5px;
+	border-radius: 2px;
+	font-size: 8pt;
+	display:block;
+	text-align: center;
+}
+
+.ERROR,
+.FAILED,
+.INVALID,
+.DENIED,
+.REJECTED,
+.REVOKED,
+.bgp.ACTIVE,
+.bgp.CONNECT,
+.DISABLED,
+.DOWN {
+	background-color:#e82000; /*#ff4107;*/
+	color: white;
+	font-weight: bold;
+	padding: 2px 5px;
+	border-radius: 2px;
+	font-size: 8pt;
+	display:block;
+	text-align:center;
+}
+
+.CACHED,
+.SUPERSEDED,
+.READY{
+	background-color: #767676;
+	color: white;
+	font-weight: bold;
+	padding: 2px 5px;
+	border-radius: 2px;
+	font-size: 8pt;
+	display:block;
+	text-align:center;
+}
+
+.ROLLEDBACK{
+	background-color: #6e5494;
+	color: white;
+	font-weight: bold;
+	padding: 2px 5px;
+	border-radius: 2px;
+	font-size: 8pt;
+	display:block;
+}
+
+.WARNING,
+.CANCELLED,
+.PULL,
+.SKIPPED,
+.IMPAIRED {
+	background-color: #a76000;
+	color: white;
+	font-weight: bold;
+	padding: 2px 5px;
+	border-radius: 2px;
+	font-size: 8pt;
+	display:block;
+	text-align: center;
+}
+
+span.NEW,
+span.ACTIVE,
+.CANDIDATE,
+.INFORMATION,
+.ROLLBACK,
+.MAINTENANCE,
+.platform .CACHED,
+.bgp.IDLE,
+.UNKNOWN{
+	background-color:#2d5c9b; /*#4078c0;*/
+	color: white;
+	font-weight: bold;
+	padding: 2px 5px;
+	border-radius: 2px;
+	font-size: 8pt;
+	display:block;
+	text-align: center;
+}
+
+.INFORMATION.SUCCESS{
+	background-color: #8bc34a;
+}
+
+.ERROR.CLOSED{
+	background: linear-gradient(-45deg, #2d5c9b 50%, #e82000 50%);
+}
+
+.WARNING.CLOSED{
+	background: linear-gradient(-45deg, #2d5c9b 50%, #a76000 50%);
+}
+.CONFIRM {
+	background: linear-gradient(-45deg, #2d5c9b 50%, #308720 50%);
+}
+	
+/* State in view headlines */	
+h2>span,
+h3>span,
+h4>span{
+	margin-left: 1em !important;
+	display: inline-block !important;
+	vertical-align: middle !important;
+}
+
+/* Format service type column */
+span.type {
+	color: #454545;
+	font-weight: bold;
+	font-size: 8pt;
+	display: block;
+}
+
+/** Link state graph style definitions. */
+
+#link-state svg {margin:auto; width: 100%}
+
+#link-state svg g a text{
+	cursor: pointer;
+	fill: #4078c0;
+}
+
+#link-state svg g image{
+	opacity: 0.5;
+	cursor: pointer;
+}
+
+#link-state svg a:focus{
+	text-decoration:underline;
+	font-weight: bold;
+	border: 1px solid blue;
+}
+
+
+#link-state svg g.focused image{
+	opacity: 1;
+}
+
+#link-state svg g.focused a{
+	text-decoration:none;
+}
+
+#link-state .links .name td {
+	padding-top: 10px;
+}
+
+#link-state .name a{
+	font-weight: normal;
+}
+
+#link-state .links .link td,
+#link-state .links .flags td:FIRST-CHILD{
+	border: 1px solid black;
+	border-collapse: collapse;
+}
+
+#link-state .links .link td:nth-child(1) ,
+#link-state .links .link td:nth-child(3) {
+	width: 40%;
+	vertical-align: top;
+}
+
+#link-state .links .link td:nth-child(1) div,
+#link-state .links .link td:nth-child(3) div{
+	border: 1px solid black;
+	margin: -1px;
+	padding: 5px 5px;
+}
+
+#link-state .links .link td:nth-child(1) div span,
+#link-state .links .link td:nth-child(3) div span{
+	display:inline-block;
+	vertical-align: middle;
+	margin: 0 5px;
+}
+
+#link-state .links .link td:nth-child(1) div span:first-child,
+#link-state .links .link td:nth-child(3) div span:first-child{
+	width: 40%;
+}
+
+#link-state .links .link td:nth-child(1) div code,
+#link-state .links .link td:nth-child(3) div code{
+	display: block;
+	font-weight: normal;
+}
+
+#link-state .flags ul li{
+	display: inline-block;
+	background-color: #4078c0;
+	color: white;
+	font-weight: bold;
+	margin: 5px 3px;
+	padding: 2px 5px;
+	border-radius: 2px;
+	font-size: 8pt;
+	
+}
+
+#link-state .links .link td:nth-child(2){
+	border: none;
+	width: 20%;
+}
+
+#link-state .links .link td:nth-child(2) div:first-child{
+	border-bottom: 1px dashed black;
+}
+
+#link-state .links .link div span{
+	font-size: 8pt;
+	font-weight: bold;
+}
+
+#link-state g a text:hover{
+	text-decoration: underline;
+}
+
+#link-state .delimiter{
+  border-top: 2px dotted #767676;
+  color: #767676;
+  margin: 20px 0px;
+  text-align: center;
+ }
+
+#link-state .delimiter div{
+	margin-top: -10px;
+}
+
+#link-state .delimiter div span{
+	background-color: white;
+}
+
+/* Topology view */
+/* :after :before is a simple CSS trick to draw a triangle that points to the currently selected pod. */
+#topology-popup:after, #topology-popup:before {
+	top: 0;
+   	left: 0;
+   	border: solid transparent;
+   	content: " ";
+   	height: 0;
+   	width: 0;
+   	position: absolute;
+   	pointer-events: none;
+}
+
+#topology-popup:after {
+	transform: rotate(90deg);
+	border-top-color: white;
+	border-width: 11px;
+	left: -20px;
+	top: 15px;
+}
+
+#topology-popup:before {
+	transform: rotate(90deg);
+	border-top-color: #ccc;
+	border-width: 10px;
+	left: -20px;
+    top: 15px;
+}
+
+#topology-popup {
+	position: relative; 
+	background-color:white; border: 
+	1px solid #ccc; 
+	border-radius: 5px; 
+	margin-top: -27px; 
+	margin-left: 10px; 
+	filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
+}
+
+#topology-popup > div{
+	padding: 5px 10px 5px 10px; 
+	width: auto;
+}
+
+#topology-popup ul {
+	padding-left: 5px;
+}
+
+#topology-popup ul li{
+	margin-left: 1em; 
+	list-style-type: square;"
+}
+  
+/* Date picker widget*/
+.calendar{
+	min-width: 20em;
+	border: 1px solid #7f7f7f;
+	padding: 5px;
+	background-color: white;
+	z-index: 10;
+	position: relative;	
+}
+
+.calendar .month span{
+	width: 10%;
+	display:inline-block;
+	vertical-align: middle;
+	text-align:center;
+	cursor: pointer;
+}
+
+.calendar .month div{
+	width: 80%;
+	display:inline-block;
+	font-size: 1.5em;
+	vertical-align: middle;
+}
+
+.calendar .month div span{
+	width: 100%;
+	text-align:center;
+	padding:0;
+	margin:0;
+}
+
+.calendar .month div span:nth-child(2){
+	font-size: 0.75em;
+}
+
+.calendar .days {
+	background-color: #f7f7f7;
+}
+
+.calendar .days span{
+	display:inline-block;
+	width:14%;
+	vertical-align: middle;
+	font-weight:bold;
+	text-align:center;
+	padding: 5px 0px;
+	cursor: pointer;
+}
+
+.calendar .page span{
+	display:inline-block;
+	width:14%;
+	vertical-align: middle;
+	text-align:center;
+	cursor: pointer;
+}
+
+.calendar .page span:hover{
+	background-color: #f7f7f7;
+}
+
+.calendar .time div{
+	width:50%;
+	display:inline-block;
+}
+
+.calendar .time div *{
+	width:80%;
+	margin:auto;
+	display:block;
+}
+
+.calendar .selected {
+	font-weight: bold;
+	background-color: rgba(116, 189, 205, 0.5);
+}
+
+.calendar.disabled .control{
+	visibility:hidden;
+}
+.calendar.disabled .days span,
+.calendar.disabled .page span{ 
+	cursor:text;
+}
+
+.calendar.disabled .selected {
+	font-weight: bold;
+	background-color: #B0B0B0 !important;
+}
+
+.calendar.disabled .page span:hover{
+	background-color: white;
+}
+
+/** Progress bar widget*/
+.progress>p{
+	color: #333333;
+	text-align: center;
+}
+
+.progressbar{
+	background-color: #D8D8D8; 
+	height: 5px;
+}
+
+.progress>.progressbar>.completed{
+	float:left;
+	display: inline;
+	background-color: #308720;
+	height: 5px;
+	width: 0%;
+	padding: 0px;
+}
+
+.progress>.progressbar>.active{
+	float:left;
+	display: inline;
+	background-color: #2d5c9b;
+	height: 5px;
+	width: 0%;
+	padding: 0px;
+}
+
+/** Highlighted code block*/
+code.hljs {
+	border: 1px solid #CCCCCC;
+	overflow: auto;
+}
+
+/** Confirm dialog boxes */
+.confirm {
+	border: 1px solid #b33630;
+	padding: 1em;
+	display:block;
+	width: 80%;
+	margin:auto;
+}
+
+.confirm h2 {
+	color: #b33630;
+}

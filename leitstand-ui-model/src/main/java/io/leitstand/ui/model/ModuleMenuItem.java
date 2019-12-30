@@ -1,20 +1,29 @@
 /*
- * (c) RtBrick, Inc - All rights reserved, 2015 - 2019
+ * (c) RtBrick, Inc All rights reserved, 2015 2019
  */
 package io.leitstand.ui.model;
 
 import static io.leitstand.commons.model.BuilderUtil.assertNotInvalidated;
 import static io.leitstand.commons.model.BuilderUtil.requires;
 import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
+import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableSet;
+import static java.util.stream.Collectors.toList;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 
 /**
@@ -43,7 +52,7 @@ public class ModuleMenuItem {
 		
 		/**
 		 * Sets the name of the menu item.
-		 * @param name - the item name
+		 * @param name the item name
 		 * @return a reference to this builder to continue with object creation.
 		 */
 		public Builder withName(String name) {
@@ -54,7 +63,7 @@ public class ModuleMenuItem {
 
 		/**
 		 * Sets the label of the menu item to be displayed in the UI.
-		 * @param label - the item label
+		 * @param label the item label
 		 * @return a reference to this builder to continue with object creation.
 		 */
 		public Builder withLabel(String label) {
@@ -65,7 +74,7 @@ public class ModuleMenuItem {
 		
 		/**
 		 * Sets the title of the menu item to be displayed as tooltip in the UI.
-		 * @param title - the item title
+		 * @param title the item title
 		 * @return a reference to this builder to continue with object creation.
 		 */
 		public Builder withTitle(String title) {
@@ -77,7 +86,7 @@ public class ModuleMenuItem {
 		/**
 		 * Sets the view template path to the view represented by this menu item.
 		 * The view model is passed to the specified view template to render the view.
-		 * @param view - the view template path.
+		 * @param view the view template path.
 		 * @return a reference to this builder to continue with object creation.
 		 */
 		public Builder withView(String view) {
@@ -87,11 +96,22 @@ public class ModuleMenuItem {
 		}
 
 		/**
+		 * Sets the controller for the current menu item.
+		 * @param controller the controller script
+		 * @return a reference to this builder to continue with object creation
+		 */
+		public Builder withController(String controller) {
+			assertNotInvalidated(getClass(), item);
+			item.controller = controller;
+			return this;
+		}
+		
+		/**
 		 * Sets the query parameters to be passed to the server when opening this view.
 		 * The specified query parameters are merged with the default query parameters specified in the {@link ModuleMenu}.
 		 * The parameters specified on the item have precedence over the default query parameters specified in the menu. 
 		 * This enables an item to overwrite the default parameters.
-		 * @param query - the item query parameters
+		 * @param query the item query parameters
 		 * @return a reference to this builder to continue with object creation.
 		 */
 		public Builder withQuery(Map<String,String> query) {
@@ -102,7 +122,7 @@ public class ModuleMenuItem {
 
 		/**
 		 * Sets the properties that have to present in the view model in order to enable this menu item.
-		 * @param requires - the properties which have to be present to enable this menu item
+		 * @param requires the properties which have to be present to enable this menu item
 		 * @return a reference to this builder to continue with object creation
 		 */
 		public Builder withRequires(String... requires) {
@@ -110,8 +130,8 @@ public class ModuleMenuItem {
 		}
 
 		/**
-		 * Sets the properties that have to present in the view model in order to enable this menu item.
-		 * @param requires - the properties which have to be present to enable this menu item
+		 * Sets the properties that must be present in the view model in order to enable this menu item.
+		 * @param requires the properties that have to be present to enable this menu item
 		 * @return a reference to this builder to continue with object creation
 		 */
 		public Builder withRequires(Collection<String> requires) {
@@ -119,16 +139,43 @@ public class ModuleMenuItem {
 			item.requires = unmodifiableSet(new TreeSet<String>(requires));
 			return this;
 		}
+
+		/**
+		 * Sets the view property matchers that must be satisfied to enable this menu item.
+		 * @param matchers the property matchers that have to be satisfied
+		 * @return a reference to this builder to continue with object creation
+		 */
+		public Builder withViewModel(ViewModelProperty.Builder... matchers) {
+			return withViewModel(stream(matchers)
+							 	 .map(ViewModelProperty.Builder::build)
+							 	 .collect(toList()));
+		}
+		
+		/**
+		 * Sets the view property matchers that must be satisfied to enable this menu item.
+		 * @param matchers the property matchers that have to be satisfied
+		 * @return a reference to this builder to continue with object creation
+		 */
+		public Builder withViewModel(List<ViewModelProperty> matchers) {
+			assertNotInvalidated(getClass(), item);
+			item.viewModel = unmodifiableList(new ArrayList<>(matchers));
+			return this;
+		}
 		
 		/**
 		 * Sets the roles allowed to access this menu item.
-		 * @param roles - the roles allowed to access this menu item.
+		 * @param roles the roles allowed to access this menu item.
 		 * @return a reference to this builder to continue with object creation.
 		 */
 		public Builder withRolesAllowed(String... roles) {
 			return withRolesAllowed(asList(roles));
 		}
 		
+		/**
+		 * Sets the roles allowed to access this menu item.
+		 * @param roles the roles allowed to access this menu item.
+		 * @return a reference to this builder to continue with object creation.
+		 */
 		public Builder withRolesAllowed(Collection<String> roles) {
 			assertNotInvalidated(getClass(), item);
 			item.rolesAllowed = unmodifiableSet(new TreeSet<>(roles));
@@ -157,8 +204,10 @@ public class ModuleMenuItem {
 	private String label;
 	private String title;
 	private String view;
+	private String controller;
 	private Map<String,String> query = emptyMap();
 	private Set<String> requires = emptySet();
+	private List<ViewModelProperty> viewModel = emptyList();
 	private Set<String> rolesAllowed = emptySet();
 
 	/**
@@ -181,18 +230,26 @@ public class ModuleMenuItem {
 	 * Returns the menu item title.
 	 * The menu item title provides a brief description of the menu item 
 	 * and is typically displayed as tooltip in the UI.
-	 * @return a brief descriotion of the menu item.
+	 * @return a brief description of the menu item.
 	 */
 	public String getTitle() {
 		return title;
 	}
 	
 	/**
-	 * Returns the relative path to the view to be displayed.
-	 * @return the relative path to the view to display.
+	 * Returns the view template path.
+	 * @return the view template path.
 	 */
 	public String getView() {
 		return view;
+	}
+	
+	/**
+	 * Returns the controller file.
+	 * @return the controller file.
+	 */
+	public String getController() {
+		return controller;
 	}
 	
 	/**
@@ -208,7 +265,7 @@ public class ModuleMenuItem {
 	 * @return an immutable set of view model properties to activate this menu item.
 	 */
 	public Set<String> getRequires() {
-		return requires;
+		return unmodifiableSet(requires);
 	}
 	
 	/**
@@ -216,13 +273,21 @@ public class ModuleMenuItem {
 	 * @return an immutable set of roles that are allowed to access this menu item
 	 */
 	public Set<String> getRolesAllowed(){
-		return rolesAllowed;
+		return unmodifiableSet(rolesAllowed);
 	}
 	
 	/**
-	 * Adds the passed parameters to this item's query parameters. This method is used to push down
-	 * the default query parameters from the menu to every item in order to facilitate the processing
-	 * of the module descriptor in the browser (javascript).
+	 * Returns the view model property matchers, that must be satisfied to display this menu item.
+	 * @return the view model property matchers.
+	 */
+	public List<ViewModelProperty> getViewModel(){
+		return unmodifiableList(viewModel);
+	}
+	
+	/**
+	 * Adds the specified parameters to the query parameters of this menu item. 
+	 * This method is used to push down the default query parameters from 
+	 * the menu to each menu item in order to simplify the processing of the module descriptor in the browser.
 	 * @param parameters the query parameters to be added to this menu item.
 	 */
 	void addQueryParameters(Map<String,String> parameters) {

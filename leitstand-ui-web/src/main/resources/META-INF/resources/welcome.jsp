@@ -1,0 +1,1 @@
+<%response.sendRedirect("/ui/views/inventory/pods.html");%>
