@@ -40,14 +40,26 @@ The basic structure of module descriptor is outline below:
    * `menu`, the menu name
    * `label`, the menu label. The label is either a static text or a template expression that reads data from the view model (e.g. `label:"{{group_name}}"` use the value of the `group_name` property as label.
    * `title`, the menu title, displayed as tooltip
-   * `requires`, optional array of properties that have to be present in the view model to activate the menu.
+   * `requires`, optional array of properties that have to be present in the view model to enable the menu.
      - the property name
+   * `viewModel`, optional array of view model property matchers providing more sophisticated means to enable the menu  
+     - `property`, the view model property name
+     - `exists`, an optional boolean flag indicating whether the property must be present (`true`) or absent (`false`) to enable the menu.
+     - `matches`, an optional regular expression to enable the menu if the view model property value matches the regular expression.
+     - `matches_not`, an optional regular expression to enable the menu if the view model property does not match the regular expression
    * `query`, optional query parameters, that have to be added to every view in this menu. The key is the parameter name, the value is the parameter value. The value is either a static value or an epxression to read the value from the view model (i.e. `group: "{{group_id}}"` reads the `group_id` property from the view model as value of the `group` query parameter).
    * `items`, the menu items
      * `item`, the name of the menu item
      * `label`, the label of the menu item. Again the label can either be static text or derived from view model properties.
      * `title`, the title of the label menu item, displayed as tooltip
      * `view`, the path to the view template.
+     * `requires`, optional array of properties that have to be present in the view model to enable the menu item.
+       - the property name
+     * `viewModel`, optional array of view model property matchers providing more sophisticated means to enable the menu item  
+       - `property`, the view model property name
+       - `exists`, an optional boolean flag indicating whether the property must be present (`true`) or absent (`false`) to enable the menu item.
+       - `matches`, an optional regular expression to enable the menu item if the view model property value matches the regular expression.
+       - `matches_not`, an optional regular expression to enable the menu item if the view model property does not match the regular expression
      * `query`, specific query parameters for this view item. The query parameters are added to the menu query parameters. The query parameters of a menu item override the menu query parameter in case of a name clash.
      
      

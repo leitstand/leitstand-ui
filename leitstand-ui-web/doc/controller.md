@@ -24,7 +24,7 @@ A typical controller configuration contains the following properties:
 
 The controller configuration is bound to the `Controller` instance.
 By that the controller configuration has access to the convenience methods provided by the `Controller`.
-The most frequently controller methods are
+The most frequently used controller methods are
 - `this.location` to read the current location including query parameters.
 - `this.getViewModel` to read the view model and extract the data to be passed to the REST API.
 - `this.navigate` to navigate to a different view.
@@ -66,7 +66,7 @@ The controller instantiates the Webhooks [resource](resources.md) and creates th
 The view model contains the returned hooks, 
 a mapping function to translate the `enabled` flag into a state with values `UP` or `DOWN`,
 and the currently applied filter.
-Moreover, the controller has an event handler refreshing the view whenever a new filter was applied.
+The controller also has an event handler that refreshes the view whenever a new filter was applied.
 
 ## Menu
 The menu assigns a view template to its controller and registers the controller in the Leitstand menu.
