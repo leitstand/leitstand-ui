@@ -1,12 +1,12 @@
 import {Resource} from '/ui/js/client.js';
-import {Controller,UserContext} from '/ui/js/ui.js';
-import {Location} from '/ui/js/ui-core.js';
+import {Controller} from '/ui/js/ui.js';
+import {Location, UserContext} from '/ui/js/ui-core.js';
 
 class Member extends Resource {
 	login(user_id,password){
-		this.json("/api/v1/_login")
-			.POST({"user_id":user_id,
-				   "password":password});
+		return this.json("/api/v1/_login")
+				   .POST({"user_id":user_id,
+				          "password":password});
 	}
 }
 
@@ -27,9 +27,8 @@ let page = new Controller({
 				roles[role] = true;
 			});
 		}
+		// Initialize the user context
 		new UserContext(settings);
-		this.setAttribute("userid",settings.user_id);
-		this.setAttribute("roles",JSON.stringify(roles));
 		if(document.referrer){
 			let location = new Location(document.referrer);
 			let path = location.path();

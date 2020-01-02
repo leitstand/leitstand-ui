@@ -2,8 +2,6 @@
  * (c) RtBrick, Inc - All rights reserved, 2019
  */
 
-import {UserContext} from '/ui/js/ui.js';
-
 /**
  * <h2>UI Component Library</h2>
  * <p>
@@ -64,6 +62,7 @@ import {UserContext} from '/ui/js/ui.js';
  * @module
  */
 
+import {UserContext} from '/ui/js/ui-core.js';
 
 /**
  * View model decorator that provides convenience functions to read and update view model properties.
@@ -227,8 +226,8 @@ export class UIElement extends HTMLElement {
 	 * Returns the controller of the current view.
 	 * @returns {ui~Controller} the controller of the current view.
 	 */
-	get page(){
-		return this._root.page;
+	get controller(){
+		return this._root.controller;
 	}
 	
 	/**
@@ -353,7 +352,7 @@ class Root extends HTMLElement {
 	 * @param {Controller} controller the view controller.
 	 */
 	setController(controller){
-		this.page = controller;
+		this.controller = controller;
 	}
 	
 	/**
@@ -682,7 +681,7 @@ export class Control extends FormElement{
 			roles = this.form.rolesAllowed
 		}
 		if(roles){
-			return roles.replaceAll(' ','').split(',');
+			return roles.split(/\s*\,\s*/g);
 		}
 		return [];
 	}
@@ -709,7 +708,7 @@ export class Control extends FormElement{
 		if(this.hasAttribute('readonly')){
 			return 'readonly';
 		}
-		let roles = this.rolesAllowed();
+		let roles = this.rolesAllowed;
 		let user  = UserContext.get();
 		
 		if(user.isUserInRole(roles)){
@@ -728,9 +727,8 @@ export class Control extends FormElement{
 			return 'disabled';
 		}
 		
-		let roles = this.rolesAllowed();
+		let roles = this.rolesAllowed;
 		let user  = UserContext.get();
-		for(let i=0; i < roles.length)
 		if(user.isUserInRole(roles)){
 			return '';
 		}
@@ -750,9 +748,12 @@ export class Control extends FormElement{
 		if(this.hasAttribute('disabled')){
 			return 'disabled';
 		}
-		//let rolesAllowd = this.
-		//TODO add roles check
-		return '';
+		let roles = this.rolesAllowed;
+		let user  = UserContext.get();
+		if(user.isUserInRole(roles)){
+			return '';
+		}
+		return 'disabled';
 	}
 
 	/**

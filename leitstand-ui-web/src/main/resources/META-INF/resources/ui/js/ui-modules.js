@@ -83,7 +83,7 @@ class Modules extends HTMLElement {
 			logout.classList.add('right');
 			logout.style='margin-left: 10px; margin-top: 5px';
 			logout.innerText='Logout';
-			logout.href='/api/v1/logout';
+			logout.href='/api/v1/_logout';
 			modulesMenu.appendChild(logout);
 			
 			mainMenu._menu.forEach(item => modulesMenu.appendChild(renderItem(item.label,

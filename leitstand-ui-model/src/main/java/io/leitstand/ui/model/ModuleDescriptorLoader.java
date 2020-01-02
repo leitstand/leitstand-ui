@@ -29,7 +29,7 @@ class ModuleDescriptorLoader {
 	ModuleDescriptor loadModuleDescriptor(String moduleName) {
 		try {
 			String moduleDescriptorPath = format("%s/ui/modules/%s/module.yaml",
-												 env.getSettings().getUiModulesDir(),
+												 env.getSettings().getUIModulesDir(),
 												 moduleName);
 
 			URL moduleDescriptorUrl = openUrl(moduleDescriptorPath);

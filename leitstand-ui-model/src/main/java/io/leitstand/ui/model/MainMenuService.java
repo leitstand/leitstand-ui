@@ -41,7 +41,7 @@ public class MainMenuService {
 	@PostConstruct
 	protected void loadMainMenu() {
 		String mainMenuPath = format("%s/module/main-menu.yaml",
-									 env.getSettings().getUiModulesDir());
+									 env.getSettings().getUIModulesDir());
 
 		menu = env.loadFile(mainMenuPath, 
 							yaml(MainMenu.class));		

@@ -48,6 +48,29 @@ import {mainMenu} from './ui-modules.js';
  */
 
 /**
+ * Leitstand view model property matcher settings.
+ * <p>
+ * A view model property matcher validates whether a view model property satisfies one out of the following constraints:
+ * <ul>
+ * <li>The <em>EXISTS</em> constraint expects the view model property to be set. 
+ *     <code>0</code>, <code>false</code>,<code>null</code> and empty string (<code>""</code>) are consider as unset properties</li>
+ * <li>The <em>EXISTS NOT</em> constraint expects the view model property to be <em>not</em> set. 
+ *     <code>0</code>, <code>false</code>,<code>null</code> and empty string (<code>""</code>) are consider as unset properties.
+ *     A property is also not set if the property is <code>undefined</code>.</li> 
+ * <li>The <em>MATCHES</em> constraint expects the view model property to match a regular expression.
+ *     The <em>MATCHES</em> constraint is only applicable for string properties and returns <code>false</code> for all non-string properties</li>
+ * <li>The <em>MATCHES NOT</em> constraint expects the view model property to <em>not</em> match a regular expression.
+ *     The <em>MATCHES NOT</em> constraint is only applicable for string properties and returns <code>true</code> for all non-string properties</li>
+ * </ul>
+ * @type {Object}
+ * @typedef ViewModelPropertyMatcherSettings
+ * @property {String} property the property name
+ * @property {boolean} [exists] <code>true</code> if the property must be present (<em>EXISTS</em> constraint) or <code>false</code> if the property must not be present (<em>EXISTS NOT</em> constraint).
+ * @property {String} [matches] a regular expression the property must match (<em>MATCHES</em> constraint)
+ * @property {String} [matches_not] a regular expression the property must not match (<em>MATCHES_NOT</em> constraint)
+ */
+
+/**
  * Container for all Leitstand UI modules.
  */
 export const modules = {};
@@ -272,7 +295,73 @@ window.addEventListener('InternalServerError',function(){
 	router.redirect('/ui/error/500.html');
 });
 
-
+/**
+ * The user context provides information about the authenticated user.
+ */
+export class UserContext {
+	
+	/**
+	 * Returns a user context for the authenticated user.
+	 */
+	static get(){
+		return new UserContext();
+	}
+	
+	/**
+	 * Creates a new user context.
+	 * @param user the settings of the authenticated user
+	 */
+	constructor(user){
+		if(user){
+			window.sessionStorage.setItem("user",JSON.stringify(user));
+			this.user = user;
+		} else {
+			this.user = JSON.parse(window.sessionStorage.getItem("user"));
+		}
+	}
+	
+	/**
+	 * Returns the user account ID
+	 * @return the user account ID
+	 */
+	get userId(){
+		return this.user.user_id;
+	}
+	
+	/**
+	 * Returns the roles of the user.
+	 * @return {String[]} the assigned roles as array of strings
+	 */
+	get roles(){
+		return this.user.roles;
+	}
+	
+	/**
+	 * Checks whether the user has one of the specified roles.
+	 * @param {String|String[]} role the expected role or an array of expected roles
+	 * @return <code>true</code> if the user is in at least on of the specified roles, <code>false</code> otherwise.
+	 */
+	isUserInRole(role){
+		if(Array.isArray(role)){
+			if(role.length == 0){
+				// Every authenticated user satisfies the constraint to have no assigned role.
+				return true;
+			}
+			// Check is user has at least one of the requested roles.
+			for(let i=0; i < role.length; i++){
+				if(this.user.roles.includes(role[i])){
+					return true;
+				}
+			}
+			return false;
+		}
+		if(role){
+			// Check if user is in the requested role
+			return this.user.roles.includes(role);
+		}
+		return false;
+	}
+}
 
 /**
  * A HTML resource.
@@ -513,6 +602,60 @@ export class Location {
 }
 
 /**
+ * View model property matcher.
+ * <p>
+ * A <code>ViewModelPropertyMatcher</code> verifies whether a view model property satisfies a certain constraint.
+ * The following constraints exists:
+ * <ul>
+ * <li>The <em>EXISTS</em> constraint expects the view model property to be set. 
+ *     <code>0</code>, <code>false</code>,<code>null</code> and empty string (<code>""</code>) are consider as unset properties</li>
+ * <li>The <em>EXISTS NOT</em> constraint expects the view model property to be <em>not</em> set. 
+ *     <code>0</code>, <code>false</code>,<code>null</code> and empty string (<code>""</code>) are consider as unset properties.
+ *     A property is also not set if the property is <code>undefined</code>.</li> 
+ * <li>The <em>MATCHES</em> constraint expects the view model property to match a regular expression.
+ *     The <em>MATCHES</em> constraint is only applicable for string properties and returns <code>false</code> for all non-string properties</li>
+ * <li>The <em>MATCHES NOT</em> constraint expects the view model property to <em>not</em> match a regular expression.
+ *     The <em>MATCHES NOT</em> constraint is only applicable for string properties and returns <code>true</code> for all non-string properties</li>
+ * </ul>
+ */
+class ViewModelPropertyMatcher{
+	
+	/**
+	 * Creates a <code>ViewModelPropertyMatcher</code>.
+	 * @param {ViewModelPropertyMatcherSettings} matcher the matcher settings
+	 */
+	constructor(matcher){
+		this.matcher = matcher;
+	}
+	
+	/**
+	 * Tests whether the view model satisfies the constraints defined by this matcher.
+	 * @param viewModel the current view model as JSON object
+	 * @return <code>true</code> if the view model satisfies the matcher constraint, <code>false</code> otherwise.
+	 */
+	accepts(viewModel){
+		let property = this.matcher.property;
+		let value = viewModel[property];
+		if(this.matcher.exists === true){
+			return !!viewModel;
+		}
+		if(this.matcher.exists === false){
+			return !viewModel;
+		}
+		if(this.matcher.matches){
+			return value && value.matches && value.matches(this.matcher.matches); 
+		}
+		if(this.matcher.matches_not){
+			return !value || !value.matches || !value.matches(this.matcher.matches_not);
+		}
+		
+		// A matcher without any settings accepts everything.
+		return true;
+	}
+	
+}
+
+/**
  * Leitstand UI module.
  * <p>
  * The Leitstand UI consists of modules.
@@ -550,7 +693,6 @@ class Module {
 		}
 		
 		// Load all missing javascript libraries.
-		// TODO Introduce app object to overwrite contoller.js to another name.
 		try{
 
 			let main = await import(`/ui/modules/${link.module()}/${this._descriptor.controller}`);
@@ -567,7 +709,6 @@ class Module {
 					alert(e);
 					console.log(`/ui/modules/${link.module()}/${this._descriptor.applications[i]} reported a ${e}`);
 				}
-				
 			}
 			
 			let templateLoader = new Html(`/ui/modules/${this._descriptor.module}/${this._descriptor.template}`);
@@ -662,31 +803,17 @@ class Module {
 								       model);
 
 			// Load all roles the user has.
-			let roles = JSON.parse(window.sessionStorage.getItem("roles"));
+			let user = UserContext.get();
 
 			// Add enabled decorator
 			menuViewModel.enabled = function(){
-				let allowed = function(){
-					if(this.rolesAllowed){
-						for (let i=0; i < this.rolesAllowed.length; i++){
-							if(roles && roles[this.rolesAllowed[i]]){
-								// User has a role with access privileges.
-								return true;
-							}
-						}
-						// User is not in a role with access privileges.
-						return false;
-					}
-					// No access privileges needed.
-					return true;
-				}.bind(this); // ES6 requires a bind of the this pointer to avoid "undefined" issues.
-
-				if(!allowed()){
+				let rolesAllowed = this.roles_allowed;
+				if(rolesAllowed && !user.isUserInRole(rolesAllowed)){
+					// Menu is not enabled because user has none of the required roles
 					return false;
 				}
-				if(this.requires == null){
-					return true;
-				}
+				
+				// Check that all required properties exist
 				for (let i=0; i < this.requires.length; i++){
 					if(!!model[this.requires[i]]){
 						continue;
@@ -696,6 +823,16 @@ class Module {
 					}
 					return false;
 				}
+				
+				// Check that every view model property matcher is satisfied
+				for(let i=0; i < this.view_model.length; i++){
+					let matcher  = new ViewModelPropertyMatcher(this.view_model[i]);
+					if(matcher.accepts(viewModel)){
+						continue;
+					}
+					return false;
+				}
+				
 				return true;
 			};
 			// Add viewpath decorator

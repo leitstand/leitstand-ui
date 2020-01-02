@@ -190,52 +190,6 @@ export class Menu extends Dom {
 
 }
 
-export class UserContext {
-	
-	static get(){
-		return new UserContext();
-	}
-	
-	constructor(user){
-		if(user){
-			window.sessionStorage.storeItem("user",JSON.stringify(user));
-			this.user = user;
-		} else {
-			this.user = JSON.parse(window.sessionStorage.getItem("user"));
-		}
-	}
-	
-	get userId(){
-		return this.user.user_id;
-	}
-	
-	get roles(){
-		return this.user.roles;
-	}
-	
-	isUserInRole(role){
-		if(Array.isArray(role)){
-			if(role.length == 0){
-				// Every authenticated user satisfies the constraint to have no assigned role.
-				return true;
-			}
-			// Check is user has at least one of the requested roles.
-			for(let i=0; i < role.length; i++){
-				if(this.user.roles.includes(role[i])){
-					return true;
-				}
-			}
-			return false;
-		}
-		if(role){
-			// Check if user is in the requested role
-			return this.user.roles.includes(role);
-		}
-		// Reject access if in doubt
-		return false;
-	}
-}
-
 /**
  * The <code>Controller</code> accesses the server-side resource through the REST API, 
  * translates the resource entity into the view model, 
@@ -560,7 +514,7 @@ export class Controller extends Dom {
 	 * @param {Resource} resource - the resource to be attached
 	 */
 	attach(resource){
-		this._attachEventListener(resource); // TODO: Refactor _attachEventListener name
+		this._attachEventListener(resource); 
 	}
 	
 	/**
@@ -589,7 +543,7 @@ export class Controller extends Dom {
 			};
 			
 			if (!this._page.init) {
-				this._page.init = function(settings) {
+				this._page.init = function(settings) {					
 					this.render(settings);
 				}.bind(this);
 			}
@@ -603,11 +557,15 @@ export class Controller extends Dom {
 				let root = document.querySelector("ui-root");
 				root.setViewModel(this._viewModel);
 				root.setController(this);
+				if(this._page.init){
+					this._page.init.call(this, this._viewModel); //SELF
+				}
+				this.renderMenu();
+				this.renderView();
 				// view model is available
 				// => render menu 
 				// => render view
 				// => Inject view model in ui-root!
-				this._page.init.call(this, this._viewModel); //SELF
 				if(this._page.postRender){
 					this._page.postRender.call(this);
 				}
@@ -843,38 +801,14 @@ export class Controller extends Dom {
 		return this._viewModel;
 	}
 	
-
 	/**
-	 * Renders either the entire view or only a part of a view if a section template was specified.
-	 * @param {string} [template] The template to render a part of the view. If not specified, the entire view will be rendered.
-	 * @param {Object} [viewModel] The view model to render the view from. Defaults to {@link #getViewModel()} if not specified.
-	 * @param {element} [target] The target container element of the rendered HTML output
+	 * Renders the module menu for the specified view model.
+	 * @param {Object} {model} the view model. Defaults to {@link #getViewModel()} if not specified.
 	 */
-	render() {
-		let model;
-		let template;
-		let target;
-		if(arguments.length == 0){
+	renderMenu(model){
+		if(!model){
 			model = this.getViewModel();
-		} else if (arguments.length == 1) {
-			if(typeof arguments[0] === "string" || arguments[0].unwrap){
-				template = arguments[0];
-				model = this.getViewModel();
-			} else {
-				model = arguments[0];
-			}
-		} else if (arguments.length == 2) {
-			template = arguments[0];
-			model = arguments[1];
-		} else if (arguments.length == 3) {
-			template = arguments[0];
-			model = arguments[1];
-			target = arguments[2];
-		} else {
-			throw "Invalid number of arguments!";
 		}
-		//TODO Add module decorator support
-
 		let location = this.location();
 		let module = this.module();
 		let menu = this.element("menu");
@@ -886,20 +820,22 @@ export class Controller extends Dom {
 			//menu.css().remove("hidden");
 			module.select(location);
 		}
-		let html = this.template(template).html(model);
-		let container;
-		if (template) {
-			container = target != null ?  this.element(target) : this.element(template);
-			container.css().add("hidden");
-			container.html(html);
-			container.css().remove("hidden");
-			container.css().remove("mustache-template");
-		} else {
-			container = this.element("page-container");
-			container.css().add("hidden");
-			container.html(html);
-			container.css().remove("hidden");
+	}
+	
+	/**
+	 * Renders the module menu for the specified view model.
+	 * @param {Object} {model} the view model. Defaults to {@link #getViewModel()} if not specified.
+	 */
+	renderView(model){
+		if(!model){
+			model = this.getViewModel();
 		}
+
+		let html = this.template().html(model);
+		let container = this.element("page-container");
+		container.css().add("hidden");
+		container.html(html);
+		container.css().remove("hidden");
 		// Some browsers loose the autofocus when adding new objects to the DOM. Hence focus has to be set again.
 		let autofocus = container.select("[autofocus]");
 		if(autofocus){
@@ -909,6 +845,15 @@ export class Controller extends Dom {
 		if(heading){
 			document.title = heading.text();
 		}
+	}
+
+	/**
+	 * Renders the entire view by calling {@link #renderMenu(model)} and {@link #renderView(model)}.
+	 * @param {Object} [model] the view model. Defaults to {@link #getViewModel()} if not specified.
+	 */
+	render(model) {
+		this.renderMenu(model);
+		this.renderView(model);
 	}
 	
 	/**

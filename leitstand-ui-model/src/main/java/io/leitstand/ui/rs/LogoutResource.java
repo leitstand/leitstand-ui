@@ -18,7 +18,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 @RequestScoped
-@Path("/logout")
+@Path("/_logout")
 public class LogoutResource {
 	
 	private static final Logger LOG = Logger.getLogger(LogoutResource.class.getName());
