@@ -14,7 +14,7 @@ tags:
   description: Leitstand UI module configuration API
 
 paths:
-  /ui/modules/:
+  /ui/modules:
     get:
       tags:
       - Module
@@ -28,8 +28,11 @@ paths:
                 type: array
                 items: 
                    $ref: "#/components/schemas/MainMenuItem"
+        401:
+          $ref: '#/components/responses/Unauthorized'
         500:
-          $ref: "commons.yaml#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
+
   /ui/modules/{module}:
     get:
       tags:
@@ -48,27 +51,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ModuleDescriptor"
+                $ref: '#/components/schemas/ModuleDescriptor'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          description: The requested module does not exist.
         500:
-          $ref: "commons.yaml#/components/responses/InternalServerError"
-# The components section contains a set of named Schema Objects.  Each schema
-# object describes a reusable data type, which can be reference by name.
-# TODO Add required to all components    
+          $ref: '#/components/responses/InternalServerError'
 components:
   responses:
-    ModuleNotFound:
-      description: The requested module does not exist.
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              $ref: "commons.yaml#/components/schemas/Message"
+    InternalServerError:
+      description: The server was not able to process the request because of an internal server error, for example if the server cannot connect to the database.
+    Unauthorized:
+      description: The request does not contain valid authorization data.
   schemas:
     MainMenuItem:
       description: Main menu item of a Leitstand UI menu item.
       type: object
       readOnly: true
+      required:
+      - module
+      - path
       properties:
         module:
           type: string
@@ -91,7 +94,8 @@ components:
           enum:
           - left
           - right
-        rolesAllowed:
+          default: "left"
+        roles_allowed:
           type: array
           description: A list of roles allowed to access the module 
           items:
@@ -100,6 +104,9 @@ components:
     ModuleApplication:
       description: Leitstand UI application descriptor
       type: object
+      readOnly: true
+      required:
+      - application
       properties:
         application:
           type: string
@@ -107,14 +114,18 @@ components:
         controller:
           type: string
           description: The controller file name.
+          default: "controller.js"
         defer:
           type: boolean
           description: Whether the application resources should be loaded eagerly or on demand.
+          default: false
     
     ModuleDescriptor:
       description: Leitstand UI module descriptor
       type: object
       readOnly: true
+      required:
+      - module
       properties:
         module:
           type: string
@@ -133,6 +144,10 @@ components:
     ModuleMenu:
       description: Leitstand UI module menu descriptor
       type: object
+      readOnly: true
+      required:
+      - menu
+      - items
       properties:
         menu:
           type: string
@@ -143,11 +158,20 @@ components:
         title: 
           type: string
           description: The menu title.
-        requires:
-          type: array
-          description: Optional array of names of properties that must be present in the view model to show this menu.
+        roles_allowed:
+          description: Optional array of user roles that are allowed to access this menu.
           items:
             type: string
+        requires:
+          type: array
+          description: Optional array of property names that must be present in the view model to enable this menu.
+          items:
+            type: string
+        view_model:
+          type: array
+          description: Optional array of property matchers that must be satisfied to enable this menu.
+          items:
+            $ref: '#/components/schemas/ViewModelPropertyMatcher'
         query:
           type: object
           description: Optional query parameters to be added when selecting a view from the menu.
@@ -155,11 +179,15 @@ components:
           type: array
           description: The menu items.
           items:
-            $ref: '#/components/schema/ModuleMenuItem'
+            $ref: '#/components/schemas/ModuleMenuItem'
     
     ModuleMenuItem:
       description: Leitstand UI module menu item descriptor
       type: object
+      readOnly: true
+      required:
+      - item
+      - view
       properties:
         item: 
           type: string
@@ -173,6 +201,41 @@ components:
         view:
           type: string
           description: The path to the view template.
+        roles_allowed:
+          description: Optional array of user roles that are allowed to access this menu item.
+          items:
+            type: string    
+        requires:
+          type: array
+          description: Optional array of property names that must be present in the view model to enable this menu.
+          items:
+            type: string
+        view_model:
+          type: array
+          description: Optional array of property matchers that must be satisfied to enable this menu item.
+          items:
+            $ref: '#/components/schemas/ViewModelPropertyMatcher'
         query:
           type: object
           description: Optional query parameters to be added when selecting a view from the menu. Overrides conflicting menu query parameters.
+   
+    ViewModelPropertyMatcher:
+      description: A matcher to test the view model in order to enable a menu or menu item
+      type: object
+      readOnly: true
+      required: 
+      - property
+      properties: 
+        property:
+          type: string
+          description: The view model property name
+        exists:
+          type: boolean
+          description: Indicates whether the property must be present (true) or absent (false).
+        matches:
+          type: string
+          description: A regular expression the property value must match.
+        matches_not:
+          type: string
+          description: A regular expression the property value must not match.
+         

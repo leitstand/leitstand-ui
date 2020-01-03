@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-fragment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_3_1.xsd"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-fragment_3_1.xsd"
+	id="rtb-ems-ui" version="3.1">
+  <servlet>
+      <servlet-name>Leitstand</servlet-name>
+	  <jsp-file>/leitstand.html</jsp-file>	
+   </servlet>
+   <servlet-mapping>
+       <servlet-name>Leitstand</servlet-name>
+       <url-pattern>/ui/views/*</url-pattern>
+   </servlet-mapping>
+	<error-page>
+		<error-code>401</error-code>
+		<location>/ui/login/login_error.json</location>
+	</error-page>
+	<error-page>
+		<error-code>403</error-code>
+		<location>/ui/login/login.html</location>
+	</error-page>
+	<error-page>
+		<error-code>404</error-code>
+		<location>/ui/error/404.html</location>
+	</error-page>
+	<error-page>
+		<error-code>500</error-code>
+		<location>/ui/error/500.html</location>
+	</error-page>
+	<welcome-file-list>
+		<welcome-file>/welcome.jsp</welcome-file>
+	</welcome-file-list>
+</web-fragment>

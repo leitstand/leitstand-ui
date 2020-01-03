@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<link rel="stylesheet" href="/ui/css/leitstand/primer.css"/>
+	<link rel="stylesheet" href="/ui/css/leitstand/leitstand.css"/>
+	<link rel="stylesheet" href="/ui/css/source/github.css"/> 
+ 	<style>
+	 form>h1,
+	 form>h2,
+	 form>h3,
+	 h4,
+	 h5 {
+	 	color: #aaa;
+	 }
+	 h3{
+	 	color: #880;
+	 	border-bottom: 1px solid #888;
+	 	margin-top: 15px;
+	 	margin-bottom:5px;
+	 	clear:both;
+	 }
+	 div.example{
+		width: 48%;
+	 	float: left;
+	 	margin: 1%;
+	 	padding: 10px;
+		min-height: 25em;
+	 	box-shadow: 1px 1px 5px #CCC;
+	 }
+	 div.widget {
+	 	margin: 0px 10px;
+	 }
+	 div.widget > div {
+	 	margin-top: 10px;
+	 }
+	 div.example > ui-code:before{
+	 	margin-top: 10px;
+	 	display:block;
+	 	content: 'Listing';
+	 	font-weight: bold;
+	 	font-color: #888;
+	 }
+	</style>
+	<script src="/ui/js/ext/highlight.pack.js"></script>
+	<script src="/ui/js/ui-components.js" type="module"></script>
+	<script>
+		window.addEventListener("DOMContentLoaded",function(){
+			
+			let root = document.querySelector("ui-root");
+			let viewModel = {};
+			viewModel.dyn_fruits = [{'value':'lemon','display_value':'Lemon'}, 
+									{'value':'grape','display_value':'Grape'},
+									{'value':'ananas','display_value':'Ananas','default':true}];
+			root.setViewModel(viewModel);
+
+			root.innerHTML = `
+				<ui-view-header>
+					<ui-title>UI Component Catalog</ui-title>
+					<ui-subtitle>A Collection of Existing UI Components</ui-subtitle>
+				</ui-view-header>
+				<ui-form>
+					<h3>Input Elements</h3>
+					<div class="example">
+						<h4>Text Input Field</h4>
+						<div class="widget">
+						<ui-input name="text_1" >
+						  <ui-label>Text Input Field</ui-label>
+						  <ui-note>General input field with note</ui-note>
+						</ui-input>
+<ui-code>
+<xmp>
+<ui-input name="text_1" >
+  <ui-label>Text Input Field</ui-label>
+  <ui-note>General input field with note</ui-note>
+</ui-input>
+</xmp>
+</ui-code>
+						</div>
+					</div>
+					<div class="example">
+						<h4>Text Input Field With Placeholder</h4>
+						<div class="widget">
+							<ui-input name="text_2" placeholder="Please enter some text">
+								<ui-label>Text Input Field</ui-label>
+								<ui-note>General input field with placeholder</ui-note>
+							</ui-input>
+<ui-code>
+<xmp>							
+<ui-input name="text_2" placeholder="Please enter some text">
+  <ui-label>Text Input Field</ui-label>
+  <ui-note>General input field with placeholder</ui-note>
+</ui-input>
+</xmp>
+</ui-code>
+						</div>
+					</div>
+					<div class="example">
+						<h4>Text Input Field With Default Value</h4>
+						<div class="widget">
+							<ui-input name="text_3" value="default">
+								<ui-label>Text Input Field</ui-label>
+								<ui-note>General input field with default value</ui-note>
+							</ui-input>
+<ui-code>
+<xmp>
+<ui-input name="text_3" value="default">
+  <ui-label>Text Input Field</ui-label>
+  <ui-note>General input field with default value</ui-note>
+</ui-input>
+</xmp>
+</ui-code>
+							</div>
+					</div>
+					<div class="example">
+						<h4>Text Input Field Without Note And Without Default Value</h4>
+						<div class="widget">
+							<ui-input name="text_4">
+								<ui-label>Text Input Field</ui-label>
+							</ui-input>
+<ui-code>
+<xmp>
+<ui-input name="text_4">
+  <ui-label>Text Input Field</ui-label>
+</ui-input>
+</xmp>
+</ui-code>
+						</div>
+					</div>
+					<div class="example">
+						<h4>Password/Secret Input Field</h4>
+						<div class="widget">
+							<ui-password name="password">
+								<ui-label>Secret Input Field</ui-label>
+								<ui-note>Password input field</ui-note>
+							</ui-password>
+						</div>
+<ui-code>
+<xmp>
+<ui-password name="password">
+  <ui-label>Secret Input Field</ui-label>
+  <ui-note>Password input field</ui-note>
+</ui-password>
+</xmp>
+</ui-code>
+					</div>
+					<div class="example">
+						<h4>Password/Secret Input Field With Placeholder</h4>
+						<div class="widget">
+							<ui-password name="password" placeholder="Enter your password">
+								<ui-label>Secret Input Field</ui-label>
+								<ui-note>Password input field</ui-note>
+							</ui-password>
+						</div>
+<ui-code>
+<xmp>
+<ui-password name="password" placeholder="Enter your password">
+  <ui-label>Secret Input Field</ui-label>
+  <ui-note>Password input field</ui-note>
+</ui-password>
+</xmp>
+</ui-code>						
+					</div>
+					<div class="example">
+						<h4>Password/Secret Input Field Without Note</h4>
+						<div class="widget">
+							<ui-password name="password">
+								<ui-label>Secret Input Field</ui-label>
+							</ui-password>
+						</div>
+<ui-code>
+<xmp>
+<ui-password name="password">
+  <ui-label>Secret Input Field</ui-label>
+</ui-password>
+</xmp>
+</ui-code>	
+						</div>
+					<div class="example">
+						<h4>Selectbox with static options set</h4>
+						<div class="widget">
+							<ui-select name="static_fruit">
+								<ui-label>Select a fruit</ui-label>
+								<ui-note>Select from a static set of options</ui-note>
+								<ui-option value="apple">Apple</ui-option>
+								<ui-option value="banana">Banana</ui-option>
+								<ui-option value="orange">Orange</ui-option>
+							</ui-select>
+						</div>
+<ui-code>
+<xmp>
+<ui-select name="static_fruit">
+  <ui-label>Select a fruit</ui-label>
+  <ui-note>Select from a static set of options</ui-note>
+  <ui-option value="apple">Apple</ui-option>
+  <ui-option value="banana">Banana</ui-option>
+  <ui-option value="orange">Orange</ui-option>
+</ui-select>
+</xmp>
+</ui-code>
+					</div>
+					<div class="example">
+						<h4>Selectbox with dynamic options set</h4>
+						<div class="widget">
+							<ui-select name="dyn_fruit" options="dyn_fruits">
+								<ui-label>Select a fruit</ui-label>
+								<ui-note>Select from a dynamic set of options</ui-note>
+							</ui-select>
+						</div>
+<ui-code>
+<xmp>
+<ui-select name="dyn_fruit" options="dyn_fruits">
+ <ui-label>Select a fruit</ui-label>
+ <ui-note>Select from a dynamic set of options</ui-note>
+</ui-select>
+</xmp>
+</ui-code>						
+					</div>
+					<div class="example">
+						<h4>Radio Buttons</h4>
+						<div class="widget">
+							<ui-group label="Pill">
+								<ui-note>This is your last chance. After this, there is no turning back. </ui-note>
+								<ui-radio name="pill" value="blue">
+									<ui-label>Blue Pill</ui-label>
+									<ui-note>You take the blue pill - the story ends, you wake up in your bed and believe whatever you want to believe.<ui-note>
+								</ui-radio>
+								<ui-radio name="pill" value="red" default>
+									<ui-label>Red Pill</ui-label>
+									<ui-note>You take the red pill - you stay in Wonderland, and I show you how deep the rabbit hole goes.</ui-note>
+								</ui-radio>
+							</ui-group>
+						</div>
+<ui-code>
+<xmp>
+<ui-group label="Pill">
+  <ui-note>This is your last chance. After this, there is no turning back. </ui-note>
+  <ui-radio name="pill" value="blue">
+    <ui-label>Blue Pill</ui-label>
+	<ui-note>You take the blue pill - the story ends, 
+	         you wake up in your bed and believe whatever you want to believe.<ui-note>
+  </ui-radio>
+  <ui-radio name="pill" value="red" default>
+    <ui-label>Red Pill</ui-label>
+	<ui-note>You take the red pill - you stay in Wonderland, 
+	         and I show you how deep the rabbit hole goes.</ui-note>
+  </ui-radio>
+</ui-group>
+</xmp>
+</ui-code>
+					</div>
+					<div class="example">
+						<h4>Checkbox</h4>
+						<div class="widget">
+							<ui-checkbox name="cb_enable_optionally" value="true">
+								<ui-label>Option</ui-label>
+								<ui-note>An option the user can select.</ui-note>
+							</ui-checkbox>
+							<ui-checkbox name="cb_enable_optionally" value="true" checked>
+								<ui-label>Option</ui-label>
+								<ui-note>An option the user can deselect.</ui-note>
+							</ui-checkbox>
+						</div>
+<ui-code>
+<xmp>
+<ui-checkbox name="cb_enable_optionally" value="true">
+  <ui-label>Option</ui-label>
+  <ui-note>An option the user can select.</ui-note>
+</ui-checkbox>
+<ui-checkbox name="cb_enable_optionally" value="true" checked>
+  <ui-label>Option</ui-label>
+  <ui-note>An option the user can deselect.</ui-note>
+</ui-checkbox>
+</xmp>
+</ui-code>
+					</div>
+					<div class="example">
+						<h4>Textarea</h4>
+						<div class="widget">
+							<ui-textarea name="textarea">
+								<ui-label>Description</ui-label>
+								<ui-note>Provide a brief description of this entity</ui-note>
+							</ui-textarea>
+						</div>
+<ui-code>
+<xmp>
+<ui-textarea name="textarea">
+  <ui-label>Description</ui-label>
+  <ui-note>Provide a brief description of this entity</ui-note>
+</ui-textarea>
+</xmp>
+</ui-code>
+
+					</div>
+					<h3>Action Elements</h3>
+					<div class="example">
+						<h4>Buttons</h4>
+						<div class="widget">
+							<ui-actions>
+								<ui-button name="primary" primary>Primary</ui-button> 
+								<ui-button name="danger" danger>Danger</ui-button>
+								<ui-button name="outline">Default</ui-button> 
+							</ui-actions>
+							<ui-actions>
+								<ui-button name="primary" primary small>Primary</ui-button>
+								<ui-button name="danger" danger small>Danger</ui-button>
+								<ui-button name="outline" small>Default</ui-button>
+							</ui-actions>
+						</div>
+<ui-code>
+<xmp>
+<ui-actions>
+  <ui-button name="primary" primary>Primary</ui-button> 
+  <ui-button name="danger" danger>Danger</ui-button>
+  <ui-button name="outline">Default</ui-button> 
+</ui-actions>
+<ui-actions>
+  <ui-button name="primary" primary small>Primary</ui-button>
+  <ui-button name="danger" danger small>Danger</ui-button>
+  <ui-button name="outline" small>Default</ui-button>
+</ui-actions>
+</xmp>
+</ui-code>
+					</div>
+					<div class="example">
+						<h4>Link Buttons</h4>
+						<div class="widget">
+							<ui-actions>
+								<ui-button href="#" name="primary" primary>Primary</ui-button>
+								<ui-button href="#" name="danger" danger>Danger</ui-button>
+								<ui-button href="#" name="outline">Default</ui-button>
+							</ui-actions>
+							<ui-actions>
+								<ui-button href="#" name="primary" primary small>Primary</ui-button>
+								<ui-button href="#" name="danger" danger small>Danger</ui-button>
+								<ui-button href="#" name="outline" small>Default</ui-button>
+							</ui-actions>
+						</div>
+						<ui-note>A link button is a link that is rendered as button.</ui-note>
+<ui-code>
+<xmp>
+<ui-actions>
+  <ui-button href="#" name="primary" primary>Primary</ui-button>
+  <ui-button href="#" name="danger" danger>Danger</ui-button>
+  <ui-button href="#" name="outline">Default</ui-button>
+</ui-actions>
+<ui-actions>
+  <ui-button href="#" name="primary" primary small>Primary</ui-button>
+  <ui-button href="#" name="danger" danger small>Danger</ui-button>
+  <ui-button href="#" name="outline" small>Default</ui-button>
+</ui-actions>
+</xmp>
+</ui-code>
+				</div>
+
+				<h3>Other Elements</h3>
+				<div class="example">
+					<h4>View Header</h4>
+					<div class="widget">
+						<ui-view-header>
+							<ui-breadcrumbs>
+								<ui-breadcrumb href="#">List</ui-breadcrumb>
+								<ui-breadcrumb>Detail</ui-breadcrumb>
+							</ui-breadcrumbs>
+							<ui-title>Title</ui-title>
+							<ui-subtitle>Subtitle</ui-subtitle>
+						</ui-view-header>
+					</div>
+<ui-code>
+<xmp>
+<ui-view-header>
+  <ui-breadcrumbs>
+    <ui-breadcrumb href="#">List</ui-breadcrumb>
+    <ui-breadcrumb>Detail</ui-breadcrumb>
+  </ui-breadcrumbs>
+  <ui-title>Title</ui-title>
+  <ui-subtitle>Subtitle</ui-subtitle>
+</ui-view-header>
+</xmp>
+</ui-code>
+				</div>
+				<div class="example">
+					<h4>Group</h4>
+					<div class="widget">
+						<ui-group label="Group">
+							<ui-note>Group of input elements. See radio buttons example above</ui-note>
+						</ui-group>
+					</div>
+<ui-code>
+<xmp>
+<ui-group label="Group">
+  <ui-note>Group of input elements. See radio buttons example above</ui-note>
+</ui-group>
+</xmp>
+</ui-code>
+				</div>
+				<div class="example">
+					<h4>Confirm Dialog</h4>
+					<div class="widget">
+					<ui-confirm>
+						<ui-title>Confirm</ui-title>
+						<ui-message>
+						<ui-note>Describe what has to be confirmed</ui-note>
+						</ui-message>
+						<ui-approve name="yes">Confirm</ui-approve>
+						<ui-decline href="#">Decline</ui-decline>
+					</ui-confirm>
+					</div>
+<ui-code>
+<xmp>
+<ui-confirm>
+  <ui-title>Confirm</ui-title>
+  <ui-message>
+    <ui-note>Describe what has to be confirmed</ui-note>
+  </ui-message>
+  <ui-approve name="yes">Confirm</ui-approve>
+  <ui-decline href="#">Decline</ui-decline>
+</ui-confirm>
+</xmp>
+</ui-code>
+				</div>
+				<div class="example">
+					<h4>Note</h4>
+					<div class="widget">
+						<ui-note>A note contains instructions or detailed explanation.</ui-note>
+					</div>
+<ui-code>
+<xmp>
+<ui-note>A note contains instructions or detailed explanation.</ui-note>
+</xmp>
+</ui-code>
+				</div>
+				<div class="example">
+					<h4>JSON Source</h4>
+					<div class="widget">
+						<ui-code>{"foo":"bar"}</ui-code>
+					</div>
+<ui-code>
+<xmp>
+<ui-code>{"foo":"bar"}</ui-code>
+</xmp>
+</ui-code>
+				</div>
+				<div class="example">
+				<h4>Blankslate</h4>
+				<div class="widget">
+					<ui-blankslate>
+						<ui-title>Entity not found!</ui-title>
+						<ui-note>The requested entity does not exist. <a href="#" title="Open create entity wizard">Add a new entity</a></ui-note>
+					</ui-blankslate>
+				</div>
+<ui-code>
+<xmp>
+<ui-blankslate>
+  <ui-title>Entity not found!</ui-title>
+  <ui-note>
+  The requested entity does not exist. 
+  <a href="#" title="Open create entity wizard">Add a new entity</a>
+  </ui-note>
+</ui-blankslate>
+</xmp>
+</ui-code>
+			</div>
+			<div class="example">
+			<h4>Filter</h4>
+			<div class="widget">
+				<ui-filter name="filter">
+				  <ui-note>Enter an expression to filter foods by name.</ui-note>
+				  <ui-options>
+					<ui-select name="advanced_filter">
+					  <ui-label>Category</ui-label>
+					  <ui-note>Select a food category</ui-note>
+					  <ui-option value="fruit">Fruits</ui-option>
+					  <ui-option value="vegtables">Vegetables</ui-option>
+					  <ui-option value="meat">Meat products</ui-option>
+					  <ui-option value="milk">Dairy goods</ui-option>
+					</ui-select>
+				  </ui-options>	
+				</ui-filter>
+			</div>
+<ui-code>
+<xmp>
+<ui-filter name="filter">
+  <ui-note>Enter an expression to filter foods by name.</ui-note>
+  <ui-options>
+    <ui-select name="advanced_filter">
+      <ui-label>Category</ui-label>
+      <ui-note>Select a food category</ui-note>
+      <ui-option value="fruit">Fruits</ui-option>
+      <ui-option value="vegtables">Vegetables</ui-option>
+      <ui-option value="meat">Meat products</ui-option>
+      <ui-option value="milk">Dairy goods</ui-option>
+    </ui-select>
+  </ui-options>	
+</ui-filter>
+</xmp>
+</ui-code>
+		</div>
+		<div class="example">
+		<h4>Object Details</h4>
+		<div class="widget">
+			<ui-details>
+				<ui-property>
+					<ui-label>Foo</ui-label>
+					<ui-value>Bar</ui-value>
+				</ui-property>
+				<ui-property>
+					<ui-label>JSON</ui-label>
+					<ui-value><ui-code>{"foo":"bar"}</ui-code></ui-value>
+				</ui-property>
+			</ui-details>
+		</div>
+<ui-code>
+<xmp>
+<ui-details>
+  <ui-property>
+    <ui-label>Foo</ui-label>
+    <ui-value>Bar</ui-value>
+  </ui-property>
+  <ui-property>
+    <ui-label>JSON</ui-label>
+    <ui-value><ui-code>{"foo":"bar"}</ui-code></ui-value>
+  </ui-property>
+</ui-details>
+</xmp>
+</ui-code>
+	</div>			
+	<div class="example">
+	<h4>Date</h4>
+	<div class="widget">
+		<div>
+		<ui-date readonly>${new Date()}</ui-date>
+		</div><div>
+		<ui-date>${new Date()}</ui-date>
+		</div><div>
+		<ui-date format="date">${new Date()}</ui-date>
+		</div>
+	</div>
+<ui-code>
+<xmp>
+<div>
+<ui-date readonly>${new Date()}</ui-date>
+</div><div>
+<ui-date>${new Date()}</ui-date>
+</div><div>
+<ui-date format="date">${new Date()}</ui-date>
+</div>
+</xmp>
+</ui-code>
+</div>	
+</div>			
+<div class="example">
+<h4>Tags</h4>
+<div class="widget">
+	<ui-tags bind="tags">
+		<ui-label>Tags</ui-label>
+		<ui-note>Assign tags to categorize this entity</ui-note>
+	</ui-date>
+</div>
+<ui-code>
+<xmp>
+<ui-tags bind="tags">
+<ui-label>Tags</ui-label>
+<ui-note>Assign tags to categorize this entity</ui-note>
+</ui-date>
+</xmp>
+</ui-code>
+</div>	
+		</ui-form>`;
+
+			});
+	</script>
+</head>
+<body>
+<div style="width:80%; margin:auto">
+<ui-root>
+
+</ui-root>
+</div>
+
+
+
+
+
+
+
+</html>
+</body>
