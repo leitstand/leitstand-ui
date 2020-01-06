@@ -15,9 +15,8 @@
  */
 package io.leitstand.ui.rs;
 
-import static java.util.Arrays.asList;
+import static io.leitstand.commons.model.ObjectUtil.asSet;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.enterprise.context.Dependent;
@@ -40,10 +39,11 @@ public class UIResources implements ApiResourceProvider{
 	 */
 	@Override
 	public Set<Class<?>> getResources(){
-		return new HashSet<>(asList(MainMenuResource.class, 
-									ModuleDescriptorResource.class,
-									LogoutResource.class,
-									JsonMessageBodyWriter.class));
+		return asSet(MainMenuResource.class,
+                             DictionaryResource.class,
+                             ModuleDescriptorResource.class,
+                             LogoutResource.class,
+                             JsonMessageBodyWriter.class);
 	}
 
 }

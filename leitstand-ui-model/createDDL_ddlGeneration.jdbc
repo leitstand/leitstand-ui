@@ -1,0 +1,5 @@
+CREATE TABLE leitstand.dictionary (ID BIGINT NOT NULL, tscreated TIMESTAMP, tsmodified TIMESTAMP, DESCRIPTION VARCHAR, MODCOUNT INTEGER, NAME VARCHAR, UUID VARCHAR(36) UNIQUE, PRIMARY KEY (ID))
+CREATE TABLE leitstand.dictionary_entry (default BOOLEAN, LABEL VARCHAR, VALUE VARCHAR, Dictionary_ID BIGINT)
+ALTER TABLE leitstand.dictionary_entry ADD CONSTRAINT FK_dictionary_entry_Dictionary_ID FOREIGN KEY (Dictionary_ID) REFERENCES leitstand.dictionary (ID)
+CREATE TABLE leitstand.sequence (name VARCHAR(50) NOT NULL, count NUMERIC(38), PRIMARY KEY (name))
+INSERT INTO leitstand.sequence(name, count) values ('id', 0)
