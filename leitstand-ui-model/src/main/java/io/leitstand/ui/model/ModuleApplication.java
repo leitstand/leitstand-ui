@@ -5,8 +5,6 @@ package io.leitstand.ui.model;
 
 import static io.leitstand.commons.model.BuilderUtil.assertNotInvalidated;
 
-import io.leitstand.commons.model.BuilderUtil;
-
 /**
  * Module application descriptor.
  * <p>
