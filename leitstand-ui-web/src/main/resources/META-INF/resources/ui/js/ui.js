@@ -104,6 +104,7 @@
 import {Resource,Json} from './client.js';
 import {Dom,Element} from './ui-dom.js';
 import {router,modules,Location} from './ui-core.js';
+import {Modules} from './ui-modules.js';
 
 
 
@@ -147,6 +148,24 @@ export class Menu extends Dom {
 			return welcomePage;
 		};
 	}
+	
+	/**
+	 * Merges the specified menu with this menu. 
+	 * Conflicting menu items will be overwritten by the items of the specified menu.
+	 * @param {MenuConfig} menu the menu to be merged into this menu
+	 * @param {ModuleApplication} [app] optional application descriptor.
+	 */
+	merge(menu,app){
+		let appPath = `${app&&app.application+'/'||''}`;
+		for (let view in menu._views){
+			this._views[appPath+view] = menu._views[view];
+		}
+		for (let item in menu._items){
+			this._items[appPath+item] = appPath+menu._items[item];
+		}
+		
+	}
+	
 	
 	/**
 	 * Returns the page controller for the specified view.
@@ -435,27 +454,14 @@ export class Controller extends Dom {
 	 * @param {String} content the view template
 	 */
 	setViewTemplate(content) {
-		let dom = document.getElementById('page-container');
-		dom.innerHTML = content;
-		let templates = dom.querySelectorAll('.mustache-template');
 		this._template = content;
-
-		if(templates.length == 0){
-			dom.innerHTML = "";
-		}
-		
-		for (let i = 0; i < templates.length; i++) {
-			let element = templates.item(i);
-			let id = element.id;
-			let template = element.innerHTML;
-			element.innerHTML = "";
-			element.classList.remove('mustache-template');
-			this._partials[id] = template;
-
-		}
-		return dom;
 	}
 
+	getViewTemplate(){
+		return this._template;
+	}
+	
+	
 
 	/**
 	 * Processes all <em>change</em> events that originate from the view.
@@ -812,12 +818,8 @@ export class Controller extends Dom {
 		let location = this.location();
 		let module = this.module();
 		let menu = this.element("menu");
-		// FIXME Add events to loosly couple navigation and view rendering.
 		if(menu){
-			//menu.css().add("hidden"); // Render DOM in background before displaying it.
-			// TODO Move this part into an event handler?
 			menu.html(Mustache.render(module.getMenuTemplate(), module.computeMenuViewModel(model)));
-			//menu.css().remove("hidden");
 			module.select(location);
 		}
 	}
@@ -832,10 +834,8 @@ export class Controller extends Dom {
 		}
 
 		let html = this.template().html(model);
-		let container = this.element("page-container");
-		container.css().add("hidden");
+		let container = this.element("view-container");
 		container.html(html);
-		container.css().remove("hidden");
 		// Some browsers loose the autofocus when adding new objects to the DOM. Hence focus has to be set again.
 		let autofocus = container.select("[autofocus]");
 		if(autofocus){
@@ -861,7 +861,7 @@ export class Controller extends Dom {
 	 * @returns the module name.
 	 */
 	module(){
-		return modules[this.location().module()]
+		return Modules.getModule(this.location().module())
 	}
 	
 	/**

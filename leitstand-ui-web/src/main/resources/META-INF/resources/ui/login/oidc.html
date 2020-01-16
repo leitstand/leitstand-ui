@@ -4,16 +4,16 @@
 <link type="text/css" rel="stylesheet" href="/ui/css/leitstand/primer.css"  >
 <link type="text/css" rel="stylesheet" href="/ui/css/leitstand/leitstand.css"  >
 <script src="/ui/js/ext/mustache.js"></script>
-<script src="login.js" type="module"></script>
-<title>Login</title>
+<script src="/ui/js/ui-components.js" type="module"></script>
+<script src="oidc.js" type="module"></script>
 </head>
 <body>
 <form class="auth-form">
-	<div id="view-container" class="container">
+	<div class="container">
 		<div class="columns">
-			<div class="centered column one-third">
-				<h1>Log in</h1>
-				<ui-login-form></ui-login-form>
+			<div class="column centered one-third">
+				<h1>Single Sign-On</h1>
+				<oidc-session></oidc-session>
 				<div class="flash-messages">
 				</div>
 			</div>
