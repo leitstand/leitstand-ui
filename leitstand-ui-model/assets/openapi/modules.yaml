@@ -1,7 +1,7 @@
 openapi: "3.0.0"
 info:
   title: Leitstand UI Modules API
-  description: Access Leistand UI module descriptors
+  description: Access Leitstand UI module descriptors
   version: 0.7.0
   contact:
     name: Martin Steger

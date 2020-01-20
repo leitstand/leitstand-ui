@@ -1,7 +1,7 @@
 # Leitstand UI Error Handling
 
 
-The Leistand UI error handling relies on the HTTP status code and status messages returned by the REST API. 
+The Leitstand UI error handling relies on the HTTP status code and status messages returned by the REST API. 
 The REST API uses the HTTP Status Code in combination with optional status messages to explain the outcome of an API invocation. A status message is a JSON object and contains the following attributes:
 
 - `severity`, the message severity which is either `ERROR`, `WARNING`, or `INFO`.

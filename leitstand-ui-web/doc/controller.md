@@ -5,7 +5,7 @@ translates the response entity into the view model,
 passes the view model to the view template in order to render the view and 
 subscribes all events from the view to process them accordingly.
 
-Leistand UI controllers are bundled in ES6 _modules_.
+Leitstand UI controllers are bundled in ES6 _modules_.
 A module provides a controller for each view and creates a menu to bind every view to its controller. 
 The menu is exported to get registered in the Leitstand menu.
 
