@@ -1,8 +1,8 @@
 
 //TODO: Introduce JSDoc for the module descriptor object passed to the module (same convention as in Controller - PageDescriptor)
 
-import {Resource,Json,merge} from './client.js';
-import {mainMenu} from './ui-modules.js';
+import {Json} from './client.js';
+import {Modules} from './ui-modules.js';
 
 /**
  * <h2>UI Core</h2>
@@ -76,124 +76,6 @@ import {mainMenu} from './ui-modules.js';
 export const modules = {};
 
 /**
- * Loads a module.
- * @param {Location} link the location of the view to be displayed
- */
-function loadModule(link) {
-	
-	let moduleDescriptor = new Json(`/api/v1/ui/modules/${link.module()}`);
-	moduleDescriptor.onLoaded = function(descriptor){
-		let module = new Module(descriptor);
-		modules[module.name] = module;
-		module.load(link);
-	}
-	moduleDescriptor.load();
-	
-};
-
-/**
- * Loads a module application.
- * @param {Location} link the location of the view to be displayed
- */
-async function loadApplication(link) {
-	let module = modules[link.module()];
-	
-	let app = link.app();
-	let lib = await import(`/ui/modules/${link.module()}/${link.app()}/controller.js`);
-	module.addApplication({'name':link.app(),
-						   'menu':lib.menu});
-	
-	window.dispatchEvent(new CustomEvent('UIApplicationLoaded',{'detail':{'module':module,
-																		  'application':link.app(),
-																		  'location':link}}));
-}
-
-/**
- * Loads the view template file from the server, 
- * compiles the view template,
- * updates the browser history and 
- * finally invokes the controller to display the view.
- * @param {Location} link the location of the view
- * @param {Controller} controller the controller of the view
- */
-function loadView(link, controller) {
-	
-	let html = new Html(`/ui/modules/${link.module()}/${link.view()}`);
-	html.onLoaded = function(view) {
-		controller.setViewTemplate(view);
-		modules[link.module()].select(link);
-		// Loads all data needed to render the view model
-		controller.load();
-	};
-	html.load();
-}
-
-/**
- * Start a timer to periodically refresh the current view if the view controller supplies a <code>refresh</code>callback.
- */
-function startAutoRefresh(){
-	
-	var refresh = function(){
-		try{
-			var link = new Location(window.location.href);
-			var module = modules[link.module()];
-			if(module){
-				var controller = module.getController(link.view());
-				if(controller && controller.refresh){
-					controller.refresh();
-				}
-			}
-		} catch (e){
-			// no action required
-		}
-	};
-	return window.setInterval(refresh,2000);
-
-}
-
-let timer = startAutoRefresh();
-
-window.addEventListener("focus",function(){
-	window.clearInterval(timer);
-	timer = null;
-});
-
-window.addEventListener("blur",function(){
-	if(!timer){
-		timer = startAutoRefresh();
-	}
-});
-
-/**
- * Listens to all change events and forwards them to the <code>_onchange</code> listener of the 
- * current view controller.
- */
-const onchange = function(event) {
-	let location = new Location(window.location.href);
-	let controller = modules[location.module()].getController(location.view());
-	controller._onchange(event);
-};
-document.addEventListener("change", onchange);
-
-/**
- * Listens to all click events and forwards them to the <code>_onclick</code> listener of the 
- * current view controller.
- */
-let onclick = function(event) {
-	let location = new Location(window.location.href);
-	let controller = modules[location.module()].getController(location.view());
-	if(controller && controller._onclick(event)){
-		return; // No more action required. Controller exists and view handled the click event.
-	}
-	if(event.target.href && router.navigate(new Location(event.target.href))){
-		event.stopPropagation();
-		event.preventDefault();
-	}
-};
-document.addEventListener("click", onclick);
-
-
-/**
  * A simple router to navigate from the current view to 
  * another view or to walk back the browser history to 
  * previous views.
@@ -219,24 +101,26 @@ export const router = {
 			
 			let module = modules[link.module()];
 			if (!module) {
-				loadModule(link);
+				let loader = new ModuleLoader();
+				loader.load(link);
 				return true;
 			}
-			mainMenu.select(link.module());
-			let view = module.getController(link.view());
-			if (!view) {
-				view = module.getController(link.path());
-			}
-			if (!view) {
-				loadApplication(link);
-				return true;
-			}
-			if (new Location(window.history.state).module() != moduleName) {
-				// Set the module template of the new module
-				document.getElementById('module-container').innerHTML = module.getModuleTemplate();
-			}
-			// Open view in different module.
-			loadView(link,view);
+			
+			// Update main menu
+			if(Modules.select(link.module())){
+				window.dispatchEvent(new CustomEvent('UIOpenModule',
+													{'detail':{'location':link,
+															   'module':link.module(),
+															   'app':link.app(),
+															   'view':link.view()}}));
+			};
+
+			// Notify module to open the selected view.
+			window.dispatchEvent(new CustomEvent('UIOpenView',
+												{'detail':{'location':link,
+														   'module':link.module(),
+														   'app':link.app(),
+														   'view':link.view()}}));
 			return true;
 		},
 		
@@ -271,14 +155,6 @@ window.addEventListener("popstate", function(event) {
 	} 
 }, true);
 
-window.addEventListener('UIModuleLoaded',function(event){
-	router.navigate(event.detail.location);
-});
-
-window.addEventListener('UIApplicationLoaded',function(event){
-	router.navigate(event.detail.location);
-});
-
 window.addEventListener('ClientUnauthenticated',function(){
 	router.redirect('/ui/login/login.html');
 });
@@ -299,6 +175,10 @@ window.addEventListener('InternalServerError',function(){
  * The user context provides information about the authenticated user.
  */
 export class UserContext {
+
+	static init(user){
+		new UserContext(user);
+	}
 	
 	/**
 	 * Returns a user context for the authenticated user.
@@ -362,34 +242,6 @@ export class UserContext {
 		return false;
 	}
 }
-
-/**
- * A HTML resource.
- * @extends Resource
- */
-class Html extends Resource {
-	
-	/**
-	 * Creates a HTML resource.
-	 * @path {string} uri the URI template of the HTML resource
-	 * @path {object} params the optional arguments for the URI template
-	 */
-	constructor(uri,params){
-		super();
-		this._uri = uri;
-		this._params = params;
-	}
-	
-	/**
-	 * Loads the HTML resource from the server.
-	 */
-	load() {
-		return this.html(this._uri,
-						 this._params)
-				   .GET();
-	}
-}
-
 
 /**
  * The location of a view template.
@@ -602,6 +454,19 @@ export class Location {
 }
 
 /**
+ * Intercepts all clicks on links to send them to the router and 
+ * forwards the event to the browser default if the router cannot approach the link target.
+ */
+let onclick = function(event) {
+
+	if(event.target.href && router.navigate(new Location(event.target.href))){
+		event.stopPropagation();
+		event.preventDefault();
+	}
+};
+document.addEventListener("click", onclick);
+
+/**
  * View model property matcher.
  * <p>
  * A <code>ViewModelPropertyMatcher</code> verifies whether a view model property satisfies a certain constraint.
@@ -656,36 +521,14 @@ class ViewModelPropertyMatcher{
 }
 
 /**
- * Leitstand UI module.
+ * Leitstand UI module loader.
  * <p>
  * The Leitstand UI consists of modules.
- * Each module can be divided into <em>applications</em>, which are shipped with the module.
- * The resources of an application are located in a sub-folder of the module root folder.
- * The folder name is also the application name.
- * The module root folder contains the default application which typically provides the module welcome view.
  */
-class Module {
+class ModuleLoader {
 	
 	/**
-	 * Creates a new module descriptor.
-	 * @param {ModuleDescriptor} descriptor the module descriptor
-	 */
-	constructor(descriptor){
-		this._descriptor = descriptor;
-		if(!this._descriptor.controller){
-			this._descriptor.controller = 'controller.js';
-		}
-		if(!this._descriptor.template){
-			this._descriptor.template = 'template.html';
-		}
-		if(!this._descriptor.menu_template){
-			this._descriptor.menu_template = 'menu-template.html';
-		}
-		
-	}
-
-	/**
-	 * Loads the module and all dependent applications.
+	 * Loads the module d
 	 */
 	async load(link){
 		if(!link){
@@ -693,94 +536,16 @@ class Module {
 		}
 		
 		// Load all missing javascript libraries.
-		try{
-
-			let main = await import(`/ui/modules/${link.module()}/${this._descriptor.controller}`);
-			this._menu = main.menu;
-			modules[link.module()]=this; // Register module.
-			
-			for(let i=0; i < this._descriptor.applications.length; i++){
-				try{
-					let app = this._descriptor.applications[i];
-					let library = await import(`/ui/modules/${this._descriptor.module}/${app.application||app}/${app.controller||'controller.js'}`);
-					this.addApplication({'name':`${app.application||app}`,
-									 	 'menu':library.menu});
-				} catch(e){
-					alert(e);
-					console.log(`/ui/modules/${link.module()}/${this._descriptor.applications[i]} reported a ${e}`);
-				}
-			}
-			
-			let templateLoader = new Html(`/ui/modules/${this._descriptor.module}/${this._descriptor.template}`);
-			this._moduleTemplate = await templateLoader.load();
-			templateLoader = new Html(`/ui/modules/${this._descriptor.module}/${this._descriptor.menu_template}`);
-			this._menuTemplate = await templateLoader.load();
-			
-			window.dispatchEvent(new CustomEvent('UIModuleLoaded',{'detail':{'module':this,'location':link}}));
-			
-		} catch (e){
-			alert(`/ui/modules/${link.module()}/${this._descriptor.controller} reported a ${e}`);
-			throw e;
-		}
-		
+		let moduleLoader = new Json(`/api/v1/ui/modules/${link.module()}`);
+		this._descriptor = await moduleLoader.load();
+		modules[this.name] = this;
+		window.dispatchEvent(new CustomEvent('UIModuleLoaded',{'detail':{'module':this._descriptor,
+																		 'location':link}}));
 	};
 	
-	/**
-	 * Adds an application to this module.
-	 * @param {ModuleApplication} app the module application
-	 */
-	addApplication(app){
-		var submenu = app.menu;
-		var appPath = app.name+'/';
-		for (let view in submenu._views){
-			this._menu._views[appPath+view] = submenu._views[view];
-		}
-		for (let item in submenu._items){
-			this._menu._items[appPath+item] = appPath+submenu._items[item];
-		}
-	}
-	
-	/**
-	 * Returns the view controller for the specified view or <code>null</code> if the view does not exist.
-	 * @param {string} view the module-scoped view location
-	 * @returns {Controller} the view controller
-	 */
-	getController(view){
-		return this._menu._views[view];
-	}
-	
-	/**
-	 * Returns the module name.
-	 * @returns {string} the module name.
-	 */
 	get name(){
 		return this._descriptor.module;
 	}
-	
-	/**
-	 * Selects the specified view in the module menu.
-	 * @param location the view location
-	 */
-	select(location){
-		this._menu.select(location);
-	}
-	
-	/**
-	 * Return the menu template.
-	 * @returns {string} the menu template.
-	 */
-	getMenuTemplate(){
-		return this._menuTemplate;
-	}
-	
-	/**
-	 * Return the module template.
-	 * @returns {string} the menu template.
-	 */
-	getModuleTemplate(){
-		return this._moduleTemplate;
-	}
-	
 	/**
 	 * Computes the menu view model.
 	 * @param model the JSON data returned by the REST API.
@@ -852,3 +617,4 @@ class Module {
 		return {};// Empty view model.
 	}
 }
+

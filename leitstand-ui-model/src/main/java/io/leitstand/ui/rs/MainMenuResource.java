@@ -3,6 +3,8 @@
  */
 package io.leitstand.ui.rs;
 
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+
 import java.util.List;
 
 import javax.enterprise.context.RequestScoped;
@@ -11,7 +13,6 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 
 import io.leitstand.ui.model.MainMenu;
 import io.leitstand.ui.model.MainMenuItem;
@@ -25,15 +26,15 @@ import io.leitstand.ui.model.MainMenuService;
  */
 @RequestScoped
 @Path("/ui")
-@Consumes(MediaType.APPLICATION_JSON)
-@Produces(MediaType.APPLICATION_JSON)
+@Consumes(APPLICATION_JSON)
+@Produces(APPLICATION_JSON)
 public class MainMenuResource {
 
 	@Inject
 	private MainMenuService menu;
 	
 	/**
-	 * Returns the EMS main menu.
+	 * Returns the Leitstand main menu.
 	 * @return the main menu items.
 	 */
 	@GET

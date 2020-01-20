@@ -62,7 +62,8 @@
  * @module
  */
 
-import {UserContext} from '/ui/js/ui-core.js';
+import {UserContext,Location} from '/ui/js/ui-core.js';
+import {Modules} from '/ui/js/ui-modules.js';
 
 /**
  * View model decorator that provides convenience functions to read and update view model properties.
@@ -90,7 +91,7 @@ class ViewModel{
 			for (let i=0; ctx && i < segments.length;i++){
 				parent = ctx;
 				if(segments[i]){
-					if(typeof ctx == "array"){
+					if(Array.isArray(ctx)){
 						// Token must be an array index in that particular case.
 						ctx = ctx[parseInt(segments[i])];
 						continue;
@@ -177,7 +178,7 @@ class ViewModel{
 		if(value == expectedValue){
 			return true;
 		}
-		if(value && typeof value == 'array'){
+		if(Array.isArray(value)){
 			return value.includes(expectedValue);
 		}
 		return false;
@@ -336,6 +337,27 @@ class Root extends HTMLElement {
 	 */
 	connectedCallback(){
 		this.innerHTML = `<div>${this.innerHTML}</div>`;
+		this.addEventListener("change",function(event) {
+			let location = new Location(window.location.href);
+			let module = Modules.getModule(location.module());
+			if(module){
+				let controller = module.getController(location.view());
+				controller._onchange(event);
+			}
+		});	
+		
+		this.addEventListener("click", function(){
+			let location = new Location(window.location.href);
+			let module = Modules.getModule(location.module());
+			if(module){
+				let controller = module.getController(location.view());
+				if(controller && controller._onclick(event)){
+					return; // No more action required. Controller exists and view handled the click event.
+				}
+			}	
+		});
+		
+		
 	}
 	
 

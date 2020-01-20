@@ -177,7 +177,11 @@ function http(uri,params) {
 					return;
 				}
 				// Send empty request if no payload is specified.
-				request.send();
+				try{
+					request.send();
+				} catch (e){
+					alert(e);
+				}
 			} catch (e){
 				console.error(`${method} request to ${uri} failed. Details: ${e}`);
 				rejected({'severity':'ERROR',
