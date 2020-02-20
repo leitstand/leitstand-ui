@@ -70,7 +70,7 @@ The template leverages the UI components which are described in the next section
   <ui-title>Element Settings <span class="{{element.operational_state}}">{{element.operational_state}}</span></ui-title>
   <ui-subtitle>Manage settings of element {{element.element_name}}{{#element.element_alias}} ({{.}}){{/element.element_alias}}</ui-subtitle>
 </ui-view-header>
-<ui-form rolesAllowed="Operator">
+<ui-form scopesAllowed="ivt ivt.element ivt.element.settings">
   <ui-group>
   <ui-label>General Settings</ui-label>
   <ui-note>Manage the element name, element alias, element role, administrative and operational state, and element description and set the pod of which the element belongs to.</ui-note>
@@ -219,6 +219,7 @@ The `when` attribute expresses which view model property needs to be present to 
 ### Access Control
 Access control checks whether the user has the permission to edit a value or perform an action.
 A component is set readonly and disabled if the user has insufficient permissions.
-The Leitstand login returns all roles of the successfully authenticated user and the web component checks whether the user has one of the roles declared in the `rolesAllowed` attribute of the component.
-Multiple roles are separated by a comma.
-Roles declared on a form are inherited by form controls if no `rolesAllowed` attribute is set on the form control.
+The Leitstand login returns all scopes the authenticated user is allowed to access. 
+Each web component checks whether the user can access at least one of the scopes declared in the `scopesAllowed` attribute of the component.
+Multiple scopes are separated by a blank.
+Scopes declared on the form web component are used by all form controls by default if no scopes are declared on the form controls itself.

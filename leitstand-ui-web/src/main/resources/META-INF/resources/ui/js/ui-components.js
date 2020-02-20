@@ -704,17 +704,17 @@ export class Control extends FormElement{
 	}
 	
 	/**
-	 * Returns a string array with all roles that are allowed to edit or execute this control.
+	 * Returns a string array with all scopes that are allowed to edit or execute this control.
 	 * Returns an empty array if everyone is allowed to edit this control.
 	 * @returns {Array } string 
 	 */
-	get rolesAllowed(){
-		let roles = this.getAttribute('rolesAllowed');
-		if(roles == null && this.form){
-			roles = this.form.rolesAllowed
+	get scopesAllowed(){
+		let scopes = this.getAttribute('scopesAllowed');
+		if(scopes == null && this.form){
+			scopes = this.form.rolesAllowed
 		}
-		if(roles){
-			return roles.split(/\s*\,\s*/g);
+		if(scopes){
+			return scopes.split(/\s*/g);
 		}
 		return [];
 	}
@@ -741,10 +741,10 @@ export class Control extends FormElement{
 		if(this.hasAttribute('readonly')){
 			return 'readonly';
 		}
-		let roles = this.rolesAllowed;
+		let scopes = this.scopesAllowed;
 		let user  = UserContext.get();
 		
-		if(user.isUserInRole(roles)){
+		if(user.scopesIncludeOneOf(scopes)){
 			return '';
 		}
 		return 'readonly';
@@ -757,15 +757,15 @@ export class Control extends FormElement{
 	 */
 	isDisabled(){
 		if(this.disabled === 'disabled' || this.isOptionEnabled('disabled')){
-			return 'disabled';
+			return true;
 		}
 		
-		let roles = this.rolesAllowed;
+		let scopes = this.scopesAllowed;
 		let user  = UserContext.get();
-		if(user.isUserInRole(roles)){
+		if(user.scopesIncludeOneOf(scopes)){
 			return '';
 		}
-		return 'readonly';
+		return true;
 	}
 	
 	/**
@@ -781,9 +781,9 @@ export class Control extends FormElement{
 		if(this.hasAttribute('disabled')){
 			return 'disabled';
 		}
-		let roles = this.rolesAllowed;
+		let scopes = this.scopesAllowed;
 		let user  = UserContext.get();
-		if(user.isUserInRole(roles)){
+		if(user.scopesIncludeOneOf(scopes)){
 			return '';
 		}
 		return 'disabled';

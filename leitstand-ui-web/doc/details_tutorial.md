@@ -125,7 +125,7 @@ It provides input fields to modify all webhook properties and buttons to save, r
   <ui-title>Webhook Settings</ui-title>
   <ui-subtitle>Manage settings of the {{hook.hook_name}} webhook.</ui-subtitle>
 </ui-view-header>
-<ui-form rolesAllowed="Administrator">
+<ui-form scopesAllowed="adm adm.webhook">
   <ui-group>
     <ui-label>General Settings</ui-label>
     <ui-note>General informations about the webhook</ui-note>

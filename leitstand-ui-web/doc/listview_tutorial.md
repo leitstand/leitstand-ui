@@ -85,7 +85,7 @@ A template section is omitted, if a property is `undefined`, `null`, `false`, or
   <ui-title>Webhooks</ui-title>
   <ui-subtitle>Listing of all existing webhooks</ui-subtitle>
 </ui-view-header>
-<ui-form rolesAllowed="Administrator">
+<ui-form scopesAllowed="adm adm.webhook">
   <ui-filter name="filter">
     <ui-label>Filter</ui-label>
     <ui-note>Filter webhooks by their name</ui-note>
@@ -124,7 +124,7 @@ A template section is omitted, if a property is `undefined`, `null`, `false`, or
   </ui-blankslate>
   <!--  {{/hooks}} -->
   <ui-actions>
-    <ui-button href="new-webhook.html" primary rolesAllowed="Administrator">Add webhook</ui-button>
+    <ui-button href="new-webhook.html" primary scopesAllowed="adm adm.webhook">Add webhook</ui-button>
   </ui-actions>
 </ui-form>
 ```

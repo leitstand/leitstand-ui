@@ -20,14 +20,15 @@ import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
-import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
+import io.leitstand.commons.rs.Resource;
 import io.leitstand.ui.model.ModuleDescriptor;
 import io.leitstand.ui.model.ModuleDescriptorService;
 
@@ -36,8 +37,10 @@ import io.leitstand.ui.model.ModuleDescriptorService;
  * @see ModuleDescriptor
  * @see ModuleDescriptorService
  */
-@RequestScoped
+@Resource
 @Path("/ui")
+@Consumes(APPLICATION_JSON)
+@Produces(APPLICATION_JSON)
 public class ModuleDescriptorResource {
 
 	@Inject
@@ -51,7 +54,6 @@ public class ModuleDescriptorResource {
 	 */
 	@GET
 	@Path("/modules/{module}")
-	@Produces(APPLICATION_JSON)
 	public Response getModuleDescription(@PathParam("module") String module) {
 		ModuleDescriptor md = service.getModuleDescriptor(module);
 		if(md == null) {

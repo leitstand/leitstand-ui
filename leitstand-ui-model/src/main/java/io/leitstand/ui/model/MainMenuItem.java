@@ -107,21 +107,21 @@ public class MainMenuItem extends ValueObject{
 		}
 		
 		/**
-		 * Adds the roles with access previliges for this module.
-		 * @param roles - the role names
+		 * Adds the scopes that are allowed to access this menu item.
+		 * @param scopes the scopes
 		 * @return a reference to this Builder to continue with object creation
 		 */
-		public Builder withRoles(String... roles) {
-			return withRolesAllowed(asSet(roles));
+		public Builder withScopesAllowed(String... scopes) {
+			return withScopesAllowed(asSet(scopes));
 		}
 
 		/**
-		 * Adds the roles with access previliges for this module.
-		 * @param roles - the role names
+		 * Adds the scopes that are allowed to access this menu item.
+		 * @param scopes the scopes
 		 * @return a reference to this Builder to continue with object creation
 		 */
-		public Builder withRolesAllowed(Set<String> roles) {
-			item.rolesAllowed = new TreeSet<String>(roles);
+		public Builder withScopesAllowed(Set<String> scopes) {
+			item.scopesAllowed = new TreeSet<String>(scopes);
 			return this;
 		}
 		
@@ -151,7 +151,7 @@ public class MainMenuItem extends ValueObject{
 	private String label;
 	private String path;
 	private String position;
-	private SortedSet<String> rolesAllowed = emptySortedSet();
+	private SortedSet<String> scopesAllowed = emptySortedSet();
 	
 	/**
 	 * Returns the name of the module represented by this menu item.
@@ -198,8 +198,8 @@ public class MainMenuItem extends ValueObject{
 		return position;
 	}
 	
-	public SortedSet<String> getRole() {
-		return unmodifiableSortedSet(rolesAllowed);
+	public SortedSet<String> getScopes() {
+		return unmodifiableSortedSet(scopesAllowed);
 	}
 	
 }

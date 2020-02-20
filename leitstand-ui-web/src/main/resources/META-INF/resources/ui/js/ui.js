@@ -333,6 +333,14 @@ export class Controller extends Dom {
 					return;
 				}
 			};
+			resource.onForbidden = function(state){
+				// Provide details why access is not granted.
+				let container = document.getElementById('page-container');
+				if(!container){
+					container = document.getElementById('module-container');
+				}	
+				container.innerHTML = `<ui-blankslate><ui-title>Access Denied</ui-title><ui-note>${state.message}</ui-note></ui-blankslate>`
+			};
 			resource.onUnauthorized = function(state) {
 				displayFlashMessages.call(self, state);
 				if (controllerConfig.onUnauthorized) {

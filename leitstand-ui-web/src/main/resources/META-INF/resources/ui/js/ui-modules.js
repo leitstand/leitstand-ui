@@ -78,9 +78,6 @@ class MainMenu {
 
 }
 
-
-
-
 export class Modules extends HTMLElement {
 	
 	static select(item){
@@ -252,6 +249,7 @@ class Html extends Resource {
 	}
 }
 
+
 /**
  * Leitstand UI module.
  * <p>
@@ -400,8 +398,8 @@ class Module {
 
 			// Add enabled decorator
 			menuViewModel.enabled = function(){
-				let rolesAllowed = this.roles_allowed;
-				if(rolesAllowed && !user.isUserInRole(rolesAllowed)){
+				let scopesAllowed = this.scopes_allowed;
+				if(scopesAllowed && !user.scopesIncludeOneOf(scopesAllowed)){
 					// Menu is not enabled because user has none of the required roles
 					return false;
 				}

@@ -115,13 +115,33 @@ public class ModuleMenu {
 		}
 		
 		/**
-		 * Sets which properties have to be present in the view model to enable this menu.
+		 * Sets the properties that have to be present in the view model to enable this menu.
 		 * @param requires - the required properties to enable this menu.
 		 * @return a reference to this builder to continue with object creation
 		 */
 		public Builder withRequires(Collection<String> requires) {
 			assertNotInvalidated(getClass(), menu);
 			menu.requires = new TreeSet<String>(requires);
+			return this;
+		}
+		
+		/**
+		 * Sets the scopes that are allowed to access this menu.
+		 * @param scopes the scopes
+		 * @return a reference to this builder to continue with object creation
+		 */
+		public Builder withScopesAllowed(String... scopes) {
+			return withScopesAllowed(asList(scopes));
+		}
+	
+		/**
+		 * Sets the scopes that are allowed to access this menu.
+		 * @param scopes the scopes
+		 * @return a reference to this builder to continue with object creation
+		 */
+		public Builder withScopesAllowed(Collection<String> scopes) {
+			assertNotInvalidated(getClass(), menu);
+			menu.scopesAllowed = new TreeSet<>(scopes);
 			return this;
 		}
 		
@@ -204,7 +224,7 @@ public class ModuleMenu {
 	private Set<String> requires = emptySet();
  	private List<ModuleMenuItem> items = emptyList();
  	private List<ViewModelProperty> viewModel = emptyList();
-
+ 	private Set<String> scopesAllowed = emptySet();
 
  	/**
  	 * Returns the name of this menu.
@@ -266,7 +286,13 @@ public class ModuleMenu {
 		return unmodifiableList(items);
 	}
 	
- 	
+	/**
+	 * Returns the scopes that are allowed to access this menu.
+	 * @return immutable set of scopes that are allowed to access this menu.
+	 */
+ 	public Set<String> getScopesAllowed() {
+		return unmodifiableSet(scopesAllowed);
+	}
 
 	
 }

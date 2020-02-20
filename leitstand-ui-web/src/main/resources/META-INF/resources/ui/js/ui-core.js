@@ -171,8 +171,8 @@ window.addEventListener('ClientUnauthenticated',function(){
 	router.redirect('/ui/login/login.html');
 });
 
-window.addEventListener('ClientForbidden',function(){
-	router.redirect('/ui/login/login.html');
+window.addEventListener('ClientForbidden',function(event){
+	router.redirect('/ui/error/403.html');
 });
 
 window.addEventListener('ResourceNotFound',function(){
@@ -182,6 +182,7 @@ window.addEventListener('ResourceNotFound',function(){
 window.addEventListener('InternalServerError',function(){
 	router.redirect('/ui/error/500.html');
 });
+
 
 /**
  * The user context provides information about the authenticated user.
@@ -221,11 +222,48 @@ export class UserContext {
 	}
 	
 	/**
-	 * Returns the roles of the user.
-	 * @return {String[]} the assigned roles as array of strings
+	 * Returns the user account name.
+	 * @return the user account name.
 	 */
-	get roles(){
-		return this.user.roles;
+	get userName(){
+		return this.user.user_name;
+	}
+	
+	/**
+	 * Returns the first name of the user.
+	 * @return the first name of the user.
+	 */
+	get firstName(){
+		return this.user.first_name;
+	}
+	
+	/**
+	 * Returns the last name of the user.
+	 * @return the last name of the user.
+	 */
+	get lastName(){
+		return this.user.last_name;
+	}
+	
+	/**
+	 * Returns the name of the user formed by first name followed by last name.
+	 * @return the name of the user
+	 */
+	get name(){
+		let first = this.firstName;
+		let last = this.lastName;
+		if(first && last){
+			return first+" "+last;
+		}
+		return null;
+	}
+	
+	/**
+	 * Returns the scopes the user can access.
+	 * @return {String[]} the accessible scopes as array of strings
+	 */
+	get scopes(){
+		return [...this.user.scopes];
 	}
 	
 	/**
@@ -233,23 +271,26 @@ export class UserContext {
 	 * @param {String|String[]} role the expected role or an array of expected roles
 	 * @return <code>true</code> if the user is in at least on of the specified roles, <code>false</code> otherwise.
 	 */
-	isUserInRole(role){
-		if(Array.isArray(role)){
-			if(role.length == 0){
-				// Every authenticated user satisfies the constraint to have no assigned role.
+	scopesIncludeOneOf(scope){
+		if(this.user == null){
+			return false;
+		}
+		if(Array.isArray(scope)){
+			if(scope.length == 0){
+				// Every authenticated user satisfies the constraint to have no scope assigned.
 				return true;
 			}
-			// Check is user has at least one of the requested roles.
-			for(let i=0; i < role.length; i++){
-				if(this.user.roles.includes(role[i])){
+			// Check is user can access on of the specified scopes
+			for(let i=0; i < scope.length; i++){
+				if(this.user.scopes.includes(scope[i])){
 					return true;
 				}
 			}
 			return false;
 		}
-		if(role){
-			// Check if user is in the requested role
-			return this.user.roles.includes(role);
+		if(scope){
+			// Check if user can access the specified scope
+			return this.user.scopes.includes(scope);
 		}
 		return false;
 	}
@@ -584,9 +625,9 @@ class ModuleLoader {
 
 			// Add enabled decorator
 			menuViewModel.enabled = function(){
-				let rolesAllowed = this.roles_allowed;
-				if(rolesAllowed && !user.isUserInRole(rolesAllowed)){
-					// Menu is not enabled because user has none of the required roles
+				let scopesAllowed = this.scopes_allowed;
+				if(scopesAllowed && !user.scopesIncludeOneOf(scopesAllowed)){
+					// Menu is not enabled because user has no access to any of the allowed scopes
 					return false;
 				}
 				
