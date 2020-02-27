@@ -118,22 +118,22 @@ public class ModuleDescriptor {
 		}
 		
 		/**
-		 * Sets the roles that have access to this module.
-		 * @param roles the roles allowed to access this module
+		 * Sets the scopes that are allowed to this module.
+		 * @param scopes the scopes that are allowed to access this module
 		 * @return a reference to this builder to continue with object creation
 		 */
-		public Builder withRoles(String... roles) {
-			return withRoles(asSet(roles));
+		public Builder withScopesAllowed(String... scopes) {
+			return withScopesAllowed(asSet(scopes));
 		}
 		
 		
 		/**
-		 * Sets the roles that have access to this module.
-		 * @param roles the roles allowed to access this module
+		 * Sets the scopes that are allowed to access this module.
+		 * @param scopes the scopes that are allowed to access this module
 		 * @return a reference to this builder to continue with object creation
 		 */
-		public Builder withRoles(Set<String> roles) {
-			descriptor.rolesAllowed = unmodifiableSet(new TreeSet<>(roles));
+		public Builder withScopesAllowed(Set<String> roles) {
+			descriptor.scopesAllowed = unmodifiableSet(new TreeSet<>(roles));
 			return this;
 		}
 		
@@ -171,7 +171,7 @@ public class ModuleDescriptor {
 	private String module;
 	private Set<ModuleApplication> applications = emptySet();
 	private List<ModuleMenu> navigation = emptyList();
-	private Set<String> rolesAllowed;
+	private Set<String> scopesAllowed;
 
 	/**
 	 * Returns the module name.
@@ -193,14 +193,15 @@ public class ModuleDescriptor {
 	
 	
 	/**
-	 * Returns the set of roles allowed to access this module.
-	 * @return the set of roles allowed to access this module.
+	 * Returns the set of scopes allowed to access this module.
+	 * Returns an empty set if any scope can access this module.
+	 * @return the set of scopes allowed to access this module.
 	 */
-	public Set<String> getRoles() {
-		if(rolesAllowed == null) {
+	public Set<String> getScopesAllowed() {
+		if(scopesAllowed == null) {
 			return emptySortedSet();
 		}
-		return unmodifiableSet(rolesAllowed);
+		return unmodifiableSet(scopesAllowed);
 	}
 	
 	/**
