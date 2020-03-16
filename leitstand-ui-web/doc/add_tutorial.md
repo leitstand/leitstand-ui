@@ -61,7 +61,7 @@ The view template renders a form to configure the new webhook.
   <ui-title>New Webhook</ui-title>
   <ui-subtitle>Add a new webhook</ui-subtitle>
 </ui-view-header>
-<ui-form rolesAllowed="Administrator">
+<ui-form scopesAllowed="adm adm.webhook">
   <ui-group>
     <ui-label>General Settings</ui-label>
     <ui-note>General informations about the webhook</ui-note>

@@ -172,12 +172,12 @@ public class ModuleMenuItem {
 		}
 		
 		/**
-		 * Sets the roles allowed to access this menu item.
-		 * @param roles the roles allowed to access this menu item.
+		 * Adds the scopes that are allowed to access this menu item.
+		 * @param scopes the scopes allowed to access this menu item.
 		 * @return a reference to this builder to continue with object creation.
 		 */
-		public Builder withRolesAllowed(String... roles) {
-			return withRolesAllowed(asList(roles));
+		public Builder withScopesAllowed(String... scopes) {
+			return withScopesAllowed(asList(scopes));
 		}
 		
 		/**
@@ -185,9 +185,9 @@ public class ModuleMenuItem {
 		 * @param roles the roles allowed to access this menu item.
 		 * @return a reference to this builder to continue with object creation.
 		 */
-		public Builder withRolesAllowed(Collection<String> roles) {
+		public Builder withScopesAllowed(Collection<String> scopes) {
 			assertNotInvalidated(getClass(), item);
-			item.rolesAllowed = unmodifiableSet(new TreeSet<>(roles));
+			item.scopesAllowed = unmodifiableSet(new TreeSet<>(scopes));
 			return this;
 		}
 		
@@ -217,7 +217,7 @@ public class ModuleMenuItem {
 	private Map<String,String> query = emptyMap();
 	private Set<String> requires = emptySet();
 	private List<ViewModelProperty> viewModel = emptyList();
-	private Set<String> rolesAllowed = emptySet();
+	private Set<String> scopesAllowed = emptySet();
 
 	/**
 	 * Returns the name of the menu item.
@@ -278,11 +278,11 @@ public class ModuleMenuItem {
 	}
 	
 	/**
-	 * Returns the roles that are allowed to access this menu item.
+	 * Returns the scopes that are allowed to access this menu item.
 	 * @return an immutable set of roles that are allowed to access this menu item
 	 */
-	public Set<String> getRolesAllowed(){
-		return unmodifiableSet(rolesAllowed);
+	public Set<String> getScopesAllowed(){
+		return unmodifiableSet(scopesAllowed);
 	}
 	
 	/**

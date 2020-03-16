@@ -95,9 +95,9 @@ components:
           - left
           - right
           default: "left"
-        roles_allowed:
+        scopes_allowed:
           type: array
-          description: A list of roles allowed to access the module 
+          description: Optional list of scopes allowed to access the module. 
           items:
             type: string
     
@@ -158,8 +158,8 @@ components:
         title: 
           type: string
           description: The menu title.
-        roles_allowed:
-          description: Optional array of user roles that are allowed to access this menu.
+        scopes_allowed:
+          description: Optional list of scopes that are allowed to access this menu.
           items:
             type: string
         requires:
@@ -201,8 +201,8 @@ components:
         view:
           type: string
           description: The path to the view template.
-        roles_allowed:
-          description: Optional array of user roles that are allowed to access this menu item.
+        scopes_allowed:
+          description: Optional list of scopes that are allowed to access this menu item.
           items:
             type: string    
         requires:

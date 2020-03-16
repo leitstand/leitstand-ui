@@ -43,12 +43,12 @@ class LoginForm extends HTMLElement {
 		config.onLoaded = function(config){
 							if(config.oidc_enabled){
 								let view = document.referrer;
-								if(!view || view.startsWith(origin) || view.startsWith('/ui/login/login.html')){
+								if(!view || !view.includes('/ui/views')){
 									view = "/ui/views/inventory/pods.html";
 								}
 								view = encodeURIComponent(view);
 								let landingPage = `${window.origin}/ui/login/oidc.html${encodeURIComponent(`?view=${view}`)}`;
-								let loginScreenUrl = `${config.login_view}?client_id=${config.oidc_client_id}&response_type=code&redirect_uri=${landingPage}`;
+								let loginScreenUrl = `${config.login_view}?client_id=${config.oidc_client_id}&response_type=code&redirect_uri=${landingPage}&scope=openid`;
 								form.innerHTML=`<div class="blankslate">
 													<h4>Forwarding you to the central authentication service!</h4>
 													<p>It will take only a few seconds. 

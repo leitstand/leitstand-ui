@@ -14,7 +14,7 @@ Each array item contains the following attributes:
 - `title`, the module title displayed in the header
 - `subtitle`, the module subtitle displayed in the header below the title
 - `path`, the path to the module welcome page
-- `rolesAllowed`, list of roles that are allowed to access this module
+- `scopesAllowed`, list of scopes that are allowed to access this module. The scopes are stored in the scope claim of the access token.
   * the role name   
 - `position`, optional tab position hint which is either `left` or `right`. Defaults to `left`. 
 
