@@ -855,7 +855,7 @@ export class Control extends FormElement{
 	 * @returns {String} disabled if the control shall be rendered disabled, an empty string otherwise
 	 */
 	get disabled(){
-		if(this.hasAttribute('disabled')){
+		if(this.isFlagSet('disabled')){
 			return 'disabled';
 		}
 		const scopes = this.scopesAllowed;
