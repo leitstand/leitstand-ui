@@ -1740,7 +1740,7 @@ class Details extends UIElement {
 			this.classList.add(this.getAttribute('class'));
 		}
 		const properties = this.querySelectorAll('ui-property');
-		const table = `<table class="details">;
+		const table = `<table class="details">
 						${[...properties]
 						   .map(property => {
 									const label = property.querySelector('ui-label').innerHTML;
