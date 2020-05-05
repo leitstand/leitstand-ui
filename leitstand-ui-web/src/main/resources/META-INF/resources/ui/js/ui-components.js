@@ -792,7 +792,7 @@ export class Control extends FormElement{
 			scopes = this.form.scopesAllowed
 		}
 		if(scopes){
-			return scopes.split(/\s*/g);
+			return scopes.split(/\s+/g);
 		}
 		return [];
 	}
