@@ -227,8 +227,8 @@ export class Controller extends Dom {
 		this._view = controllerConfig;
 		this._viewModel = {};
 		this._attachEventListener = function(resource) {
-			let self = this;
-			resource.onInputError = function(messages) {
+			const self = this;
+			resource.onInputError = function(messages){
 				clearFlashMessages();
 				const global = [];
 				if (messages.length) {
@@ -256,6 +256,7 @@ export class Controller extends Dom {
 					displayFlashMessages.call(self,global);
 					return;
 				}
+				displayFlashMessages.call(self,messages);
 			};
 			resource.onError = function(state) {
 				displayFlashMessages.call(self, state);
@@ -311,7 +312,6 @@ export class Controller extends Dom {
 				}
 			};
 			resource.onLoaded = function(state) {
-				alert(self == this);
 				displayFlashMessages.call(self, state);
 				if (controllerConfig.onLoaded) {
 					controllerConfig.onLoaded.call(self, state);
@@ -953,17 +953,13 @@ function clearFlashMessages() {
  */
 function displayFlashMessages(messages) {
 	clearFlashMessages();
-	if (!messages || !(messages.forEach || messages.severity && messages.message)) {
-		// Not a valid message
-		return;
-	}
-	if (messages.forEach) {
-		messages.forEach(function(message) {
+	if (Array.isArray(messages)) {
+		messages.forEach(message => {
 			displayFlashMessage(message.severity, 
 								message.reason, 
 								message.message);
 		});
-	} else {
+	} else if (messages.severity && messages.message ){
 		displayFlashMessage(messages.severity, 
 							messages.reason, 
 							messages.message);
