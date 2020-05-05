@@ -283,11 +283,11 @@ export class UIElement extends HTMLElement {
 	}
 	
 	/**
-	 * Tests whether a component option is enabled.
-	 * An option is enabled when the corresponding element attribute value is either <code>true</code> or no value was specified and the attribute is present only.
+	 * Tests whether a component flag is set.
+	 * A flag is set when the corresponding element attribute value is either <code>true</code> or no value was specified and the attribute is present only.
 	 * @param {String} name the attribute name
 	 */
-	isOptionEnabled(name){
+	isFlagSet(name){
 		const attr = this.getAttribute(name);
 		return attr == '' || attr == 'true';
 	}
@@ -803,7 +803,7 @@ export class Control extends FormElement{
 	 * @returns {boolean} <code>true</code> if this control is readonly, <code>false</code> otherwise.
 	 */
 	isReadonly(){
-		return this.readonly === 'readonly' || this.isOptionEnabled('readonly');
+		return this.readonly === 'readonly' || this.isFlagSet('readonly');
 	}
 	
 	/**
@@ -833,7 +833,7 @@ export class Control extends FormElement{
 	 * @returns {boolean} <code>true</code> if this control is disabled, <code>false</code> otherwise.
 	 */
 	isDisabled(){
-		if(this.disabled === 'disabled' || this.isOptionEnabled('disabled')){
+		if(this.disabled === 'disabled' || this.isFlagSet('disabled')){
 			return true;
 		}
 		
@@ -1036,7 +1036,7 @@ class Button extends Control {
 		
 		const href = this.getAttribute('href');
 		if(href){
-			const target = this.isOptionEnabled('external') ? 'target="_blank"' : '';
+			const target = this.isFlagSet('external') ? 'target="_blank"' : '';
 			
 			this.outerHTML=`<a id="${this.name}" class="btn ${this._buttonSize} ${this._buttonStyle}" title="${this.title}" href="${href}" ${target}>${this.label}</a>`;
 		} else {
@@ -1320,7 +1320,7 @@ export class Select extends InputControl {
 	}
 	
 	get multiple(){
-		return this.isOptionEnabled('multiple')
+		return this.isFlagSet('multiple')
 	}
 	
 	get selected(){
@@ -1403,7 +1403,7 @@ class RadioButton extends InputControl {
 	 */
 	renderDom(){
 		const value = this.getAttribute('value');
-		const checkedByDefault = this.isOptionEnabled('default');
+		const checkedByDefault = this.isFlagSet('default');
 		const checked = (this.viewModel.contains(this.binding) && this.viewModel.test(this.binding,value) || !this.viewModel.contains(this.binding) && checkedByDefault ) ? 'checked' : '';
 		this.innerHTML=	`<div class="form-checkbox">
 						  <label>
@@ -1463,7 +1463,7 @@ class Checkbox extends InputControl {
 		
 		
 		const value = this.getAttribute('value');
-		const checkedByDefault = this.isOptionEnabled('checked');
+		const checkedByDefault = this.isFlagSet('checked');
 		const checked = (this.viewModel.test(this.binding,typedValue(value)) || !this.viewModel.contains(this.binding) && checkedByDefault ) ? 'checked' : '';
 		let conditional = this.querySelector('ui-checked');
 		if(conditional) {
