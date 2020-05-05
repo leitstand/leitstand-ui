@@ -1035,12 +1035,12 @@ class Button extends Control {
 		}
 		
 		const href = this.getAttribute('href');
-		if(href){
+		if(href && !this.disabled){ // Render button because disabled links are not supported
 			const target = this.isFlagSet('external') ? 'target="_blank"' : '';
 			
 			this.outerHTML=`<a id="${this.name}" class="btn ${this._buttonSize} ${this._buttonStyle}" title="${this.title}" href="${href}" ${target}>${this.label}</a>`;
 		} else {
-			this.outerHTML=`<button id="${this.name}" name="${this.name}" class="btn ${this._buttonSize} ${this._buttonStyle}" title="${this.title}" ${this.readonly}>${this.label}</button>`;
+			this.outerHTML=`<button id="${this.name}" name="${this.name}" class="btn ${this._buttonSize} ${this._buttonStyle}" title="${this.title}" ${this.readonly} ${this.disabled}>${this.label}</button>`;
 		}
 	}
 }
