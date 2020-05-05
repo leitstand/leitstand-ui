@@ -753,7 +753,7 @@ class Actions extends FormElement {
 	 * Renders the form actions container DOM.
 	 */
 	renderDom(){
-		this.outerHTML = `<div class="form-actions" style="margin-top: 10px">
+		this.innerHTML = `<div class="form-actions" style="margin-top: 10px">
 							${this.innerHTML}
 						  </div>`;
 	}
