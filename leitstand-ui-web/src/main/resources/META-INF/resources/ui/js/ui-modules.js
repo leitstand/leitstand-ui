@@ -580,7 +580,7 @@ export class Module {
 					delimiter='&';
 				}
 				
-				if(item.view.startsWith('/')){
+				if(item.view.match(/^(?:[a-z]+\:\/)?\//)){
 					return `${item.view}${queryString}`;
 				}
 				
