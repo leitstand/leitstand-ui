@@ -1922,7 +1922,7 @@ class ModuleMenu extends HTMLElement {
 	render(menus){
 		const concat = (a,b) => a+b;
 		const item2html = function(item){
-			return `<li><a class="menu-item" id="${item.view}" title="${item.title}" href="${item.viewpath}">${item.label}</a></li>`;
+			return `<li><a class="menu-item" id="${item.view}" title="${item.title}" href="${item.viewpath}" ${item.target ? `target="${item.target}"` :''}>${item.label}</a></li>`;
 		};
 		const menuDom = menus.map((menu) => `<nav class="menu">
 												${menu.label ? `<h3 class="menu-heading" title="${menu.title}">${menu.label}</h3>`:''}

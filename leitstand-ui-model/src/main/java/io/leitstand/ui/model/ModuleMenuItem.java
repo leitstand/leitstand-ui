@@ -72,6 +72,17 @@ public class ModuleMenuItem extends BaseModuleItem {
 			return this;
 		}
 
+		/**
+		 * Sets the optional view target for this menu item.
+		 * @param target the view target
+		 * @return a referemce to this builder to continue with object creation.
+		 */
+		public Builder withTarget(String target) {
+			assertNotInvalidated(getClass(), item);
+			item.target = target;
+			return this;
+		}
+		
 		public ModuleMenuItem build() {
 			try {
 				assertNotInvalidated(getClass(), item);
@@ -92,6 +103,7 @@ public class ModuleMenuItem extends BaseModuleItem {
 	
 	private String item;
 	private String view;
+	private String target;
 	
 	/**
 	 * Returns the name of the menu item.
@@ -109,6 +121,13 @@ public class ModuleMenuItem extends BaseModuleItem {
 		return view;
 	}
 	
+	/**
+	 * Returns the view target.
+	 * @return the view target or <code>null</code> if no target is specified.
+	 */
+	public String getTarget() {
+		return target;
+	}
 	
 	@Override
 	@JsonbTransient
