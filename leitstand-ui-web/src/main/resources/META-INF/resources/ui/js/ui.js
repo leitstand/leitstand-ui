@@ -232,7 +232,7 @@ export class Controller extends Dom {
 				clearFlashMessages();
 				const global = [];
 				if (messages.length) {
-					const firstInvalidInput = null;
+					let firstInvalidInput = null;
 					for (let i = 0; i < messages.length; i++) {
 						const message = messages[i];
 						if (message.property) {
