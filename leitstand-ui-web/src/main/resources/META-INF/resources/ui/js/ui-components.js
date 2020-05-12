@@ -1462,7 +1462,7 @@ class Checkbox extends InputControl {
 			if(isNaN(value)){
 				return value;
 			}
-			if(isInteger(value)){
+			if(Number.isInteger(value)){
 				return Number.parseInt(value);
 			}
 			return Number.parseFloat(value);
