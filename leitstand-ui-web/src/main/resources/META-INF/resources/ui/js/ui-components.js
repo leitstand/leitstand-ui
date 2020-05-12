@@ -249,6 +249,13 @@ export class UIElement extends HTMLElement {
 	}
 	
 	/**
+	 * Returns the view location.
+	 */
+	get location(){
+		return this.controller.location
+	}
+	
+	/**
 	 * Returns the form of the current view or <code>null</code> if no form is displayed.
 	 * return {Form} the form UI component
 	 */
@@ -1346,7 +1353,7 @@ export class Select extends InputControl {
 			.then((options) => {
 				const size = this.multiple ? options.length : 1;
 				const optionsHtml = options.map(option => `<option value="${option.value}" ${this.isSelected(option) ? 'selected' : ''}>${option.label || option.value}</option>`)
-										   .reduce((a,b) => a+b);
+										   .reduce((a,b) => a+b,'');
 				this.innerHTML=`<div class="form-group">
 									<div class="label"><label for="${name}">${label}</label></div>
 									<div class="input"><select id="${name}" class="${size == 1 ? 'form-select' : 'form-control'}" ${this.readonly} ${this.disabled} name="${this.name}" ${this.multiple ? "multiple" : ""} size="${size}">${optionsHtml}</select></div>
@@ -1596,7 +1603,7 @@ class Composition extends UIElement {
 			}
 			return ''
 		};
-		const cells = [...items].map(item => `<div class="column ${size(item)}">${item.innerHTML}</div>`).reduce((a,b)=>a+b);
+		const cells = [...items].map(item => `<div class="column ${size(item)}">${item.innerHTML}</div>`).reduce((a,b)=>a+b,'');
 		this.innerHTML=`<div>
 						${cells}
 						</div>`;
@@ -1754,7 +1761,7 @@ class Details extends UIElement {
 									}
 									return '';
 								})
-							.reduce((a,b) => a+b)}
+							.reduce((a,b) => a+b,'')}
 						</table>`;
 		this.innerHTML=table;
 	}
@@ -1837,7 +1844,7 @@ class MainMenu extends HTMLElement {
 												   data-title="${item.title}" 
 												   data-module="${item.module}">
 												   ${item.label}</a>`)
-								  .reduce((a,b)=>a+b)}
+								  .reduce((a,b)=>a+b,'')}
 					 	</nav>
 					 </div>
 					 <div id="module">
@@ -1919,9 +1926,9 @@ class ModuleMenu extends HTMLElement {
 		};
 		const menuDom = menus.map((menu) => `<nav class="menu">
 												${menu.label ? `<h3 class="menu-heading" title="${menu.title}">${menu.label}</h3>`:''}
-												<ul>${menu.items.map(item2html).reduce(concat)}</ul>
+												<ul>${menu.items.map(item2html).reduce(concat,'')}</ul>
 							 				 </nav>` )
-							 .reduce(concat);
+							 .reduce(concat,'');
 		this.innerHTML=menuDom;
 	}
 	
@@ -2314,7 +2321,7 @@ class Calendar {
 						</div>
 						<div class="input">
 			 				<select id="hour" name="hour" class="form-select">
-			 					${Calendar.HOURS_OF_DAY.map(hour => `<option value="${hour}" ${selected(this.getHours(),hour)} >${hour}</option>`).reduce((a,b) => a+b)}
+			 					${Calendar.HOURS_OF_DAY.map(hour => `<option value="${hour}" ${selected(this.getHours(),hour)} >${hour}</option>`).reduce((a,b) => a+b,'')}
 							</select>
 						</div>
 					</div><div class="form-group">
@@ -2323,7 +2330,7 @@ class Calendar {
 						</div>
 						<div class="input">
 							<select id="minute" name="minute" class="form-select">
-								${Calendar.MINUTES_OF_HOUR.map(minute => `<option value="${minute}" ${selected(this.getMinutes(),minute)} >${minute}</option>`).reduce((a,b) => a+b)}
+								${Calendar.MINUTES_OF_HOUR.map(minute => `<option value="${minute}" ${selected(this.getMinutes(),minute)} >${minute}</option>`).reduce((a,b) => a+b,'')}
 			 				</select>
 						</div>
 					</div>
@@ -2366,7 +2373,7 @@ class Calendar {
 						<span>Sun</span><span>Mon</span><span>Tue</span><span>Wen</span><span>Thu</span><span>Fri</span><span>Sat</span>
 					</div>
 					<div class="page">
-						${dayElements.reduce((a,b)=>a+b)}
+						${dayElements.reduce((a,b)=>a+b,'')}
 					</div>
 				<div>`;
 	};
@@ -2449,7 +2456,7 @@ class TagEditor extends InputControl{
 			const tags = this.viewModel.getProperty(this.binding);
 			if(this.readonly){
 				return `<ol class="tags">
-							${tags && tags.length > 0 ? tags.map(tag => `<li class="tag">${tag}</li>`).reduce((a,b) => a+b) : ''}
+							${tags && tags.map(tag => `<li class="tag">${tag}</li>`).reduce((a,b) => a+b,'')}
 						</ol>`;
 			}
 			
