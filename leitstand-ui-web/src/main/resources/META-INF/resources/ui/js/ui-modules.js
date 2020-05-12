@@ -548,7 +548,7 @@ export class Module {
 				if(m.requires){
 					// Check that all required properties exist
 					for (let i=0; i < m.requires.length; i++){
-						if(!!model[m.requires[i]]){
+						if(!!model[m.requires[i]] || JSONPath(m.requires[i],model).length > 0){
 							continue;
 						}
 						if(!!m.query[m.requires[i]]){
