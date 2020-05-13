@@ -192,6 +192,10 @@ export class Menu extends Dom {
 		return null;
 	}
 	
+	isFocused(view){
+		return this._items[view] != null;
+	}
+	
 	/**
 	 * Selects the menu item of a view and returns the controller of this view.
 	 * Returns <code>null</code> if the view does not exist.
@@ -202,7 +206,7 @@ export class Menu extends Dom {
 		const controller = this.controller(location.view);
 		const menu = document.querySelector("ui-module-menu");
 		const item = this.item(location.view);
-		menu.select(item);
+		menu.select(this,item);
 		return controller;
 	}
 

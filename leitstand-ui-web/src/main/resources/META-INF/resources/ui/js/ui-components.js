@@ -1927,34 +1927,60 @@ class Module extends HTMLElement {
  */
 class ModuleMenu extends HTMLElement {
 
+	connectedCallback(){
+		this.addEventListener('click',(evt)=>{
+			if(evt.target.nodeName == 'BUTTON'){
+				const items = evt.target.parentElement.parentElement.querySelector('ul');
+				if(items.classList.contains('hidden')){
+					evt.target.innerHTML='&ndash;';
+					evt.target.title='Hide menu items';
+					items.classList.remove('hidden');
+				} else {
+					evt.target.innerHTML='+';
+					evt.target.title='Show menu items';
+					items.classList.add('hidden');
+				}
+			}
+		
+		});
+	}
+	
 	render(menus){
 		const concat = (a,b) => a+b;
 		const item2html = function(item){
 			return `<li><a class="menu-item" id="${item.view}" title="${item.title}" href="${item.viewpath}" ${item.target ? `target="${item.target}"` :''}>${item.label}</a></li>`;
 		};
-		const menuDom = menus.map((menu) => `<nav class="menu">
-												${menu.label ? `<h3 class="menu-heading" title="${menu.title}">${menu.label}</h3>`:''}
-												<ul>${menu.items.map(item2html).reduce(concat,'')}</ul>
-							 				 </nav>` )
+		const menuDom = menus.map((menu) => `${menu.entity ? `<p class="note">${menu.entity}</p>` : ''}
+											 <nav class="menu">
+												${menu.label ? `<h3 class="menu-heading" style="position:relative" title="${menu.title}">${menu.label} <button class="btn btn-sm" style="position:absolute; top: 5px; right:5px" name="toggle">${menu.expand=='auto'?'&ndash;':'+'}</button></h3>`:''}
+												<ul ${menu.expand=='auto' || !menu.label?'':'class="hidden"'}>${menu.items.map(item2html).reduce(concat,'')}</ul>
+							 				 </nav>
+							 				 ` )
 							 .reduce(concat,'');
 		this.innerHTML=menuDom;
 	}
 	
-	select(item){
+	select(menu,item){
 		const selected = document.querySelector("nav[class='menu'] a[class~='selected']");
 		if (selected) {
 			selected.classList.remove("selected");
 		}
 		if (item) {
 			item.css.add("selected");
+			const button = item.up('nav').select("button");
+			if(button){
+				button.html("&ndash;");
+				item.up('ul').css.remove("hidden");
+			}
 		}
+		console.log(JSON.stringify(menu));
 	}
 	
 }
 
 /**
  * A utility class to remove embedded <code>&lt;ui-label&gt;</code> from the DOM.
- * @extrends UIElement
+ * @extends UIElement
  */
 class Label extends UIElement {
 	/**
