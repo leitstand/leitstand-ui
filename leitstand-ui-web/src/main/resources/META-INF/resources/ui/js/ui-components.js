@@ -2518,7 +2518,7 @@ customElements.define('ui-details',Details);
 customElements.define('ui-element',UIElement);
 customElements.define('ui-filter',Filter);
 customElements.define('ui-form',Form);
-customElements.define('ui-group',Group,{'extends':'fieldset'});
+customElements.define('ui-group',Group);
 customElements.define('ui-input',InputText);
 customElements.define('ui-number',InputNumber);
 customElements.define('ui-password',Password);

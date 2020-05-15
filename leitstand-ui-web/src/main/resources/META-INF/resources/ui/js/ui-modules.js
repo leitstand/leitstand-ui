@@ -376,7 +376,6 @@ export class Module {
 			this._moduleTemplate = await templateLoader.load();
 			return this;
 		} catch (e){
-			console.log(JSON.stringify(module.applications));
 			console.error(`Failed to initialze module ${location.module}. Reported error: ${e}`);
 			throw e;
 		}
