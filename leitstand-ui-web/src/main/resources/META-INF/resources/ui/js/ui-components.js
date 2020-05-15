@@ -2498,7 +2498,7 @@ class TagEditor extends InputControl{
 }
 
 // Register view first to avoid troubles with DOM rendering.
-customElements.define('ui-view',View,{'extends':'div'});
+customElements.define('ui-view',View);
 customElements.define('ui-module-menu',ModuleMenu);
 customElements.define('ui-module',Module);
 customElements.define('ui-modules',MainMenu);
