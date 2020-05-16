@@ -1153,9 +1153,17 @@ class InputText extends InputControl {
 	 * Renders the DOM
 	 */
 	renderDom(){
+		// Search for buttons to be displayed next to the input field.
+		const buttons = this.querySelectorAll('ui-button');
+		
 		this.innerHTML=`<div class="form-group">
-						<div class="label"><label for="${this.name}">${this.label}</label></div>
-						<div class="input"><input id="${this.name}" type="text" class="form-control" ${this.readonly} ${this.disabled} name="${this.name}" value='${this.value}' placeholder="${this.placeholder}"></div>
+						<div class="label">
+							<label for="${this.name}">${this.label}</label>
+						</div>
+						<div class="input">
+							<input id="${this.name}" type="text" class="form-control" ${this.readonly} ${this.disabled} name="${this.name}" value='${this.value}' placeholder="${this.placeholder}">
+							${[...buttons].map(button => button.outerHTML).reduce((a,b)=>a+b,'')}
+						</div>
 						<p class="note">${this.note}</p>
 						</div>`;
 		this.addEventListener("change",function(evt){
