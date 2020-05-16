@@ -1973,7 +1973,6 @@ class ModuleMenu extends HTMLElement {
 				item.up('ul').css.remove("hidden");
 			}
 		}
-		console.log(JSON.stringify(menu));
 	}
 	
 }
