@@ -2460,6 +2460,8 @@ class TagEditor extends InputControl{
 	 */
 	renderDom(){
 		
+		const note = this.note;
+		
 		const renderTags = function(){
 			const tags = this.viewModel.getProperty(this.binding);
 			if(this.readonly){
@@ -2474,7 +2476,7 @@ class TagEditor extends InputControl{
 					</ol>
 					<span style="position:relative"><input type="text" name="new-tag"><button name="add-tag" title="Add new tag" class="btn btn-sm btn-outline">+</button></span>
 					</div>
-					<p class="note">${this.note}</p>`;
+					<p class="note">${note}</p>`;
 		}.bind(this);
 		
 		this.innerHTML = renderTags();
