@@ -302,10 +302,10 @@ class ViewModelPropertyMatcher{
 		const property = this.matcher.property;
 		const value = viewModel[property];
 		if(this.matcher.exists === true){
-			return !!viewModel;
+			return !!value;
 		}
 		if(this.matcher.exists === false){
-			return !viewModel;
+			return !value;
 		}
 		if(this.matcher.matches){
 			return value && value.matches && value.matches(this.matcher.matches); 
