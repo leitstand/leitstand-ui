@@ -113,7 +113,7 @@ function http(uri,params) {
 		// Mustache is not available as ES6 module.
 		uri = Mustache.render(uri,viewparams);
 	}
-	uri = encodeURI(uri)+replace('+','%2B');
+	uri = encodeURI(uri).replace('+','%2B');
 	// Request headers
 	const headers = {
 		'Accept':'application/json',	

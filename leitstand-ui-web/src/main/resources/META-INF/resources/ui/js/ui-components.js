@@ -1869,7 +1869,7 @@ class MainMenu extends HTMLElement {
 			  .catch((e) => {
 				  console.error("Cannot create Leistand main menu.");
 				  console.log(e);
-				  rouder.redirect('/ui/login/login.html');
+				  router.redirect('/ui/login/login.html');
 			  });
 	}
 	
