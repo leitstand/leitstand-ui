@@ -61,6 +61,23 @@ public class ModuleMenu extends BaseModuleItem {
 			item.menu = name;
 			return this;
 		}
+		
+		/**
+		 * Sets the expression to display the entity name.
+		 * @param entity - the expression to resolve the entity name
+		 * @return a reference to this builder to continue with object creation.
+		 */
+		public Builder withEntity(String entity) {
+			assertNotInvalidated(getClass(), item);
+			item.entity = entity;
+			return this;
+		}
+		
+		public Builder withExpand(String name) {
+			assertNotInvalidated(getClass(),item);
+			item.expand = name;
+			return this;
+		}
 
 
 		/**
@@ -114,7 +131,9 @@ public class ModuleMenu extends BaseModuleItem {
 	
 	private String menu;
  	private List<ModuleMenuItem> items = new LinkedList<>();
-
+ 	private String expand;
+ 	private String entity;
+ 	
  	/**
  	 * Returns the name of this menu.
  	 * @return the name of this menu.
@@ -166,6 +185,15 @@ public class ModuleMenu extends BaseModuleItem {
 	@JsonbTransient
 	public String getName() {
 		return menu;
+	}
+
+	public String getEntity() {
+		return entity;
+	}
+	
+	
+	public String getExpand() {
+		return expand;
 	}
 
 }
