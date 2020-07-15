@@ -89,7 +89,7 @@ class LoginForm extends HTMLElement {
 														UserContext.init(authenticatedUser);
 														if(document.referrer){
 															let location = new Location(document.referrer);
-															let path = location.path();
+															let path = location.path;
 															if(path && path.startsWith("/ui/views")){
 																// Forward the user to the originally requested view.
 																this.redirect(path);

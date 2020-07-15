@@ -16,7 +16,6 @@
 package io.leitstand.ui.model;
 
 import static io.leitstand.commons.etc.FileProcessor.yaml;
-import static java.lang.String.format;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -27,13 +26,14 @@ import io.leitstand.commons.etc.Environment;
 /**
  * Loads the {@link MainMenu} from the YAML file specified in the <code>ems.main-menu</code> property or
  * from <code>META-INF/etc/main-menu.yaml</code> if this property is not present.
- * @author mast
- *
  */
 @ApplicationScoped
 public class MainMenuService {
 
+	@Inject
 	private Environment env;
+	@Inject
+	private Contributions extensions;
 	
 	private MainMenu menu;
 	
@@ -41,27 +41,19 @@ public class MainMenuService {
 		// CDI constructor
 	}
 	
-	/**
-	 * Create a <code>MainMenuService</code>.
-	 * @param env - the current EMS environment
-	 */
-	@Inject
-	protected MainMenuService(Environment env) {
-		this.env = env;
-	}
-	
 	@PostConstruct
 	protected void loadMainMenu() {
-		String mainMenuPath = format("%s/module/main-menu.yaml",
-									 env.getSettings().getUIModulesDir());
 
-		menu = env.loadFile(mainMenuPath, 
+		menu = env.loadFile("/META-INF/resources/ui/modules/main-menu.yaml", 
 							yaml(MainMenu.class));		
+		
+		menu.addExtensions(extensions.findExtensions());
+	
 	}
 	
 	/**
-	 * Returns the EMS main menu.
-	 * @return the EMS main menu.
+	 * Returns the Leitstand main menu.
+	 * @return the Leitstand main menu.
 	 */
 	public MainMenu getMainMenu() {
 		return menu;

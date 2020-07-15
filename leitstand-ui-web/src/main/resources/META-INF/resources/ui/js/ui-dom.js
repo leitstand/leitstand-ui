@@ -15,20 +15,17 @@
  */
 /**
  * <h2>DOM Library</h2>
- * The DOM library provides classes for DOM manipulation.
- * <p>
- * This library exports two classes: the <code>Dom</code> class and the <code>Element</code> class.
- * The {@linkcode Dom} class is the base class for DOM manipulators.
- * The {@linkcode Element} wraps a native DOM element and provides a rich set of convenient methods to read or manipulate the DOM.
- * </p>
+ * The DOM library simplifies to query and manipulate the Document Object Model (DOM).
+ * The {@linkcode Element} class wraps a native DOM element and provides means for essential DOM operations like managing CSS classes for example.
+ * More details can be found on the method documentation.
+ * The {@linkcode Dom} class is the base class for all DOM manipulators.
  * @module
  */
 
 /**
  * Base class for DOM manipulators. 
  * <p>
- * The <code>Dom</code> class provides methods to query the Document Object Model (DOM),
- * bind event handlers to DOM elements, and generate DOM elements from templates.
+ * The <code>Dom</code> class provides methods to query the Document Object Model (DOM) and to maintain templates for rendering the body content.
  * </p>
  */
 export class Dom {
@@ -134,16 +131,16 @@ export class Dom {
 }
 
 /**
- * The <code>Element</code> represents a single object in the Document Object Model (DOM).
+ * A single element of the document object model.
  * <p>
- * The <code>Element</code> wraps a native DOM element and provides convenience methods to read, navigate through, and manipulate the DOM.
+ * The <code>Element</code> class wraps a native DOM element and provides convenience methods to read, navigate through, and manipulate the DOM.
  * </p>
  * @extends Dom
  */
 export class Element extends Dom{
 	
 	/**
-	 * A factory method to create an <code>Element</code> from an native DOM element.
+	 * A factory method to create an <code>Element</code> from a native DOM element.
 	 * @param {Element} element the native DOM element
 	 * @param {Object} [scope] the <code>this</code> pointer for event listeners bound to this <code>Element</code>.
 	 * @returns {ui-dom~Element} an element for the native DOM element
@@ -156,8 +153,8 @@ export class Element extends Dom{
 	}
 
 	/**
-	 * Returns the underlying native DOM element of an <code>Element</code>.
-	 * @param {ui-dom~Element} element the element to read the native DOM element from
+	 * Returns the native DOM element wrapped by the specified <code>Element</code>.
+	 * @param {ui-dom~Element} element the element to retrieve the native DOM element from
 	 * @return {Element} the underlying native DOM element
 	 */
 	static unwrap(element){
@@ -168,7 +165,7 @@ export class Element extends Dom{
 	}
 	
 	/**
-	 * Creates a new <code>Element</code>.
+	 * Creates an <code>Element</code>.
 	 * @param {Element} element the native DOM element
 	 * @param {Object} [scope] the <code>this</code> pointer for event listeners bound to this <code>Element</code>.
 	 */
@@ -180,7 +177,7 @@ export class Element extends Dom{
 	
 	/**
 	 * Returns the inner HTML content of this element.
-	 * Replaces the inner HTML content if a new content was specified.
+	 * Replaces the inner HTML content if a new content is specified.
 	 * 
 	 * @param {String} [content] the new inner HTML content
 	 * @returns {String} the inner HTML content of the element
@@ -194,7 +191,7 @@ export class Element extends Dom{
 	
 	/**
 	 * Returns the inner text content of this element.
-	 * Replaces the inner text content if a new content was specified.
+	 * Replaces the inner text content if a new content is specified.
 	 * @param {String} [content] the new inner text content
 	 * @return {String} the inner text content of the element
 	 */
@@ -206,16 +203,15 @@ export class Element extends Dom{
 	}
 	
 	/**
-	 * Returns the value of this element if a value exists. 
-	 * <p>
-	 * This element follows the rules below to determine the value:
+	 * Returns the value of this element if a value exists.
 	 * <ul>
-	 *  <li>Returns the value attribute of a checked checkbox. Returns <code>null</code> if the checkbox is unchecked</li>
-	 *  <li>Returns the value attribute of the selected radio button. 
+	 *  <li>Returns the <code>value</code> attribute of a checked checkbox. Returns <code>null</code> if the checkbox is unchecked</li>
+	 *  <li>Returns the <code>value</code> attribute of the selected radio button. 
 	 *  	If this element represents an unselected radio button, the value of the selected radio button with the same name is returned.</li> 
 	 *  <li>Returns the value of the selected option of a select box.</li>
-	 *  <li>Returns the value attribute of all other input elements, such as text input fields, password input fields or textarea</li>
+	 *  <li>Returns the <code>value</code> attribute of all other input elements, such as text input fields, password input fields or textarea</li>
 	 * </ul>
+	 * Updates the element value if a new value is specified.
 	 * @param {String} [value] the new value
 	 * @return {String} the element value if a value exists. 
 	 */
@@ -228,20 +224,20 @@ export class Element extends Dom{
 			return this._element.checked ? this._element.value : null;
 		}
 		if (this._element.type == 'radio') {
-			let selected = document.querySelectorAll(`input[name='${this._element.name}']:checked`);
+			const selected = document.querySelectorAll(`input[name='${this._element.name}']:checked`);
 			if(selected){
 				return selected.value;
 			}
 		}
 		if (this._element.value || value) {
-			let old = this._element.value;
+			const old = this._element.value;
 			if(value !== undefined){
 				this._element.value = value;
 			}
 			return old;
 		}
 		if (this._element.nodeName === 'SELECT') {
-			let options = this._element.getElementsByTagName('option');
+			const options = this._element.getElementsByTagName('option');
 			let selectedOption = -1;
 			if(value){
 				//TODO Add multivalue support
@@ -255,7 +251,7 @@ export class Element extends Dom{
 				this._element.selectedIndex = selectedOption;
 			}
 			if(this._element.multiple){
-				let selections = [];
+				const selections = [];
 				options.forEach(function(option){
 					if(option.selected){
 						selections.push(option.value);
@@ -271,7 +267,7 @@ export class Element extends Dom{
 	/**
 	 * Returns the values of all input elements with the same name as this element.
 	 * The values of unchecked check boxed or radio buttons are ignored.
-	 * @return {String[]} all input values, or an empty string if no matches exist.
+	 * @return {String[]} all input values.
 	 */
 	values(){
 		if(this.isElement('input')){
@@ -279,17 +275,17 @@ export class Element extends Dom{
 				   .filter(input => input.checked || input.selected || input.type=='text') // Filter for text field, selected radio buttons and checked checkboxes
 				   .map(input => input.value); // Extract the value.
 		}
-		let value = this.value();
-		if(value.push){
+		const value = this.value();
+		if(Array.isArray(value)){
 			return value;
 		}
 		return [value];
 	}
 	
 	/**
-	 * Checks or unchecks a check box or radio button and returns the new checked state.
+	 * Checks or unchecks a checkbox or radio button and returns the new checked state.
 	 * <p>
-	 * The method has no effect when executed on other elements than radio button or check box.
+	 * The method has no effect when executed on other elements than radio button or checkbox.
 	 * @param {boolean} [checked=true] the new checked state
 	 * @returns {boolean} Whether the check box is checked (<code>true</code>) or unchecked (<code>false</code>).
 	 */
@@ -323,6 +319,7 @@ export class Element extends Dom{
 	/**
 	 * Returns the <code>style</code> attribute of the underlying native DOM element.
 	 * @returns {Object} the <code>style</code> attribute of the underlying native DOM element.
+	 * @readonly
 	 */
 	get style(){
 		return this._element.style
@@ -330,12 +327,12 @@ export class Element extends Dom{
 	
 	/**
 	 * Returns a CSS object to <code>add</code> CSS classes to or <code>remove</code> CSS classes from 
-	 * the decorated element's class list and to check whether a class is already
+	 * the decorated element class list and to check whether a class is already
 	 * assigned to the element, i.e. the class list <code>contains</code> a particular class.
 	 * @returns {CSS} The CSS classes of this element.
 	 */
-	css() {
-		let element = this._element;
+	get css() {
+		const element = this._element;
 		return {
 			/**
 			 * Removes the specified classes from the CSS classes of the underlying element.
@@ -344,7 +341,7 @@ export class Element extends Dom{
 			 * @method remove
 			 */
 			"remove" : function() {
-				for (var i = 0; i < arguments.length; i++) {
+				for (let i = 0; i < arguments.length; i++) {
 					element.classList.remove(arguments[i]);
 				}
 			},
@@ -355,7 +352,7 @@ export class Element extends Dom{
 			 * @method add
 			 */
 			"add" : function() {
-				for (var i = 0; i < arguments.length; i++) {
+				for (let i = 0; i < arguments.length; i++) {
 					element.classList.add(arguments[i]);
 				}
 			},
@@ -374,7 +371,7 @@ export class Element extends Dom{
 	
 	/**
 	 * Returns the attribute with the specified name.
-	 * @param {String} name the attribute
+	 * @param {String} name the attribute name
 	 * @returns {String} the attribute value or <code>null<code> if the attribute does not exist
 	 */
 	getAttribute(name) {
@@ -444,7 +441,7 @@ export class Element extends Dom{
 	 * @return {ui-dom~Element} the first matching child element or <code>null</code> if no match exists.
 	 */
 	select(query) {
-		let selected = this._element.querySelector(query);
+		const selected = this._element.querySelector(query);
 		if (selected) {
 			return new Element(selected, this._scope);
 		}
@@ -469,7 +466,7 @@ export class Element extends Dom{
 	 * @returns {ui-dom~Element} the matching parent element or <code>null</code> if no match exists.
 	 */
 	up(name) {
-		var parent = this._element.parentNode;
+		let parent = this._element.parentNode;
 		while (parent && parent.tagName !== name.toUpperCase()) {
 			parent = parent.parentNode;
 		}
@@ -496,22 +493,24 @@ export class Element extends Dom{
 	}
 	
 	/**
-	 * The immutable element id. 
+	 * The element id. 
 	 * <p>
 	 * The id is read from the id attribute of the underlying DOM element.
 	 * </p>
 	 * @return the id attribute of the underlying native DOM element.
+	 * @readonly 
 	 */
 	get id() {
 		return this._element.id;
 	}
 	
 	/**
-	 * The immutable element name. 
+	 * The element name. 
 	 * <p>
 	 * The name is read from the name attribute of the underlying DOM element.
 	 * </p>
 	 * @return the id attribute of the underlying native DOM element.
+	 * @readonly
 	 */	
 	get name() {
 		return this._element.name;

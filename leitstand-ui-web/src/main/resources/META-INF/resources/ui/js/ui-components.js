@@ -38,11 +38,11 @@
  * 	 <tr><td><code>&lt;ui-note&gt;</code></td><td>A note to provide detailed explanation or instructions.</td></tr>
  * 	 <tr><td><code>&lt;ui-password&gt;</code></td><td>A password input field.</td></tr>
  * 	 <tr><td><code>&lt;ui-radio&gt;</code></td><td>A radio button.</td></tr>
- * 	 <tr><td><code>&lt;ui-root&gt;</code></td><td>The root component of the entire component tree. The root is set in the base templates only.</td></tr>
  * 	 <tr><td><code>&lt;ui-select&gt;</code></td><td>A select box.</td></tr>
  *   <tr><td><code>&gt;ui-tags&gt;</code></td><td>A tag editor to manage tags as string array.</td></tr>
  * 	 <tr><td><code>&lt;ui-textarea&gt;</code></td><td>A textarea.</td></tr>
  * 	 <tr><td><code>&lt;ui-view-header&gt;</code></td><td>Header section of a UI view consisting of title, subtitle and breadcrumbs.</td></tr>
+ * 	 <tr><td><code>&lt;ui-view&gt;</code></td><td>The container element of the displayed view.</td></tr>
  *  </tbody>
  * </table>
  * <p>
@@ -60,7 +60,7 @@
  * The <em>Controller</em> builds the view model and passes it to the view and the component model respectively.
  * The <code>ViewModel</code> class decorates the view model by means of adding functions to access the view model state, 
  * i.e. reading and writing view model properties. 
- * The <code>Root</code> component maintains the view model for the entire view.
+ * The <code>View</code> component maintains the view model for the entire view.
  * <h3>Data Binding</h3>
  * <em>Data Binding</em> is the process of binding the view model properties to the input controls. 
  * Each <code>FormElement</code> is automatically bound to the view model.
@@ -73,8 +73,9 @@
  * @module
  */
 
-import {UserContext,Location} from '/ui/js/ui-core.js';
-import {Modules} from '/ui/js/ui-modules.js';
+import {UserContext,Location,router} from './ui-core.js';
+import {Modules} from './ui-modules.js';
+import {Json} from './client.js';
 
 /**
  * View model decorator that provides convenience functions to read and update view model properties.
@@ -125,7 +126,7 @@ class ViewModel{
 	 * @param {Object|string|number|boolean|array} value the property value
 	 */
 	setProperty(path,value){
-		 let segments = path.split(/\.|\[|\]/);
+		 const segments = path.split(/\.|\[|\]/);
 		 let i=0;
 		 let ctx = this._model;
 		 for (; ctx && i < segments.length - 1;i++){
@@ -154,7 +155,7 @@ class ViewModel{
 	 * @param {String} path the property JSON path
 	 */
 	removeProperty(path){
-		 let segments = path.split(/\.|\[|\]/);
+		 const segments = path.split(/\.|\[|\]/);
 		 let i=0;
 		 let ctx = this._model;
 		 for (; ctx && i < segments.length - 1;i++){
@@ -185,14 +186,14 @@ class ViewModel{
 	 * @returns {boolean} <code>true</code> when the view model value matches the expected value, <code>false</code> if not.
 	 */
 	test(path,expectedValue){
-		let value = this.getProperty(path);
+		const value = this.getProperty(path);
 		if(value == expectedValue){
 			return true;
 		}
 		if(Array.isArray(value)){
 			return value.includes(expectedValue);
 		}
-		return false;
+		return `${expectedValue}`==`${value}`;
 	}
 	
 	/**
@@ -206,6 +207,7 @@ class ViewModel{
 	
 }
 
+
 /**
  * Base class for all UI components.
  * <p>
@@ -218,12 +220,12 @@ class ViewModel{
 export class UIElement extends HTMLElement {
 	
 	/**
-	 * Initializes the UI element and lookups the root component.
+	 * Initializes the UI element and lookups the view component.
 	 * @throws an exception if no root component exists.
 	 */
 	constructor(){
 		super();
-		this._root = document.querySelector('ui-root');
+		this._view = document.querySelector('ui-view');
 	}
 
 	/**
@@ -231,7 +233,11 @@ export class UIElement extends HTMLElement {
 	 * @returns {ViewModel} the current view model.
 	 */
 	get viewModel(){
-		return this._root.viewModel;
+		return this._view.viewModel;
+	}
+	
+	get view() {
+		return this._view
 	}
 	
 	/**
@@ -239,7 +245,7 @@ export class UIElement extends HTMLElement {
 	 * @returns {ui~Controller} the controller of the current view.
 	 */
 	get controller(){
-		return this._root.controller;
+		return this._view.controller;
 	}
 	
 	/**
@@ -247,7 +253,7 @@ export class UIElement extends HTMLElement {
 	 * return {Form} the form UI component
 	 */
 	get form(){
-		return this._root.querySelector('ui-form');
+		return this._view.querySelector('ui-form');
 	}
 	
 	/**
@@ -256,7 +262,7 @@ export class UIElement extends HTMLElement {
 	 * @returns {String} the unique element ID
 	 */
 	get id(){
-		let id = this.getAttribute('id');
+		const id = this.getAttribute('id');
 		if(id){
 			return id;
 		}
@@ -269,7 +275,7 @@ export class UIElement extends HTMLElement {
 	 * @returns {String} the CSS classes or an empty string if no classes were specified.
 	 */
 	get _class(){
-		let _class = this.getAttribute('class');
+		const _class = this.getAttribute('class');
 		if(_class){
 			return _class;
 		}
@@ -282,7 +288,7 @@ export class UIElement extends HTMLElement {
 	 * @param {String} name the attribute name
 	 */
 	isOptionEnabled(name){
-		let attr = this.getAttribute(name);
+		const attr = this.getAttribute(name);
 		return attr == '' || attr == 'true';
 	}
 
@@ -293,21 +299,20 @@ export class UIElement extends HTMLElement {
 	 */
 	connectedCallback(){
 		this.renderDom();
-		let when = this.getAttribute('when');
+		const when = this.getAttribute('when');
 		if(when){
-			let dom = this.innerHTML;
 			if(!!!this.viewModel.getProperty(when)){
 				this.classList.add('hidden');
 			}
-			let form = document.querySelector('ui-form');
+			const form = document.querySelector('ui-form');
 			if(form){
-				form.addEventListener('UIViewModelUpdate',function(evt){
+				form.addEventListener('UIViewModelUpdate',(evt) => {
 					if(!!this.viewModel.getProperty(when)){
 						this.classList.remove('hidden');
 					} else {
 						this.classList.add('hidden');
 					}
-				}.bind(this));
+				});
 			}
 		}
 	}
@@ -320,48 +325,128 @@ export class UIElement extends HTMLElement {
 		// Render body as it is by default.
 		// UIElement can be leveraged to implement conditional clauses.
 	}
+	
+	requires(resources,action){
+		
+		return new Promise(function(resolved,rejected){
+		
+			const head = document.head;
+			const elements = [];
+			const loadResources = function(){
+				if(elements.length == 0){
+					resolved();
+					return;
+				}
+				const element = elements.shift();
+				element.onload = loadResources;
+				head.appendChild(element);
+			}
+			
+			const addStylesheet = function(href){
+				const stylesheets = head.querySelectorAll("link[rel='stylesheet']");
+				for(let i=0; i < stylesheets.length; i++){
+					const stylesheet = stylesheets[i];
+					if(stylesheet.href == href){
+						return;
+					}
+				}
+				const stylesheet = document.createElement('link');
+				stylesheet.rel='stylesheet';
+				stylesheet.href=href;
+				elements.push(stylesheet);	
+			}
+			
+			const addLibrary = function(src){
+				const scripts = head.querySelectorAll('script');
+				for(let i=0; i < scripts.length; i++){
+					const script = scripts[i];
+					if(script.src == src){
+						return;
+					}
+				}
+				const script = document.createElement('script');
+				script.type='text/javascript';
+				script.src=src;
+				elements.push(script);
+			}
+			
+			if(resources.lib){
+				addLibrary(resources.lib);
+			}
+			
+			if(resources.libs){
+				resources.libs.forEach(lib => addLibrary(lib));
+			}
+			
+			if(resources.stylesheet){
+				addStylesheet(resources.stylesheet);
+			}
+			
+			if(resources.stylesheets){
+				resources.stylesheets.forEach(stylesheet => addStylesheet(stylesheet));
+			}
+			
+			loadResources();
+		
+		});
+		
+	}
+
 }
 
 
 /**
- * Root component of the view component tree.
+ * View component of the view component tree.
  * <p>
  * The root component maintains the view model for the entire UI component tree.
  * @extends UIElement
- * @example <caption>Declaration of UI Root Component</caption>
- * <ui-root>
+ * @example <caption>Declaration of UI View Component</caption>
+ * <ui-view>
  *   <!-- UI view elements -->
- * </ui-root>
+ * </ui-view>
  */
-class Root extends HTMLElement {
+class View extends HTMLElement {
 
 	/**
 	 * Creates a new root component with an empty view model.
 	 */
 	constructor(){
 		super();
-		this.viewModel = new ViewModel({});
+		this._viewModel = new ViewModel({});
 	}
 	
 	/**
 	 * Renders the root container HTML element.
 	 */
 	connectedCallback(){
-		this.innerHTML = `<div>${this.innerHTML}</div>`;
-		this.addEventListener("change",function(event) {
-			let location = new Location(window.location.href);
-			let module = Modules.getModule(location.module());
+		this.addEventListener('UIRenderView',(evt) =>{
+			this._viewModel = new ViewModel(evt.detail.viewModel);
+			const location = evt.detail.location;
+			const module = Modules.getModule(location.module);
+			this._controller = module.getController(location);
+			if(!evt.detail.viewOnly){
+				this.dispatchEvent(new CustomEvent('UIRenderMenu',
+												   { bubbles : true,
+													 detail : evt.detail }));
+			}
+			this._controller.renderView();
+
+		});
+		
+		this.addEventListener('change',function(event) {
+			const location = new Location(window.location.href);
+			const module = Modules.getModule(location.module);
 			if(module){
-				let controller = module.getController(location.view());
+				const controller = module.getController(location);
 				controller._onchange(event);
 			}
 		});	
 		
-		this.addEventListener("click", function(){
-			let location = new Location(window.location.href);
-			let module = Modules.getModule(location.module());
+		this.addEventListener('click', function(){
+			const location = new Location(window.location.href);
+			const module = Modules.getModule(location.module);
 			if(module){
-				let controller = module.getController(location.view());
+				const controller = module.getController(location);
 				if(controller && controller._onclick(event)){
 					return; // No more action required. Controller exists and view handled the click event.
 				}
@@ -371,31 +456,24 @@ class Root extends HTMLElement {
 		
 	}
 	
-
-	/**
-	 * Sets the view model for the entire UI component tree
-	 * @param {Object} viewModel the view model
-	 */
-	setViewModel(viewModel){
-		this.viewModel = new ViewModel(viewModel);
+	get module() {
+		return this._controller.module;
 	}
 
-	/**
-	 * Sets the controller of the current view.
-	 * @param {Controller} controller the view controller.
-	 */
-	setController(controller){
-		this.controller = controller;
+	get location(){
+		return this._controller.location;
 	}
 	
-	/**
-	 * Returns the view model of the entire UI component tree
-	 * @returns {Object} the view model
-	 */
-	getViewModel(){
-		return this.viewModel._model;
+	get controller(){
+		return this._controller;
 	}
 	
+	get viewModel(){
+		if(!this._viewModel){
+			this._viewModel = new ViewModel({});
+		}
+		return this._viewModel;
+	}
 }
 
 /**
@@ -484,7 +562,13 @@ class Note extends UIElement {
 	 * Renders the DOM.
 	 */
 	renderDom(){
-		this.innerHTML = `<p class="note">${this.innerHTML}</p>`; 
+		const note = this.innerHTML;
+		if(note){
+			this.innerHTML = `<p class="note">${this.innerHTML}</p>`; 
+		} else {
+			this.innerHTML = "";
+		}
+		
 	}
 	
 }
@@ -575,9 +659,8 @@ class FormElement extends UIElement{
 		if(label){
 			return label.innerHTML;
 		}
-		label = this.innerHTML;
-		if(label){
-			return label;
+		if(this.innerHTML){
+			return this.innerHTML;
 		}
 		return this.name;
 	}
@@ -597,12 +680,7 @@ class FormElement extends UIElement{
 		}
 		note = this.querySelector('ui-note');
 		if(note){
-			return `${note.innerHTML}`;
-		}
-		// Check whether a note already exists and render the note.
-		note = this.querySelector('p.note');
-		if(note){
-			return note.outerHTML;
+			return note.innerHTML;
 		}
 		return '';
 	}
@@ -612,8 +690,8 @@ class FormElement extends UIElement{
 	 * Returns an empty string when no title was specified.
 	 * @returns {String} the title text or an empty string if no title exists
 	 */
-	get _title(){
-		let title = this.getAttribute('title');
+	get title(){
+		const title = this.getAttribute('title');
 		if(title){
 			return title;
 		}
@@ -649,7 +727,7 @@ class Group extends FormElement {
 	renderDom(){
 		if(!this.querySelector("fieldset")){
 			this.innerHTML = `<fieldset>
-								<legend title="${this._title}">${this.label}</legend>
+								<legend title="${this.title}">${this.label}</legend>
 								${this.innerHTML}
 							  </fieldset>`;
 		}
@@ -700,7 +778,7 @@ export class Control extends FormElement{
 	 * @returns {ViewModel} the current view model 
 	 */
 	get viewModel(){
-		return this._root.viewModel;
+		return this._view.viewModel;
 	}
 	
 	/**
@@ -710,8 +788,8 @@ export class Control extends FormElement{
 	 */
 	get scopesAllowed(){
 		let scopes = this.getAttribute('scopesAllowed');
-		if(scopes == null && this.form){
-			scopes = this.form.rolesAllowed
+		if(!scopes && this.form){
+			scopes = this.form.scopesAllowed
 		}
 		if(scopes){
 			return scopes.split(/\s*/g);
@@ -734,7 +812,7 @@ export class Control extends FormElement{
 	 * A control is readonly if explicitly declared <code>readonly</code>, or if
 	 * the user has insufficient privileges.
 	 * </p>
-	 * @see rolesAllowed
+	 * @see scopesAllowed
 	 * @returns {String} readonly if the control shall be rendered readonly, an empty string otherwise
 	 */
 	get readonly(){
@@ -743,7 +821,6 @@ export class Control extends FormElement{
 		}
 		let scopes = this.scopesAllowed;
 		let user  = UserContext.get();
-		
 		if(user.scopesIncludeOneOf(scopes)){
 			return '';
 		}
@@ -774,15 +851,15 @@ export class Control extends FormElement{
 	 * A control is disabled if explicitly declared <code>disabled</code>, or if
 	 * the user has insufficient privileges.
 	 * </p>
-	 * @see rolesAllowed
+	 * @see scopesAllowed
 	 * @returns {String} disabled if the control shall be rendered disabled, an empty string otherwise
 	 */
 	get disabled(){
 		if(this.hasAttribute('disabled')){
 			return 'disabled';
 		}
-		let scopes = this.scopesAllowed;
-		let user  = UserContext.get();
+		const scopes = this.scopesAllowed;
+		const user  = UserContext.get();
 		if(user.scopesIncludeOneOf(scopes)){
 			return '';
 		}
@@ -803,7 +880,7 @@ export class Control extends FormElement{
 	 * The binding defaults to the control name if no binding was specified.
 	 */
 	get binding(){
-		let binding = this.getAttribute('bind');
+		const binding = this.getAttribute('bind');
 		if(binding){
 			return binding;
 		}
@@ -811,6 +888,66 @@ export class Control extends FormElement{
 		
 	}
 	
+}
+
+/**
+ * UI link component.
+ * <p>
+ * Renders a link to the specified view if the view exists. 
+ * Renders plain text if the view does not exist.
+ * @extends UIElement
+ * @see Section to render complete sections only if a specified view exists.
+ * @example <caption>Link to an optional view</caption>
+ * 	<ui-link href="/path/to/view.html" title="Open view">Go to view</ui-link>
+ * 
+ */
+export class Link extends UIElement {
+	
+	constructor(){
+		super();
+	}
+	
+	renderDom(){
+		if(!this._content){
+			this._content = this.innerHTML;
+		}
+		const href = this.getAttribute('href');
+		const location = new Location(href);
+		Modules.selectModule(location.module)
+			   .then((module) => module.viewExists(location))
+			   .then(() => {this.innerHTML=`<a href="${href}" title="${title||''}">${this._content}</a>`})
+			   .catch(() => {this.innerHTML=this._content});
+	}
+	
+}
+
+/**
+ * UI section component.
+ * <p>
+ * Renders a section only if all specified constraints are satisfied.
+ * @extends UIElement
+ * @example <caption>Render section when the specified view exists</caption>
+ * 	<ui-section whenViewExists="/path/to/view.html">
+ * 		...
+ *  </ui-section>
+ */
+
+export class Section extends UIElement {
+	constructor(){
+		super();
+	}
+	
+	renderDom(){
+		if(!this._content){
+			this._content = this.innerHTML;
+		}
+		const view = this.getAttribute('whenViewExists');
+		const location = new Location(view);
+		Modules.selectModule(location.module)
+			   .then((module) => module.viewExists(location))
+			   .then(() => {this.innerHTML=this._content})
+			   .catch(() => {this.innerHTML=''});
+	}
 }
 
 
@@ -848,7 +985,7 @@ class Button extends Control {
 	 * @return {String} the button size CSS class.
 	 */
 	get _buttonSize(){
-		let small = this.getAttribute('small');
+		const small = this.getAttribute('small');
 		if(small == '' || small == 'true'){
 			return 'btn-sm';
 		}
@@ -872,12 +1009,12 @@ class Button extends Control {
 	 * @return {String} the button style CSS class.
 	 */
 	get _buttonStyle(){
-		let danger = this.getAttribute('danger');
+		const danger = this.getAttribute('danger');
 		if(danger == '' && danger != 'false'){
 			return 'btn-danger';
 		}
 		
-		let primary = this.getAttribute('primary');
+		const primary = this.getAttribute('primary');
 		if(primary == '' && primary != 'false'){
 			return 'btn-primary';
 		}
@@ -890,20 +1027,20 @@ class Button extends Control {
 	 */
 	renderDom(){
 		
-		let condition = this.getAttribute('when');
+		const condition = this.getAttribute('when');
 		if(condition && !this.viewModel.getProperty(condition)){
 			this.innerHTML='';
 			this.outerHTML='';
 			return;
 		}
 		
-		let href = this.getAttribute('href');
+		const href = this.getAttribute('href');
 		if(href){
-			let target = this.isOptionEnabled('external') ? 'target="_blank"' : '';
+			const target = this.isOptionEnabled('external') ? 'target="_blank"' : '';
 			
 			this.outerHTML=`<a id="${this.name}" class="btn ${this._buttonSize} ${this._buttonStyle}" title="${this.title}" href="${href}" ${target}>${this.label}</a>`;
 		} else {
-			this.outerHTML=`<button id="${this.name}" name="${this.name}" class="btn ${this._buttonSize} ${this._buttonStyle}" title="${this._title}" ${this.readonly}>${this.label}</button>`;
+			this.outerHTML=`<button id="${this.name}" name="${this.name}" class="btn ${this._buttonSize} ${this._buttonStyle}" title="${this.title}" ${this.readonly}>${this.label}</button>`;
 		}
 	}
 }
@@ -926,23 +1063,26 @@ export class InputControl extends Control {
 	 * @return {String} the current value of this input control.
 	 */
 	get value(){
-		
-		let path = this.binding;
-		
-		// Lookup specified model property.
-		let model = this.viewModel.getProperty(path);
-		if(model){
-			return model;
+		try{
+			const path = this.binding;
+			// Lookup specified model property.
+			const model = this.viewModel.getProperty(path);
+			if(model){
+				return model;
+			}
+	
+			const value = this.getAttribute('value');
+			if(value){
+				// Set initial value if value not already present in view model
+				this.viewModel.setProperty(path,value);
+				return value;
+			}
+			// No value specified. Use '' instead of null
+			return '';
+		} catch (e){
+			console.log(e);
+			return '';
 		}
-
-		let value = this.getAttribute('value');
-		if(value){
-			// Set initial value if value not already present in view model
-			this.viewModel.setProperty(path,value);
-			return value;
-		}
-		// No value specified. Use '' instead of null
-		return '';
 	}
 	
 	/**
@@ -950,7 +1090,7 @@ export class InputControl extends Control {
 	 * @param {string|number|boolean} value the new property value 
 	 */
 	set value(value){
-		let transient = this.getAttribute('transient');
+		const transient = this.getAttribute('transient');
 		if(transient == '' || transient=='true'){
 			// Ignore transient attributes.
 			return;
@@ -974,7 +1114,7 @@ export class InputControl extends Control {
 	 * @returns {String} the placeholder text or an empty string if no placeholder text was specified.
 	 */
 	get placeholder(){
-		let placeholder =  this.getAttribute('placeholder');
+		const placeholder =  this.getAttribute('placeholder');
 		if(placeholder){
 			return placeholder;
 		}
@@ -1009,7 +1149,7 @@ class InputText extends InputControl {
 		this.innerHTML=`<div class="form-group">
 						<div class="label"><label for="${this.name}">${this.label}</label></div>
 						<div class="input"><input id="${this.name}" type="text" class="form-control" ${this.readonly} ${this.disabled} name="${this.name}" value='${this.value}' placeholder="${this.placeholder}"></div>
-						<ui-note>${this.note}</ui-note>
+						<p class="note">${this.note}</p>
 						</div>`;
 		this.addEventListener("change",function(evt){
 			this.viewModel.setProperty(this.binding,evt.target.value);
@@ -1042,7 +1182,7 @@ class InputNumber extends InputControl {
 		this.innerHTML=`<div class="form-group">
 						<div class="label"><label for="${this.name}">${this.label}</label></div>
 						<div class="input"><input id="${this.name}" type="number" class="form-control" ${this.readonly} ${this.disabled} name="${this.name}" value="${this.value}" placeholder="${this.placeholder}"></div>
-						<ui-note>${this.note}</ui-note>
+						<p class="note">${this.note}</p>
 						</div>`;
 		this.addEventListener("change",function(evt){
 			this.viewModel.setProperty(this.binding,evt.target.value);
@@ -1072,7 +1212,7 @@ class Password extends InputControl {
 		this.innerHTML=`<div class="form-group">
 			<div class="label"><label for="${this.name}">${this.label}</label></div>
 			<div class="input"><input id="${this.name}" type="password" class="form-control" ${this.readonly} ${this.disabled} name="${this.name}" value='${this.value}' placeholder="${this.placeholder}"></div>
-			<ui-note>${this.note}</ui-note>
+			<p class="note">${this.note}</p>
 			</div>`;
 		this.addEventListener("change",function(evt){
 			this.viewModel.setProperty(this.binding,evt.target.value);
@@ -1099,7 +1239,7 @@ class Textarea extends InputControl {
 		this.innerHTML=`<div class="form-group">
 						  <div class="label"><label for="${this.name}">${this.label}</label></div>
 						  <div class="input"><textarea id="${this.name}" type="text" class="form-control" ${this.readonly} ${this.disabled} name="${this.name}">${this.value}</textarea></div>
-						  <ui-note>${this.note}</ui-note>
+						  <p class="note">${this.note}</p>
 						</div>`;
 		this.addEventListener("change",function(evt){
 			this.viewModel.setProperty(this.binding,evt.target.value);
@@ -1143,9 +1283,9 @@ export class Select extends InputControl {
 	 * @returns {String} option list in HTML format
 	 */
 	get _options(){
-		let binding = this.getAttribute('options');
+		const binding = this.getAttribute('options');
 		let options = this.viewModel.getProperty(binding);
-
+		
 		if(!options){
 			options = [];
 			this.querySelectorAll('ui-option')
@@ -1153,24 +1293,7 @@ export class Select extends InputControl {
 												 'label':option.innerHTML,
 												 'default':(option.getAttribute('default') == '' || option.getAttribute('default') == 'true')}));
 		}
-		
-		if(options){
-			if(options.forEach){
-				let html = '';
-				options.forEach(option => {
-					let value = option.value;
-					let label = option.label;
-					if(!label){
-						label = value;
-					}
-					// Option is selected if either the view model value is equal to the option OR
-					// no value is present in the view model and the option is declared to be the default option.
-					html+=`<option value="${value}" ${this.isSelected(option) ? 'selected' : ''}>${label}</option>`;
-				});
-				return html;
-			}
-		}
-		return this.innerHTML; 
+		return options;
 	}
 	
 	/**
@@ -1192,24 +1315,47 @@ export class Select extends InputControl {
 		this.value=option;
 	}
 	
+	options(){
+		return Promise.resolve(this._options);
+	}
+	
+	get selected(){
+		const select = this.querySelector('select');
+		if(select.selectedIndex >= 0){
+			const selected = select.options[select.selectedIndex];
+			return {'label':selected.label,'value':selected.value};
+		}
+		return null;
+	}
+	
 	/**
 	 * Renders the select box DOM.
 	 */
 	renderDom(){
-		this.innerHTML=`<div class="form-group">
-						 <div class="label"><label for="${this.name}">${this.label}</label></div>
-						 <div class="input"><select id="${this.name}" class="form-select" ${this.readonly} ${this.disabled} name="${this.name}">${this._options}</select></div>
-						 <ui-note>${this.note}</ui-note>
-						</div>`;
-		this.addEventListener('change',function(evt){
-			this.select(evt.target.value);
-		}.bind(this));
-		this.form.addEventListener('UIPreExecuteAction',function(evt){
-			let select = this.querySelector('select');
-			if(select.selectedIndex >= 0){
-				this.select(select.options[select.selectedIndex].value);
-			}
-		}.bind(this));
+		const label = this.label;
+		const name = this.name;
+		const note = this.note;
+		this.options()
+			.then((options) => {
+				const optionsHtml = options.map(option => `<option value="${option.value}" ${this.isSelected(option) ? 'selected' : ''}>${option.label}</option>`)
+										   .reduce((a,b) => a+b);
+				this.innerHTML=`<div class="form-group">
+									<div class="label"><label for="${name}">${label}</label></div>
+									<div class="input"><select id="${name}" class="form-select" ${this.readonly} ${this.disabled} name="${this.name}">${optionsHtml}</select></div>
+									<p class="note">${note}</p>
+								</div>`;
+			
+				this.addEventListener('change',(evt) => {
+					this.select(evt.target.value);
+				});
+			
+				this.form.addEventListener('UIPreExecuteAction',(evt) => {
+					const select = this.querySelector('select');
+					if(select.selectedIndex >= 0){
+						this.select(select.options[select.selectedIndex].value);
+					}
+				});
+			});
 	}
 	
 }
@@ -1240,13 +1386,13 @@ class RadioButton extends InputControl {
 	 * Renders the DOM.
 	 */
 	renderDom(){
-		let value = this.getAttribute('value');
-		let checkedByDefault = this.isOptionEnabled('default');
-		let checked = (this.viewModel.contains(this.binding) && this.viewModel.test(this.binding,value) || !this.viewModel.contains(this.binding) && checkedByDefault ) ? 'checked' : '';
+		const value = this.getAttribute('value');
+		const checkedByDefault = this.isOptionEnabled('default');
+		const checked = (this.viewModel.contains(this.binding) && this.viewModel.test(this.binding,value) || !this.viewModel.contains(this.binding) && checkedByDefault ) ? 'checked' : '';
 		this.innerHTML=	`<div class="form-checkbox">
 						  <label>
 						   <input type="radio" class="form-control" name="${this.name}" ${this.readonly} ${this.disabled} value="${value}" ${checked}>${this.label}
-						   <ui-note>${this.note}</ui-note>
+						   <p class="note">${this.note}</p>
 						  </label> 
 						 </div>`;
 		
@@ -1283,25 +1429,6 @@ class Checkbox extends InputControl {
 	 * Renders the DOM.
 	 */
 	renderDom(){
-		let value = this.getAttribute('value');
-		let checkedByDefault = this.isOptionEnabled('checked');
-		let checked = (this.viewModel.test(this.binding,value) || !this.viewModel.contains(this.binding) && checkedByDefault ) ? 'checked' : '';
-		let conditional = this.querySelector('ui-checked');
-		if(conditional) {
-			let condition = this.getAttribute('when');
-			if(!condition){
-				condition = this.binding;
-			}
-			conditional = `<ui-element when="${condition}">${conditional.innerHTML}</ui-element>`;
-		}
-		this.innerHTML= `<div class="form-checkbox">
-						  <label>
-						   <input type="checkbox" class="form-control" name="${this.name}" ${this.readonly} ${this.disabled} value="${value}" ${checked}>${this.label}
-						   <ui-note>${this.note}</ui-note>
-						   ${conditional||''}
-						  </label> 
-						 </div>`;
-
 		function typedValue(value){
 			if(value === 'true'){
 				return true;
@@ -1319,30 +1446,49 @@ class Checkbox extends InputControl {
 		}
 		
 		
-		this.addEventListener('change',function(evt){
-			let checkboxes = document.querySelectorAll(`input[name='${this.name}']`);
+		const value = this.getAttribute('value');
+		const checkedByDefault = this.isOptionEnabled('checked');
+		const checked = (this.viewModel.test(this.binding,typedValue(value)) || !this.viewModel.contains(this.binding) && checkedByDefault ) ? 'checked' : '';
+		let conditional = this.querySelector('ui-checked');
+		if(conditional) {
+			let condition = this.getAttribute('when');
+			if(!condition){
+				condition = this.binding;
+			}
+			conditional = `<ui-element when="${condition}">${conditional.innerHTML}</ui-element>`;
+		}
+		this.innerHTML= `<div class="form-checkbox">
+						  <label>
+						   <input type="checkbox" class="form-control" name="${this.name}" ${this.readonly} ${this.disabled} value="${value}" ${checked}>${this.label}
+						   <p class="note">${this.note}</p>
+						   ${conditional||''}
+						  </label> 
+						 </div>`;
+
+
+		
+		
+		this.addEventListener('change',(evt) => {
+			const checkboxes = document.querySelectorAll(`input[name='${this.name}']`);
 			if(checkboxes.length > 1){
 				//Multivalue field
-				let values = [...checkboxes].filter(checkbox => checkbox.checked).map(checkbox => typedValue(checkbox.value));
+				const values = [...checkboxes].filter(checkbox => checkbox.checked).map(checkbox => typedValue(checkbox.value));
 				this.viewModel.setProperty(this.binding,values);
 			} else {
-
-				
 				if(evt.target.checked){
 					this.viewModel.setProperty(this.binding,typedValue(evt.target.value));
 				} else {
-					let value = typedValue(evt.target.value);
+					const value = typedValue(evt.target.value);
 					if(value === true){
 						this.viewModel.setProperty(this.binding,false);
-					} 
-					else if(value === false){
+					} else if(value === false){
 						this.viewModel.setProperty(this.binding,true);
 					} else {
 						this.viewModel.removeProperty(this.binding);
 					}
 				}
 			}
-		}.bind(this));
+		});
 	}
 }
 
@@ -1372,10 +1518,10 @@ class Blankslate extends UIElement {
 	 * Renders the blank slate DOM.
 	 */
 	renderDom(){
-		let bind  = this.getAttribute('bind');
+		const bind  = this.getAttribute('bind');
 		if(!bind || !this.viewModel.getProperty(bind) || this.viewModel.getProperty(bind).length === 0){
-			let title = this.querySelector('ui-title').innerHTML;
-			let note = this.querySelector('ui-note').innerHTML;
+			const title = this.querySelector('ui-title').innerHTML;
+			const note = this.querySelector('ui-note').innerHTML;
 			this.innerHTML = `<div class="blankslate">
 				<h4>${title}</h4>
 				<ui-note>${note}</ui-note>
@@ -1426,15 +1572,15 @@ class Composition extends UIElement {
 	 * Renders the DOM.
 	 */
 	renderDom(){
-		let items = this.querySelectorAll('ui-item');
-		let size = function(item){
-			let size = item.getAttribute('size');
+		const items = this.querySelectorAll('ui-item');
+		const size = function(item){
+			const size = item.getAttribute('size');
 			if(size){
 				return size;
 			}
 			return ''
 		};
-		let cells = [...items].map(item => `<div class="column ${size(item)}">${item.innerHTML}</div>`).reduce((a,b)=>a+b);
+		const cells = [...items].map(item => `<div class="column ${size(item)}">${item.innerHTML}</div>`).reduce((a,b)=>a+b);
 		this.innerHTML=`<div>
 						${cells}
 						</div>`;
@@ -1486,7 +1632,7 @@ export class Filter extends InputControl {
 	 * Renders the DOM.
 	 */
 	renderDom(){
-		let note    = this.querySelector('ui-note');
+		let note = this.querySelector('ui-note');
 		note = note ? note.innerHTML : '';
 		let options = this.querySelector('ui-options');
 		let autofocus = 'autofocus';
@@ -1512,19 +1658,19 @@ export class Filter extends InputControl {
 						  </div>
 						  ${options||''}`;
 
-		this.addEventListener("change",function(evt){
+		this.addEventListener("change",(evt) => {
 			if(evt.target.name==this.name){
 				this.viewModel.setProperty(this.binding,evt.target.value);
 			}
-		}.bind(this));
+		});
 		
 		// Add controls to show / hide advanced filtering options.
-		this.addEventListener('click',function(evt){
-			let name = evt.target.name;
+		this.addEventListener('click',(evt) => {
+			const name = evt.target.name;
 			if(name == 'show_options' || name == 'hide_options'){
-				let show = this.querySelector("a[name='show_options']");
-				let hide = this.querySelector("a[name='hide_options']");
-				let group = this.querySelector('ui-group');
+				const show = this.querySelector("a[name='show_options']");
+				const hide = this.querySelector("a[name='hide_options']");
+				const group = this.querySelector('ui-group');
 				if(name == 'show_options'){
 					group.classList.remove('hidden');
 					show.classList.add('hidden');
@@ -1577,21 +1723,23 @@ class Details extends UIElement {
 		if(this.hasAttribute('class')){
 			this.classList.add(this.getAttribute('class'));
 		}
-		let table = '<table class="details">';
-		let properties = this.querySelectorAll('ui-property');
-		[...properties].forEach(property => {
-			let label = property.querySelector('ui-label').innerHTML;
-			let valueTag = property.querySelector('ui-value');
-			let value = valueTag.innerHTML.trim();
-			if(!value){
-				value = valueTag.getAttribute("default");
-			}
-			if(value){
-				let row = `<tr><th class="text top">${label}</th><td>${value}</td></tr>`;
-				table+=row;
-			}
-		});
-		table+='</table>';
+		const properties = this.querySelectorAll('ui-property');
+		const table = `<table class="details">;
+						${[...properties]
+						   .map(property => {
+									const label = property.querySelector('ui-label').innerHTML;
+									const valueTag = property.querySelector('ui-value');
+									let value = valueTag.innerHTML.trim();
+									if(!value){
+										value = valueTag.getAttribute("default");
+									}
+									if(value){
+										return `<tr><th class="text top">${label}</th><td>${value}</td></tr>`;
+									}
+									return '';
+								})
+							.reduce((a,b) => a+b)}
+						</table>`;
 		this.innerHTML=table;
 	}
 	
@@ -1606,7 +1754,7 @@ class Details extends UIElement {
  * </p>
  * @extends UIElement
  * @example <caption>Confirm Box With Option</caption>
- * <ui-confirm rolesAllowed="Operator">
+ * <ui-confirm scopesAllowed="Operator">
  *  <ui-title>Confirm to remove metric {{metric_name}}</ui-title>
  *  <ui-message>
  *    <ui-note>
@@ -1631,26 +1779,144 @@ class ConfirmDialog extends UIElement {
 	 * Renders the DOM.
 	 */
 	renderDom(){
-		let header = this.querySelector('ui-title').innerHTML;
-		let note = this.querySelector('ui-message').innerHTML;
-		let confirm = this.querySelector('ui-approve');
-		let decline = this.querySelector('ui-decline');
-		let rolesAllowed = this.getAttribute('rolesAllowed');
-		if(!rolesAllowed){
-			rolesAllowed='';
-		}
+		const header = this.querySelector('ui-title').innerHTML;
+		const note = this.querySelector('ui-message').innerHTML;
+		const confirm = this.querySelector('ui-approve');
+		const decline = this.querySelector('ui-decline');
+		const scopesAllowed = this.getAttribute('scopesAllowed');
 		
 		this.innerHTML=`<div class="confirm">
 						  <ui-form>
 						    <h2>${header}</h2>
 						    <div>${note}</div>
 						    <ui-actions>
-						      <ui-button danger name="${confirm.getAttribute('name')}" rolesAllowed="${rolesAllowed}">${confirm.innerHTML}</ui-button>
+						      <ui-button danger name="${confirm.getAttribute('name')}" scopesAllowed="${scopesAllowed||''}">${confirm.innerHTML}</ui-button>
 					    	  <ui-button href="${decline.getAttribute('href')}">${decline.innerHTML}</ui-button>
 						    </ui-actions>
 						  </ui-form>
 						</div>`;
+	}
+	
+}
+
+
+class MainMenu extends HTMLElement {
+	
+	connectedCallback(){
+		const render = function(menu){
+			return  `<div class="header">
+						<h1 id="title"></h1>
+						<p id="subtitle" class="lead"></p>
+					 </div>
+					 <div class="tabnav" role="tablist">
+						<nav class="tabnav-tabs" style="position:relative">
+							<a class="btn btn-outline btn-sm right" 
+							   style="margin-left: 10px; margin-top:5px" 
+							   href="/api/v1/_logout">
+							   Logout</a>
+							${menu.map(item => `<a class="tabnav-tab ${item.position ? item.position : ''}" 
+												   role="tab" 
+												   href="/ui/views${item.path}" 
+												   title="${item.subtitle}" 
+												   data-title="${item.title}" 
+												   data-module="${item.module}">
+												   ${item.label}</a>`)
+								  .reduce((a,b)=>a+b)}
+					 	</nav>
+					 </div>
+					 <div id="module">
+					 </div>
+					 `;
+		};
 		
+		const loader = new Json('/api/v1/ui/modules');
+		loader.load()
+			  .then((menu) => {
+				  this.innerHTML = render(menu);
+				  router.navigate(new Location(window.location.href));
+			  })
+			  .catch((e) => {
+				  console.error("Cannot create Leistand main menu.");
+				  console.log(e);
+				  rouder.redirect('/ui/error/500.html');
+			  });
+	}
+	
+	openModule(module){
+		this.querySelector("div#module").innerHTML=module.template;
+	}
+	
+	select(tab){	
+		const selected = document.querySelector(".tabnav-tabs a[class~='selected']");
+		const select = document.querySelector(`.tabnav-tabs a[data-module='${tab}']`);
+	
+		if(selected == select){
+			return false; // No changes needed.
+		}
+	
+		if (selected) {
+			selected.classList.remove("selected");
+			selected.setAttribute("aria-selected","false");
+		}
+	
+		select.classList.add("selected");
+		select.setAttribute("aria-selected","true");
+		document.querySelector("h1").innerHTML = select.getAttribute("data-title");
+		document.querySelector("#subtitle").innerHTML = select.getAttribute("title");
+		return true;
+	}
+
+}
+
+class Module extends HTMLElement {
+	
+	connectedCallback(){
+		this.addEventListener('UIRenderMenu', evt => {
+			const module = evt.detail.module;
+			const nav = this.querySelector('ui-module-menu');
+			if(nav){
+				const menus = module.computeMenuViewModel(evt.detail.viewModel,
+														  menu => !menu.category || menu.category == 'module');
+				nav.render(menus);
+				module.select(evt.detail.location);
+			}
+		});
+	}
+}
+
+
+/**
+ * Module menu component.
+ * <p>
+ * The <code>&lt;ui-module-menu&gt;</code> component renders the module menus as list of menus.
+ * @extends HTMLElement
+ * @example <caption>Render module menus</caption>
+ * 	 <ui-module-menu></ui-module-menu>
+ *   
+ */
+class ModuleMenu extends HTMLElement {
+
+	render(menus){
+		const concat = (a,b) => a+b;
+		const item2html = function(item){
+			return `<li><a class="menu-item" id="${item.view}" title="${item.title}" href="${item.viewpath}">${item.label}</a></li>`;
+		};
+		const menuDom = menus.map((menu) => `<nav class="menu">
+												${menu.label ? `<h3 class="menu-heading" title="${menu.title}">${menu.label}</h3>`:''}
+												<ul>${menu.items.map(item2html).reduce(concat)}</ul>
+							 				 </nav>` )
+							 .reduce(concat);
+		this.innerHTML=menuDom;
+	}
+	
+	select(item){
+		const selected = document.querySelector("nav[class='menu'] a[class~='selected']");
+		if (selected) {
+			selected.classList.remove("selected");
+		}
+		if (item) {
+			item.css.add("selected");
+		}
 	}
 	
 }
@@ -1696,9 +1962,9 @@ class DateTime extends InputControl {
 	 * Renders the DOM.
 	 */
 	renderDom(){
-		let date = new Date(this.innerText.trim());
-		let format = this.getAttribute('format');
-		let selectFormatter = function(){
+		const date = new Date(this.innerText.trim());
+		const format = this.getAttribute('format');
+		const selectFormatter = function(){
 			if(this.getAttribute('format') == 'date'){
 				return Calendar.formatDate;
 			}
@@ -1708,20 +1974,20 @@ class DateTime extends InputControl {
 			return Calendar.formatTimestamp;
 		}.bind(this); 
 		
-		let format_date = selectFormatter();
+		const format_date = selectFormatter();
 
 		if(this.isReadonly()){
 			this.outerHTML=`<time datetime="${date}">${format_date(date)}</time>`;
 			
 		} else {
-			let calendar = new Calendar({'date': date,
-										 'mode': this.getAttribute('format'),
-										 'root': this});
+			const calendar = new Calendar({'date': date,
+										   'mode': this.getAttribute('format'),
+										   'root': this});
 			
 			
 			this.innerHTML=calendar.render({'show':false}); 
 		
-			this.addEventListener("click",function(evt){
+			this.addEventListener("click",(evt) => {
 				evt.stopPropagation();
 				evt.preventDefault();
 				if(evt.target.id==='apply'){
@@ -1733,9 +1999,9 @@ class DateTime extends InputControl {
 						selected.classList.remove('selected');
 					}
 					evt.target.classList.add('selected');
-					let year = this._root.querySelector('#year').innerText;
-					let month = Calendar.MONTHS.indexOf(this._root.querySelector('#month').innerText);
-					let date  = evt.target.innerText;
+					const year = this._view.querySelector('#year').innerText;
+					const month = Calendar.MONTHS.indexOf(this._view.querySelector('#month').innerText);
+					const date  = evt.target.innerText;
 					calendar.setDate(year,month,date);
 					this.innerHTML = calendar.render({'show':true});
 				} else if(evt.target.id==='next'){
@@ -1748,8 +2014,8 @@ class DateTime extends InputControl {
 					this.innerHTML = calendar.render({'show':true});
 				}
 				
-			}.bind(this));
-			this.addEventListener('change',function(evt){
+			});
+			this.addEventListener('change',(evt) => {
 				evt.stopPropagation();
 				evt.preventDefault();
 				if(evt.target.name==='hour'){
@@ -1760,9 +2026,9 @@ class DateTime extends InputControl {
 				}
 
 			});
-			this.form.addEventListener('UIPreExecuteAction',function(evt){
+			this.form.addEventListener('UIPreExecuteAction',(evt) => {
 				this.viewModel.setProperty(this.binding,calendar.getSelectedDate().toISOString());
-			}.bind(this));
+			});
 		}	
 	}
 	
@@ -1885,7 +2151,7 @@ class Calendar {
 		if(!cfg){
 			throw 'Calendar configuration is mandatory!';
 		}
-		this._root = cfg.root;
+		this.root = cfg.root;
 		this._date = cfg.date ? cfg.date : new Date();
 		this._mode = cfg.mode ? cfg.mode : 'dateTime';
 		this._formatDate = (this._mode === 'dateTime') ? Calendar.formatDateTime : Calendar.formatDate;
@@ -2163,8 +2429,8 @@ class TagEditor extends InputControl{
 	 */
 	renderDom(){
 		
-		let renderTags = function(){
-			let tags = this.viewModel.getProperty(this.binding);
+		const renderTags = function(){
+			const tags = this.viewModel.getProperty(this.binding);
 			if(this.readonly){
 				return `<ol class="tags">
 							${tags && tags.length > 0 ? tags.map(tag => `<li class="tag">${tag}</li>`).reduce((a,b) => a+b) : ''}
@@ -2177,12 +2443,12 @@ class TagEditor extends InputControl{
 					</ol>
 					<span style="position:relative"><input type="text" name="new-tag"><button name="add-tag" title="Add new tag" class="btn btn-sm btn-outline">+</button></span>
 					</div>
-					<ui-note>${this.note}</ui-note>`;
+					<p class="note">${this.note}</p>`;
 		}.bind(this);
 		
 		this.innerHTML = renderTags();
 		
-		this.addEventListener('click',function(evt){
+		this.addEventListener('click',(evt) => {
 			evt.stopPropagation();
 			evt.preventDefault();
 			if(evt.target.name==='remove-tag'){
@@ -2203,11 +2469,18 @@ class TagEditor extends InputControl{
 				}
 			}
 			
-		}.bind(this));
+		});
 	}
 	
 }
 
+// Register view first to avoid troubles with DOM rendering.
+customElements.define('ui-view',View,{'extends':'div'});
+customElements.define('ui-module-menu',ModuleMenu);
+customElements.define('ui-module',Module);
+customElements.define('ui-modules',MainMenu);
+customElements.define('ui-link',Link);
+customElements.define('ui-section',Section);
 
 // Register all components
 customElements.define('ui-actions',Actions);
@@ -2222,15 +2495,19 @@ customElements.define('ui-details',Details);
 customElements.define('ui-element',UIElement);
 customElements.define('ui-filter',Filter);
 customElements.define('ui-form',Form);
-customElements.define('ui-group',Group);
+customElements.define('ui-group',Group,{'extends':'fieldset'});
 customElements.define('ui-input',InputText);
-customElements.define('ui-label',Label);
-customElements.define('ui-note',Note);
 customElements.define('ui-number',InputNumber);
 customElements.define('ui-password',Password);
 customElements.define('ui-radio',RadioButton);
-customElements.define('ui-root',Root);
 customElements.define('ui-select',Select);
 customElements.define('ui-tags',TagEditor);
 customElements.define('ui-textarea',Textarea);
 customElements.define('ui-view-header',ViewHeader);
+
+//Nested elements must be registered at the end to avoid troubles when rendering the DOM
+customElements.define('ui-label',Label);
+customElements.define('ui-note',Note);
+
+
+

@@ -24,6 +24,11 @@ import static io.leitstand.commons.model.BuilderUtil.assertNotInvalidated;
  * Moreover, the application descriptor <code>defer</code> flag states whether to load the application eagerly or on demand.
  */
 public class ModuleApplication {
+	
+	public static Builder newModuleApplication() {
+		return new Builder();
+	}
+	
 
 	public static class Builder {
 		private ModuleApplication module = new ModuleApplication();
@@ -58,7 +63,7 @@ public class ModuleApplication {
 	}
 
 	private String application;
-	private String controller = "controller.js";
+	private String controller;
 	private boolean defer;
 	
 	/**
@@ -70,15 +75,15 @@ public class ModuleApplication {
 	}
 	
 	/**
-	 * The controller file name.
-	 * @return the controller file name.
+	 * Returns the controller that bootstraps the controllers of the application.
+	 * @return the controller file.
 	 */
 	public String getController() {
 		return controller;
 	}
 	
 	/**
-	 * Returns whether this application shall be loeaded on demand or eagerly.
+	 * Returns whether this application shall be loaded on demand or eagerly.
 	 * @return <code>true</code> when this application shall be loaded on demand, <code>false</code> if the application shall be loaded at the moment when the module is loaded.
 	 */
 	public boolean isDefer() {

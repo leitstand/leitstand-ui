@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 /**
@@ -37,57 +38,37 @@ public class ModuleDescriptorService {
 
 	private static final Pattern DYNAMIC_MODULE = compile("\\{\\{.*\\}\\}");
 	
-	private ConcurrentMap<String,ModuleDescriptor> CACHE;
+	private ConcurrentMap<String,ModuleDescriptor> cache;
 	
 	@Inject
-	private ModuleDescriptorLoader loader;
+	private Instance<ModuleDescriptor> modules;
+	
+	@Inject
+	private Contributions contributions;
 	
 	@PostConstruct
-	protected void initModuleCache() {
-		CACHE = new ConcurrentHashMap<>();
+	protected void createModuleCache() {
+		cache = new ConcurrentHashMap<>();
+		for(ModuleDescriptor module : modules) {
+			module.addExtensions(contributions.findExtensions(module));
+			applyDefaults(module);
+			cache.put(module.getModule(), module);
+		}
 	}
-	
-	
 	
 	/**
 	 * Returns the module descriptor for the specified module or <code>null</code> if the specified module does not exist.
-	 * @param context - the current context
-	 * @param moduleName - the module name
-	 * @return the module descriptor or <code>null</code> if the requested module does not exist.
+	 * @param moduleName the module name
+	 * @return the module descriptor or <code>null</code> if the module does not exist.
 	 */
 	public ModuleDescriptor getModuleDescriptor(String moduleName) {
-
-		ModuleDescriptor descriptor =  CACHE.get(moduleName);
-		if(descriptor != null) {
-			return descriptor;
-		}
-		
-		descriptor = loader.loadModuleDescriptor(moduleName);
-		if(descriptor == null) {
-			// The requested module does not exist!
-			return null;
-		}
-		
-		optimizeModuleDescriptor(descriptor);
-		
-		return cacheModuleDescriptor(moduleName, 
-									descriptor);
+		return cache.get(moduleName);
 	}
 
-	private ModuleDescriptor cacheModuleDescriptor(String moduleName, 
-												   ModuleDescriptor descriptor) {
-		// putIfAbsent returns null, if no cache entry was present. 
-		// Instead of a null check (and return of descriptor instead the null value), 
-		// a second CACHE lookup is preferred. This improves readability and is not performance
-		// relevant as creating a new descriptor is the exceptional branch.
-		CACHE.putIfAbsent(moduleName, descriptor);
-		return CACHE.get(moduleName);
-	}
-
-	protected void optimizeModuleDescriptor(ModuleDescriptor descriptor) {
+	protected void applyDefaults(ModuleDescriptor descriptor) {
 		// Push down menu query settings to all menu items to facilitate 
 		// module descriptor processing in the browser.
-		for(ModuleMenu menu : descriptor.getNavigation()) {
+		for(ModuleMenu menu : descriptor.getMenus()) {
 			for(ModuleMenuItem item: menu.getItems()) {
 				item.addQueryParameters(menu.getQuery());
 				// If item refers to a submodule, add this module to the includes section!
@@ -106,7 +87,5 @@ public class ModuleDescriptorService {
 	static boolean isDynamicModule(String module) {
 		return DYNAMIC_MODULE.matcher(module).matches();
 	}
-	
-
 	
 }

@@ -19,6 +19,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import io.leitstand.commons.etc.Environment;
@@ -51,5 +52,17 @@ public class MainMenu extends ValueObject{
 	 */
 	public List<MainMenuItem> getItems() {
 		return unmodifiableList(menu);
+	}
+
+	public void addExtensions(List<Extension> extensions) {
+		LinkedHashMap<MainMenuItem,ExtensionPoint> points = new LinkedHashMap<>();
+		for(Extension extension : extensions) {
+			points.put(extension.getItem(),extension.getExtensionPoint());
+		}
+		menu.addAll(points.keySet());
+		
+		// Sort all points according to the injection point hints!
+		ExtensionSorter<MainMenuItem> sorter = new ExtensionSorter<>(points, menu);
+		this.menu = sorter.sort();
 	}
 }

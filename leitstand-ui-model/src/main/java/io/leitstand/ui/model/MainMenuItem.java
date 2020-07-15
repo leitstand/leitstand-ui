@@ -18,20 +18,25 @@ package io.leitstand.ui.model;
 import static io.leitstand.commons.model.BuilderUtil.assertNotInvalidated;
 import static io.leitstand.commons.model.BuilderUtil.requires;
 import static io.leitstand.commons.model.ObjectUtil.asSet;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySortedSet;
+import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSortedSet;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import javax.json.bind.annotation.JsonbTransient;
 
 import io.leitstand.commons.model.ValueObject;
 
 
 /**
- * A menu item of the EMS main menu.
+ * Leitstand main menu item
  */
-public class MainMenuItem extends ValueObject{
+public class MainMenuItem extends ValueObject implements Named{
 
 	/**
 	 * Returns a builder to create an immutable main menu item.
@@ -151,7 +156,8 @@ public class MainMenuItem extends ValueObject{
 	private String label;
 	private String path;
 	private String position;
-	private SortedSet<String> scopesAllowed = emptySortedSet();
+	private SortedSet<String> scopesAllowed; // Do not init with empty sorted set to avoid transmission of empty object.
+	private Map<String,Object> config; // Do not init with empty map to avoid transmission of empty object!
 	
 	/**
 	 * Returns the name of the module represented by this menu item.
@@ -194,12 +200,43 @@ public class MainMenuItem extends ValueObject{
 		return path;
 	}
 	
+	/**
+	 * Returns a hint where to position this element.
+	 * @return a hint where to position this element.
+	 */
 	public String getPosition() {
 		return position;
 	}
 	
+	/**
+	 * Returns the scopes that can access this menu item.
+	 * Returns an empty set if all scopes have access to this menu item.
+	 * @return the scopes that can access this menu item.
+	 */
+	@JsonbTransient
 	public SortedSet<String> getScopes() {
+		if(scopesAllowed == null) {
+			return emptySortedSet();
+		}
 		return unmodifiableSortedSet(scopesAllowed);
+	}
+	
+	/**
+	 * Returns the config associated with this menu item.
+	 * Returns an empty map if no config exists.
+	 * @return config associated with this menu item.
+	 */
+	@JsonbTransient
+	public Map<String, Object> getConfig() {
+		if (config == null) {
+			return emptyMap();
+		}
+		return unmodifiableMap(config);
+	}
+
+	@Override
+	public String getName() {
+		return getModule();
 	}
 	
 }
