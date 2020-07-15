@@ -17,9 +17,9 @@ package io.leitstand.ui.rs;
 
 import static java.lang.String.format;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.Response.temporaryRedirect;
+import static javax.ws.rs.core.Response.serverError;
+import static javax.ws.rs.core.Response.status;
 
-import java.net.URI;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
@@ -45,12 +45,15 @@ public class LogoutResource {
 	public Response browserLogout(@Context HttpServletRequest request) {
 		try {
 			request.logout();
+			return status(307)
+				   .build(); // Preserve the redirct URI.
 		} catch (ServletException e) {
 			LOG.fine(() -> format("An error occured while attempting to logoff user %s: %s", 
 								  request.getUserPrincipal(), 
 								  e.getMessage()));
+			return serverError()
+				   .build();
 		}
-		return temporaryRedirect(URI.create("../../ui/login/login.html")).build();
 	}
 	
 
