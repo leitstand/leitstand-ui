@@ -24,7 +24,7 @@ allprojects {
         project.setVersion(version)
     }
 
-    group = 'io.leitstand.inventory'
+    group = 'io.leitstand.ui'
     // Activate jacoco for all modules to measure unit test code coverage
     apply plugin: 'jacoco'
     apply plugin: 'java'

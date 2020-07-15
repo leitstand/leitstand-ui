@@ -13,188 +13,111 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import {Json} from './client.js';
-import {Modules} from './ui-modules.js';
-
 /**
- * <h2>UI Core</h2>
- * This library contains the UI module management.
- * It loads the main menu and module descriptors from the UI servers,
- * maintains the Leitstand navigation and 
- * loads the view templates, controllers and client libraries forming the module applications.
+ * <h2>UI Core Library</h2>
+ * 
+ * The UI core library contains the core components of the Leitstand UI framework, which are
+ * <ul>
+ * 	<li>The <code>router</code> to navigate to the Leitstand views and manage the browser history</li>
+ *  <li>The <code>Location</code>  to represent the location of a view</li>
+ *  <li>The <code>UserContext</code> providing information about the authenticated user, 
+ *      its permissions, id token and access token.</li>
+ * </ul> 
+ *  
+ * The core library registers default event handler for the following events:
+ * <ul>
+ * 	<li><code>ClientUnauthenticated</code>, a custom event fired if an unauthenticated user attempts to access a protected resource and the server responded with <code>401 Unauthorized<code> status.
+ *      The core library redirects the user to the login page to prompt for credentials (<code>/ui/login/login.html</code> or the configured OpenID authorization server)</li>
+ *  <li><code>ClientForbidden</code>, a custom event fired if an authenticated user attempts to access a resource with insufficient privileges and the server responded with a <code>403 Forbidden</code> status.
+ *		The core library redirects the user to a standard error page. (<code>/ui/error/403.html</code>) </li>
+ *  <li><code>ResourceNotFound</code>, a custom event fired if the requested resource does not exist and the server responded with a <code>404 Not Found</code> status.
+ *      The core library redirecs the user to a standard error page (<code>/ui/error/404.html</code>).
+ *  <li><code>InternalServerError</code>, a custom event fired if the server responded with <code>500 Internal Server Error</code> status.
+ *      The core library redirects the user to a standard error page (<code>/ui/error/500.html</code>).</li>
+ * </ul>
  * @module
  */
 
 /**
- * Leitstand UI module descriptor.
- * <p>
- * The descriptor describes the module application and the module menus.
+ * The <code>UIOpenView</code> event is a custom event to open a view in the Leitstand UI.
+ * The event conveys the location of the view and information about the authenticated user.
  * @type {Object}
- * @typedef ModuleDescriptor
- * @property {String} module the module name
- * @property {ModuleApplication} applications[] the module applications
- * @property {ModuleMenu} navigation[] the module menus
+ * @typedef UIOpenView
+ * @property {Location} detail.view view to be opened
+ * @property {UserContext} detail.user the authenticated user
  */
 
 /**
- * Leitstand UI module application descriptor.
- * <p>
- * Sets the application controller file name and whether to load the application at the time when the module is loaded (default) or only on demand.
- * @type {Object}
- * @typedef ModuleApplication
- * @property {String} application the application name
- * @property {String} [controller='controller.js'] the application controller file name
- * @property {boolean} [defer=false] whether to defer loading the application
- */
-
-/**
- * Leitstand UI module menu descriptor.
- * <p>
- * Describes a single menu of a Leitstand module.
- * @type {Object}
- * @typedef ModuleMenu
- * @property {String} menu the menu name
- * @property {String  label the menu label
- * @property {String} [title] the menu title
- * @property {MenuItem} items the menu items
- */
-
-/**
- * Leitstand view model property matcher settings.
- * <p>
- * A view model property matcher validates whether a view model property satisfies one out of the following constraints:
- * <ul>
- * <li>The <em>EXISTS</em> constraint expects the view model property to be set. 
- *     <code>0</code>, <code>false</code>,<code>null</code> and empty string (<code>""</code>) are consider as unset properties</li>
- * <li>The <em>EXISTS NOT</em> constraint expects the view model property to be <em>not</em> set. 
- *     <code>0</code>, <code>false</code>,<code>null</code> and empty string (<code>""</code>) are consider as unset properties.
- *     A property is also not set if the property is <code>undefined</code>.</li> 
- * <li>The <em>MATCHES</em> constraint expects the view model property to match a regular expression.
- *     The <em>MATCHES</em> constraint is only applicable for string properties and returns <code>false</code> for all non-string properties</li>
- * <li>The <em>MATCHES NOT</em> constraint expects the view model property to <em>not</em> match a regular expression.
- *     The <em>MATCHES NOT</em> constraint is only applicable for string properties and returns <code>true</code> for all non-string properties</li>
- * </ul>
- * @type {Object}
- * @typedef ViewModelPropertyMatcherSettings
- * @property {String} property the property name
- * @property {boolean} [exists] <code>true</code> if the property must be present (<em>EXISTS</em> constraint) or <code>false</code> if the property must not be present (<em>EXISTS NOT</em> constraint).
- * @property {String} [matches] a regular expression the property must match (<em>MATCHES</em> constraint)
- * @property {String} [matches_not] a regular expression the property must not match (<em>MATCHES_NOT</em> constraint)
- */
-
-/**
- * Container for all Leitstand UI modules.
- */
-export const modules = {};
-
-/**
- * A simple router to navigate from the current view to 
- * another view or to walk back the browser history to 
- * previous views.
+ * The Leitstand router maintains the browser history and either opens the requested Leitstand view by means of firing a <code>UIOpenView</code> custom event 
+ * or delegates routing back to the browser for all external targets.
+ * 
  */
 export const router = {
+		
 		/**
-		 * Navigates to the specified view. 
-		 * @returns <code>true</code> if the router was able to navigate to the requested view,
-		 * returns <code>false</code> if not. In the latter case routing is delegated to the browser.
-		 * @param {Location} link the view location
+		 * Navigates to the specified target.
+		 * Fires a <code>UIOpenView</code> custom event if the target is a Leitstand view.
+		 * Delegates routing to the browser for all non Leitstand views.
+		 * @param {Location} target the target to be opened
+		 * @returns <code>true</code> if the target is a Leitstand view and opened by the router and <code>false</code> for all external targets.
 		 */
-		navigate : function(link) {
+		navigate : function(target) {
 			// Store current view in browser history.
-			if(new Location(window.location.href).path() != link.path() && window.event.type != "popstate"){
-				window.history.pushState({"href":window.location.href},null,link.path());
+			if(new Location(window.location.href).path != target.path && !(window.event && window.event.type == 'popstate')){
+				window.history.pushState({'href':window.location.href},null,target.path);
 			}
+
+			if (target.module) {
+				// Open the requested view.
+				window.dispatchEvent(new CustomEvent('UIOpenView',{detail:{view:target,
+																		   user:UserContext.get()}}));
 			
-			let moduleName = link.module();
-			
-			if (!moduleName) {
-				return false;
-			}
-			
-			let module = modules[link.module()];
-			if (!module) {
-				let loader = new ModuleLoader();
-				loader.load(link);
 				return true;
 			}
-			
-			// Update main menu
-			if(Modules.select(link.module())){
-				window.dispatchEvent(new CustomEvent('UIOpenModule',
-													{'detail':{'location':link,
-															   'module':link.module(),
-															   'app':link.app(),
-															   'view':link.view()}}));
-			};
-
-			// Notify module to open the selected view.
-			window.dispatchEvent(new CustomEvent('UIOpenView',
-												{'detail':{'location':link,
-														   'module':link.module(),
-														   'app':link.app(),
-														   'view':link.view()}}));
-			return true;
+			// Delegate routing to browser.
+			return false;
 		},
 		
 		/**
 		 * Redirects the browser to the specified URI bypassing the router logic.
-		 * @param {string} path the redirect target
+		 * @param {string} target the redirect target
 		 */
-		redirect : function(path) {
-			window.location.href = path;
+		redirect : function(target) {
+			window.location.href = target;
 		},
 		
 		/**
 		 * Walks back the browser history.
-		 * @param {string} defaultPath the view to display if the browser history is empty
+		 * Proceeds at the specified default target if the browser history is empty.
+		 * Does nothing if the browser history is empty an no default target is specified.
+		 * @param {string} defaultTarget the default target if the browser history is empty.
 		 */
-		back : function(defaultPath) {
+		back : function(defaultTarget) {
 			if (window.history.length > 0) {
 				window.history.back();
-			} else {
-				this.redirect(defaultPath);
+			} else if(defaultTarget){
+				this.redirect(defaultTarget);
 			}
 		}
 	};
 
-//Listen to browser back and navigate to the proper view.
-//Since the top-level menu (i.e. the tabs) handles all browser back operations,
-//walking back over module boundaries is supported. The tabs menu puts the focus
-//on the current module and then calls the router to display the proper view.
-window.addEventListener("popstate", function(event) {
-	if (event.state && event.state.href) {
-		router.navigate(new Location(window.location.href));
-	} 
-}, true);
-
-window.addEventListener('ClientUnauthenticated',function(){
-	router.redirect('/ui/login/login.html');
-});
-
-window.addEventListener('ClientForbidden',function(event){
-	router.redirect('/ui/error/403.html');
-});
-
-window.addEventListener('ResourceNotFound',function(){
-	router.redirect('/ui/error/404.html');
-});
-
-window.addEventListener('InternalServerError',function(){
-	router.redirect('/ui/error/500.html');
-});
-
-
 /**
- * The user context provides information about the authenticated user.
+ * The user context provides information about the authenticated user, including
+ * <ul>
+ * 	<li>The user account ID</li>
+ *  <li>The user account name, which is used to login</li>
+ *  <li>The user first and last name</li>
+ *  <li>The scopes the user is allowed to access</li>
+ * </ul>
  */
 export class UserContext {
 
 	static init(user){
-		new UserContext(user);
+		return new UserContext(user);
 	}
 	
 	/**
-	 * Returns a user context for the authenticated user.
+	 * Returns the user context of the authenticated user.
 	 */
 	static get(){
 		return new UserContext();
@@ -202,14 +125,14 @@ export class UserContext {
 	
 	/**
 	 * Creates a new user context.
-	 * @param user the settings of the authenticated user
+	 * @param user the profile of the authenticated user
 	 */
 	constructor(user){
 		if(user){
 			window.sessionStorage.setItem("user",JSON.stringify(user));
-			this.user = user;
+			this._user = user;
 		} else {
-			this.user = JSON.parse(window.sessionStorage.getItem("user"));
+			this._user = JSON.parse(window.sessionStorage.getItem("user"));
 		}
 	}
 	
@@ -218,7 +141,7 @@ export class UserContext {
 	 * @return the user account ID
 	 */
 	get userId(){
-		return this.user.user_id;
+		return this._user.user_id;
 	}
 	
 	/**
@@ -226,7 +149,7 @@ export class UserContext {
 	 * @return the user account name.
 	 */
 	get userName(){
-		return this.user.user_name;
+		return this._user.user_name;
 	}
 	
 	/**
@@ -234,7 +157,7 @@ export class UserContext {
 	 * @return the first name of the user.
 	 */
 	get firstName(){
-		return this.user.first_name;
+		return this._user.first_name;
 	}
 	
 	/**
@@ -242,7 +165,7 @@ export class UserContext {
 	 * @return the last name of the user.
 	 */
 	get lastName(){
-		return this.user.last_name;
+		return this._user.last_name;
 	}
 	
 	/**
@@ -250,10 +173,10 @@ export class UserContext {
 	 * @return the name of the user
 	 */
 	get name(){
-		let first = this.firstName;
-		let last = this.lastName;
+		const first = this.firstName;
+		const last = this.lastName;
 		if(first && last){
-			return first+" "+last;
+			return `${first} ${last}`;
 		}
 		return null;
 	}
@@ -263,61 +186,62 @@ export class UserContext {
 	 * @return {String[]} the accessible scopes as array of strings
 	 */
 	get scopes(){
-		return [...this.user.scopes];
+		return [...this._user.scopes];
 	}
 	
 	/**
-	 * Checks whether the user has one of the specified roles.
-	 * @param {String|String[]} role the expected role or an array of expected roles
+	 * Checks whether the user has one of the specified scopes.
+	 * @param {...String|String[]} scopes the scopes to be tested
 	 * @return <code>true</code> if the user is in at least on of the specified roles, <code>false</code> otherwise.
 	 */
-	scopesIncludeOneOf(scope){
-		if(this.user == null){
+	scopesIncludeOneOf(scopes){
+		if(this._user == null){
 			return false;
 		}
-		if(Array.isArray(scope)){
-			if(scope.length == 0){
+		if(Array.isArray(scopes)){
+			if(scopes.length == 0){
 				// Every authenticated user satisfies the constraint to have no scope assigned.
 				return true;
 			}
 			// Check is user can access on of the specified scopes
-			for(let i=0; i < scope.length; i++){
-				if(this.user.scopes.includes(scope[i])){
+			for(let i=0; i < scopes.length; i++){
+				if(this._user.scopes.includes(scopes[i])){
 					return true;
 				}
 			}
 			return false;
 		}
-		if(scope){
-			// Check if user can access the specified scope
-			return this.user.scopes.includes(scope);
+		// Iterate over all passed scopes.
+		for(let i=0; i < arguments.length; i++){
+			const scope = arguments[i];
+			if(this._user.scopes.includes(scope)){
+				return true;
+			}
 		}
-		return false;
+		return arguments.length == 0;
 	}
 }
 
 /**
- * The location of a view template.
+ * The location of a Leitstand view.
  * <p>
- * Every Leitstand view template locations consists of 
- * <ul>
- * <li>the <code>ui</code> literal followed by </li>                                                                        
+ * The Leitstand view location path consists of 
+ * <ol>
+ * <li>the <code>ui/views</code> literal followed by </li>                                                                        
  * <li>the module name followed by</li>                                                                                                                           
- * <li>an optional module application name followed by</li>                                                                                                     
- * <li>the view template name followed by<li>                                                                                                                             
+ * <li>an optional sub module folder followed by</li>                                                                                                     
+ * <li>the view template file name followed by<li>                                                                                                                             
  * <li>optional query parameters.</li>
- * </ul>                                                                                                              
- * The <code>/</code> (slash) is the delimiter between the location path segments.                                                                                  
- * The <code>?</code> is the delimiter between the path section and the  query parameters.                                                                 
+ * </ol>                                                                                                              
+ * The <code>/</code> character is the delimiter of location path segments.                                                                                  
+ * The <code>?</code> character is the delimiter of the path section and the query parameters.
+ * The <code>&<code> character is the query parameters delimiter.                                                                
  * Each query parameter is a key-value pair using the <code>=</code> as delimiter between key and value.                                                   
- * The first parameter follows immediately the <code>?</code> while further parameters are appended with the <code>&</code> (ampersand) as delimiter.      
  * <p>                                                                                                                                                     
- * Location also supports anchors.                                                                                                                         
- * An anchor identifies a certain section within a view.                                                                                                   
- * The name of the anchor is appended to the view template name using an <code>#</code> (hash) as delimiter.                                                        
- * The anchor is inserted between the view template and the query parameters section.      
- * <p>
- * For example, location <code>/ui/views/inventory/topology/link-state.html?group=INN</code> refers to the <em>link-state.html</em> view template
+ * Location also supports anchors to identify a certain section of a view.  
+ * The anchor is inserted between the view template and the query parameters section 
+ * using the <code>#</code> as delimiter of the view template file name and the section identifier.      
+ * For example, location <code>/ui/views/inventory/topology/link-state.html?group=INN</code> refers to the <em>link-state.html</em> view 
  * of the <em>topology</em> application located in the <em>inventory</em> module. 
  * The <code>group</code> query parameter specifies the group of which the link-state graph should be displayed.
  */
@@ -347,28 +271,27 @@ export class Location {
 	 */
 	static href(pd) {
 		if(pd.view){
-			var view = pd.view;
 			if (pd['?']) {
-				var del = '?';
-				var query = '';
-				for ( var p in pd['?']) {
-					var v = pd['?'][p];
-					if(v || v === false){
-						if(v.forEach){
+				let del = '?';
+				let queryString = '';
+				for (let param in pd['?']) {
+					const value = pd['?'][param];
+					if(value || value === false){
+						if(Array.isArray(value)){
 							// Multi value
-							v.forEach(function(item){
-								query += (del + p + '=' + encodeURIComponent(item));
-								del = '&';
+							value.forEach((item) => {
+								queryString += `${del}${param}=${encodeURIComponent(item)}`;
+								del = '&'; // Use & as delimiter for all parameters after the first parameter
 							});
-							continue; //with next parameter
+							continue; // with next query parameter
 						} 
-						query += (del + p + '=' + encodeURIComponent(v));
-						del = '&';
+						queryString += `${del}${param}=${encodeURIComponent(value)}`;
+						del = '&'; // Use & as delimiter for all parameters after the first parameter
 					}
 				}
-				return view + query;
+				return pd.view + queryString;
 			}
-			return view;
+			return pd.view;
 		}
 		return pd;
 	}
@@ -403,7 +326,7 @@ export class Location {
 	 * @returns {boolean} <code>true</code> if this link is a local link, <code>false</code> if not
 	 */
 	isLocal() {
-		var hash = window.location.href.indexOf('#');
+		const hash = window.location.href.indexOf('#');
 		if (hash >= 0) {
 			return this._href.indexOf(window.location.href.substring(0, hash)) == 0;
 		}
@@ -415,8 +338,9 @@ export class Location {
 	 * The path section starts with the first <code>/</code> after the host and also includes query parameters,
 	 * if query parameters are specified.
 	 * @returns {string} the path section of the string including query parameters.
+	 * @readonly
 	 */
-	path() {
+	get path() {
 		return this._groups[1];
 	}
 	
@@ -427,8 +351,9 @@ export class Location {
 	 * the first occurrence of a <code>?</code> character, i.e. the beginning of the query parameters section, or at 
 	 * the end of the string if neither an anchor nor query parameter sections exists.
 	 * @returns {string} the unique view name
+	 * @readonly
 	 */
-	view() {
+	get view() {
 		if(this._groups[3]){
 			return `${this._groups[3]}/${this._groups[4]}`;
 		}
@@ -437,12 +362,13 @@ export class Location {
 	
 	/**
 	 * Returns the query string.
-	 * @return the quest string or an empty string if no query string is present
+	 * @return the query string or an empty string if no query string is present
+ 	 * @readonly
 	 */
-	queryString(){
-		let qm = this._href.lastIndexOf("?");
+	get queryString(){
+		const qm = this._href.lastIndexOf('?');
 		if(qm < 0){
-			return "";
+			return '';
 		}
 		return this._href.substring(qm);
 	}
@@ -451,8 +377,9 @@ export class Location {
 	 * Returns the module name. 
 	 * The module name is the first path segment after the context root segment.
 	 * @return {string} the module name
+ 	 * @readonly
 	 */
-	module() {
+	get module(){
 		return this._groups[2];
 	}
 	
@@ -460,8 +387,9 @@ export class Location {
 	 * Returns the application identifier. 
 	 * The application identifier is constituted by all path segments after the module path segment.
 	 * @return {string} the application identifier
+ 	 * @readonly
 	 */
-	app(){
+	get app(){
 		return this._groups[3];
 	}
 	
@@ -471,27 +399,28 @@ export class Location {
 	 * @returns {string} the parameter value or <code>null</code> if the parameter is not set
 	 */
 	param(name) {
-		return this.params()[name];
+		return this.params[name];
 	}
 
 	/**
 	 * Returns all query parameters as associative array.
 	 * Returns an empty object if no parameters exist.
 	 * @return {object} an associative array of all existing parameters.
+ 	 * @readonly
 	 */
-	params() {
+	get params(){
 		if (this._params == null) {
 			this._params = {};
 			let qm = this._href.lastIndexOf('?');
 			if (qm > 0) {
-				let pairs = this._href.substring(qm + 1).split('&');
+				const pairs = this._href.substring(qm + 1).split('&');
 				for (let i = 0; i < pairs.length; i++) {
-					let keyvalue = pairs[i].split('=');
+					const keyvalue = pairs[i].split('=');
 					if(!this._params[keyvalue[0]]){
 						this._params[keyvalue[0]] = decodeURIComponent(keyvalue[1]);
 						continue;
 					}
-					let multivalue = this._params[keyvalue[0]];
+					const multivalue = this._params[keyvalue[0]];
 					if(typeof multivalue === 'array'){
 						multivalue.push( decodeURIComponent(keyvalue[1]));
 						continue;
@@ -503,171 +432,47 @@ export class Location {
 		}
 		return this._params;
 	}
-	
+		
 }
 
-/**
- * Intercepts all clicks on links to send them to the router and 
- * forwards the event to the browser default if the router cannot approach the link target.
- */
-let onclick = function(event) {
+Location.prototype.toString = function(){
+	return this._href;
+}
 
+window.addEventListener("popstate", function(event) {
+	if (event.state && event.state.href) {
+		router.navigate(new Location(window.location.href));
+	} 
+}, true);
+
+window.addEventListener('ClientUnauthenticated',function(){
+	router.redirect('/ui/login/login.html');
+});
+
+window.addEventListener('ClientForbidden',function(event){
+	router.redirect('/ui/error/403.html');
+});
+
+window.addEventListener('ResourceNotFound',function(){
+	router.redirect('/ui/error/404.html');
+});
+
+window.addEventListener('InternalServerError',function(){
+	router.redirect('/ui/error/500.html');
+});
+
+/**
+ * Intercepts all clicks on links to send them to the router.
+ * Stops event processing if router is able to open the specified target.
+ * Delegate event processing to the browser if the router is not able to navigate to the specified target.
+ */
+const onclick = function(event) {
 	if(event.target.href && router.navigate(new Location(event.target.href))){
+		// Stop event processing because router has opened the specified target.
 		event.stopPropagation();
 		event.preventDefault();
 	}
 };
 document.addEventListener("click", onclick);
 
-/**
- * View model property matcher.
- * <p>
- * A <code>ViewModelPropertyMatcher</code> verifies whether a view model property satisfies a certain constraint.
- * The following constraints exists:
- * <ul>
- * <li>The <em>EXISTS</em> constraint expects the view model property to be set. 
- *     <code>0</code>, <code>false</code>,<code>null</code> and empty string (<code>""</code>) are consider as unset properties</li>
- * <li>The <em>EXISTS NOT</em> constraint expects the view model property to be <em>not</em> set. 
- *     <code>0</code>, <code>false</code>,<code>null</code> and empty string (<code>""</code>) are consider as unset properties.
- *     A property is also not set if the property is <code>undefined</code>.</li> 
- * <li>The <em>MATCHES</em> constraint expects the view model property to match a regular expression.
- *     The <em>MATCHES</em> constraint is only applicable for string properties and returns <code>false</code> for all non-string properties</li>
- * <li>The <em>MATCHES NOT</em> constraint expects the view model property to <em>not</em> match a regular expression.
- *     The <em>MATCHES NOT</em> constraint is only applicable for string properties and returns <code>true</code> for all non-string properties</li>
- * </ul>
- */
-class ViewModelPropertyMatcher{
-	
-	/**
-	 * Creates a <code>ViewModelPropertyMatcher</code>.
-	 * @param {ViewModelPropertyMatcherSettings} matcher the matcher settings
-	 */
-	constructor(matcher){
-		this.matcher = matcher;
-	}
-	
-	/**
-	 * Tests whether the view model satisfies the constraints defined by this matcher.
-	 * @param viewModel the current view model as JSON object
-	 * @return <code>true</code> if the view model satisfies the matcher constraint, <code>false</code> otherwise.
-	 */
-	accepts(viewModel){
-		let property = this.matcher.property;
-		let value = viewModel[property];
-		if(this.matcher.exists === true){
-			return !!viewModel;
-		}
-		if(this.matcher.exists === false){
-			return !viewModel;
-		}
-		if(this.matcher.matches){
-			return value && value.matches && value.matches(this.matcher.matches); 
-		}
-		if(this.matcher.matches_not){
-			return !value || !value.matches || !value.matches(this.matcher.matches_not);
-		}
-		
-		// A matcher without any settings accepts everything.
-		return true;
-	}
-	
-}
-
-/**
- * Leitstand UI module loader.
- * <p>
- * The Leitstand UI consists of modules.
- */
-class ModuleLoader {
-	
-	/**
-	 * Loads the module d
-	 */
-	async load(link){
-		if(!link){
-			link = new Location(window.location.href);
-		}
-		
-		// Load all missing javascript libraries.
-		let moduleLoader = new Json(`/api/v1/ui/modules/${link.module()}`);
-		this._descriptor = await moduleLoader.load();
-		modules[this.name] = this;
-		window.dispatchEvent(new CustomEvent('UIModuleLoaded',{'detail':{'module':this._descriptor,
-																		 'location':link}}));
-	};
-	
-	get name(){
-		return this._descriptor.module;
-	}
-	/**
-	 * Computes the menu view model.
-	 * @param model the JSON data returned by the REST API.
-	 * @returns {Object} the menu view model.
-	 */
-	computeMenuViewModel(model){
-		// Apply the model to the navigation template to create the navigation view.
-		// Create a string representation from the JSON descriptor
-		
-		if(this._descriptor.navigation){
-			let location = new Location(window.location.href);
-			// Render the menu itmes from the module descriptor navigation template
-			let menus = JSON.parse(Mustache.render(JSON.stringify(this._descriptor.navigation),merge(location,model)));
-			// The menu view model consists of
-			// - the menus, i.e. all menus of all applications of the current module
-			// - the model, i.e. the data being displayed in the current view
-			// - the enabled decorator that decides whether a certain menu is enabler
-			// - the viewpath decorator that computes the path of a certain view.
-			let menuViewModel = merge({'menus':menus},
-								       model);
-
-			// Load all roles the user has.
-			let user = UserContext.get();
-
-			// Add enabled decorator
-			menuViewModel.enabled = function(){
-				let scopesAllowed = this.scopes_allowed;
-				if(scopesAllowed && !user.scopesIncludeOneOf(scopesAllowed)){
-					// Menu is not enabled because user has no access to any of the allowed scopes
-					return false;
-				}
-				
-				// Check that all required properties exist
-				for (let i=0; i < this.requires.length; i++){
-					if(!!model[this.requires[i]]){
-						continue;
-					}
-					if(!!this.query[this.requires[i]]){
-						continue;
-					}
-					return false;
-				}
-				
-				// Check that every view model property matcher is satisfied
-				for(let i=0; i < this.view_model.length; i++){
-					let matcher  = new ViewModelPropertyMatcher(this.view_model[i]);
-					if(matcher.accepts(viewModel)){
-						continue;
-					}
-					return false;
-				}
-				
-				return true;
-			};
-			// Add viewpath decorator
-			let moduleName = this._descriptor.module;
-			menuViewModel.viewpath = function(){
-				let query = '';
-				let delimiter = '?';
-				for (let p in this.query){
-					query += delimiter+p+'='+this.query[p];
-					delimiter='&';
-				}
-				
-				return `/ui/views/${moduleName}/${this.view}${query}`;
-			};
-			return menuViewModel;
-		}
-		return {};// Empty view model.
-	}
-}
 

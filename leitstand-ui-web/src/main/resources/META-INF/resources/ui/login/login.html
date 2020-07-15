@@ -17,20 +17,22 @@
 <html>
 <head>
 <link type="text/css" rel="stylesheet" href="/ui/css/leitstand/primer.css"  >
-<link type="text/css" rel="stylesheet" href="/ui/css/leitstand/leitstand.css"  >
+<link type="text/css" rel="stylesheet" href="/ui/login/login.css"  >
 <script src="/ui/js/ext/mustache.js"></script>
 <script src="login.js" type="module"></script>
 <title>Login</title>
 </head>
 <body>
 <form class="auth-form">
-	<div id="view-container" class="container">
+	<div class="container">
 		<div class="columns">
 			<div class="centered column one-third">
-				<h1>Log in</h1>
-				<ui-login-form></ui-login-form>
-				<div class="flash-messages">
-				</div>
+				<ui-view>
+					<h1>Log in</h1>
+					<ui-login-form></ui-login-form>
+					<div class="flash-messages">
+					</div>
+				</ui-view>
 			</div>
 		</div>
 	</div>

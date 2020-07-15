@@ -1,0 +1,13 @@
+/* Heading of login and error pages.*/
+.auth-form h1{
+	background-image: url('/ui/images/logo.png');
+	background-position: center;
+	background-repeat: no-repeat;
+	font-weight: 300;
+	padding-top: 240px;
+	text-align: center;
+}
+
+.auth-form .flash-messages {
+	margin-top: 15px; /** Increase margin for login error messages */
+}

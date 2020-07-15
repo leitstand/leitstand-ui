@@ -15,9 +15,12 @@
  */
 package io.leitstand.ui.model;
 
+import static io.leitstand.commons.etc.FileProcessor.yaml;
 import static io.leitstand.commons.model.BuilderUtil.assertNotInvalidated;
 import static io.leitstand.commons.model.BuilderUtil.requires;
 import static io.leitstand.commons.model.ObjectUtil.asSet;
+import static io.leitstand.commons.model.StringUtil.isNonEmptyString;
+import static io.leitstand.ui.model.ModuleApplication.newModuleApplication;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
@@ -27,11 +30,16 @@ import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toList;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+
 
 /**
  * The <code>ModuleDescriptor</code> describes a UI module.
@@ -45,7 +53,7 @@ import java.util.TreeSet;
  * </p>
  */
 public class ModuleDescriptor {
-	
+		
 	/**
 	 * Returns a new builder to create an immutable <code>ModuleDescriptor</code> instance.
 	 * @return a new <code>ModuleDescriptor</code> builder
@@ -54,12 +62,19 @@ public class ModuleDescriptor {
 		return new Builder();
 	}
 	
+	public static Builder readModuleDescriptor(URL descriptor) throws IOException {
+		Builder builder = new Builder();
+		builder.descriptor = yaml(ModuleDescriptor.class).process(descriptor);
+		return builder;
+	}
+	
 	/**
 	 * The builder for an immutable <code>ModuleDescriptor</code> instance.
 	 */
 	public static class Builder {
 		
 		private ModuleDescriptor descriptor = new ModuleDescriptor();
+		private List<Contribution> contributions = emptyList();
 		
 		/**
 		 * Sets the module name.
@@ -95,13 +110,23 @@ public class ModuleDescriptor {
 			return this;
 		}
 		
+		public Builder withContributions(Contribution... contributions) {
+			return withContributions(asList(contributions));
+		}
+		
+		public Builder withContributions(List<Contribution> contributions) {
+			assertNotInvalidated(getClass(), descriptor);
+			this.contributions = new ArrayList<>(contributions);
+			return this;
+		}
+		
 		/**
-		 * Sets the module navigation
+		 * Sets the module menus
 		 * @param builder the builders for all module menus
 		 * @return a reference to this builder to continue with object creation.
 		 */
 		
-		public Builder withNavigation(ModuleMenu.Builder...builder) {
+		public Builder withMenus(ModuleMenu.Builder...builder) {
 			return withNavigation(stream(builder)
 								 .map(ModuleMenu.Builder::build)
 								 .collect(toList()));
@@ -109,11 +134,11 @@ public class ModuleDescriptor {
 		
 		
 		/**
-		 * Sets the module navigation
+		 * Sets the module menus
 		 * @param menus all menus of this module
 		 * @return a reference to this builder to continue with object creation.
 		 */
-		public Builder withNavigation(ModuleMenu...menus) {
+		public Builder withMenus(ModuleMenu...menus) {
 			return withNavigation(asList(menus));
 		}
 		
@@ -144,7 +169,7 @@ public class ModuleDescriptor {
 		 */
 		public Builder withNavigation(List<ModuleMenu> menus) {
 			assertNotInvalidated(getClass(), descriptor);
-			descriptor.navigation = new ArrayList<>(menus);
+			descriptor.menus = new ArrayList<>(menus);
 			return this;
 		}
 		
@@ -157,7 +182,17 @@ public class ModuleDescriptor {
 			try {
 				assertNotInvalidated(getClass(), descriptor);
 				requires(getClass(), "name", descriptor.module);
-				requires(getClass(), "navigation", descriptor.navigation);
+				requires(getClass(), "navigation", descriptor.menus);
+				contributions.stream()
+							 .filter(c -> c.contributesTo(descriptor))
+							 .forEach(c -> {
+								 descriptor.addApplication(newModuleApplication()
+										 				   .withApplicationName(isNonEmptyString(c.getName()) ? c.getName() : c.getBaseUri())
+										 				   .withController(c.getBaseUri()+"/"+c.getController())
+										 				   .build());
+								 descriptor.addExtensions(c.getExtensions());
+							 });
+				
 				return descriptor;
 			} finally {
 				descriptor = null;
@@ -170,7 +205,7 @@ public class ModuleDescriptor {
 
 	private String module;
 	private Set<ModuleApplication> applications = emptySet();
-	private List<ModuleMenu> navigation = emptyList();
+	private List<ModuleMenu> menus = emptyList();
 	private Set<String> scopesAllowed;
 
 	/**
@@ -210,8 +245,50 @@ public class ModuleDescriptor {
 	 * which are enabled depending on the data currently being displayed.
 	 * @return the menus of this module
 	 */
-	public List<ModuleMenu> getNavigation() {
-		return unmodifiableList(navigation);
+	public List<ModuleMenu> getMenus() {
+		return unmodifiableList(menus);
 	}
+
+	void addExtensions(Extension... contributions) {
+		addExtensions(asList(contributions));
+	}
+	
+	void addExtensions(List<Extension> extensions) {
+		// Add all menus
+		LinkedHashMap<ModuleMenu,ExtensionPoint> moduleExtensions = new LinkedHashMap<>();
+		for(Extension extension : extensions) {
+			if(extension.isModuleExtension()) {
+				ExtensionPoint point = extension.getExtensionPoint();
+				for(ModuleMenu menu : extension.getMenus()) {
+					moduleExtensions.put(menu,point);
+					// Preserve order of contributed menus 
+					point = new ExtensionPoint().module(point.getModule()).after(menu.getMenu());
+				}
+			}
+		}
+		this.menus.addAll(moduleExtensions.keySet());
+		// Rearrange all menus according to the after and before constraints
+		ExtensionSorter<ModuleMenu> sort = new ExtensionSorter<>(moduleExtensions,this.menus);
+		this.menus = sort.sort(); 
+		
+		// Add all menu contributions
+		for(ModuleMenu menu : this.menus) {
+			menu.addExtensions(extensions
+							   .stream()
+							   .filter(Extension::isModuleMenuExtension)
+							   .filter(c -> menu.getName().equals(c.getExtensionPoint().getMenu()))
+							   .collect(toList()));
+		}
+		
+	}
+
+	void addApplication(ModuleApplication app) {
+		if(this.applications.isEmpty()) {
+			// Empty set is immutable
+			this.applications = new LinkedHashSet<>();
+		}
+		this.applications.add(app);
+	}
+	
 	
 }

@@ -114,11 +114,8 @@
 
 import {Resource,Json} from './client.js';
 import {Dom,Element} from './ui-dom.js';
-import {router,modules,Location} from './ui-core.js';
+import {router,Location} from './ui-core.js';
 import {Modules} from './ui-modules.js';
-
-
-
 
 /**
  * The menu binds the views of a module to their respective controllers.
@@ -133,19 +130,18 @@ export class Menu extends Dom {
 	/**
 	 * Creates a new menu.
 	 * @param {MenuConfig} menu the menu items
-	 * @param {String} welcomePage an absolute path to the welcome page of this module
 	 */
-	constructor(menu,welcomePage){
+	constructor(menu){
 		super();
 		this._views = {};
 		this._items = {};
-		for (let path in menu) {
-			let view = menu[path];
+		for (const path in menu) {
+			const view = menu[path];
 			this._items[path] = path;
 			if (view.master) {
 				this._views[path] = view.master;
 				if (view.details) {
-					for (let subpage in view.details) {
+					for (const subpage in view.details) {
 						this._views[subpage] = view.details[subpage];
 						this._items[subpage] = path;
 					}
@@ -155,9 +151,6 @@ export class Menu extends Dom {
 			this._views[path] = view;
 		}
 		
-		this.getWelcomePage = function(){
-			return welcomePage;
-		};
 	}
 	
 	/**
@@ -167,11 +160,11 @@ export class Menu extends Dom {
 	 * @param {ModuleApplication} [app] optional application descriptor.
 	 */
 	merge(menu,app){
-		let appPath = `${app&&app.application+'/'||''}`;
-		for (let view in menu._views){
+		const appPath = `${app&&app.application+'/'||''}`;
+		for (const view in menu._views){
 			this._views[appPath+view] = menu._views[view];
 		}
-		for (let item in menu._items){
+		for (const item in menu._items){
 			this._items[appPath+item] = appPath+menu._items[item];
 		}
 		
@@ -206,15 +199,10 @@ export class Menu extends Dom {
 	 * @return {Controller} the controller of the selected view
 	 */
 	select(location) {
-		let selected = document.querySelector("nav[class='menu']>a[class~='selected']");
-		if (selected) {
-			selected.classList.remove("selected");
-		}
-		let controller = this.controller(location.view());
-		let element = this.item(location.view());
-		if (element) {
-			element.css().add("selected");
-		}
+		const controller = this.controller(location.view);
+		const menu = document.querySelector("ui-module-menu");
+		const item = this.item(location.view);
+		menu.select(item);
 		return controller;
 	}
 
@@ -236,19 +224,19 @@ export class Controller extends Dom {
 	 */
 	constructor(controllerConfig){
 		super();
-		this._page = controllerConfig;
+		this._view = controllerConfig;
 		this._viewModel = {};
 		this._attachEventListener = function(resource) {
 			let self = this;
 			resource.onInputError = function(messages) {
 				clearFlashMessages();
-				let global = [];
+				const global = [];
 				if (messages.length) {
-					let firstInvalidInput = null;
+					const firstInvalidInput = null;
 					for (let i = 0; i < messages.length; i++) {
-						let message = messages[i];
+						const message = messages[i];
 						if (message.property) {
-							let input = self.elements(`#${message.property}`, message.value);
+							const input = self.elements(`#${message.property}`, message.value);
 							if (input.length == 1) {
 								displayInputError.call(	self,
 														input[0].unwrap(),
@@ -300,9 +288,9 @@ export class Controller extends Dom {
 			resource.onSuccess = function(state) {
 				if (this.status == 204) { // No content
 					displayFlashMessages.call(self, [ {
-						"severity" : "INFO",
-						"reason" : "WUI0000I",
-						"message" : "All changes applied successfully."
+						'severity' : 'INFO',
+						'reason' : 'WUI0000I',
+						'message' : 'All changes applied successfully.'
 					} ]);
 				} else {
 					displayFlashMessages.call(self, state);
@@ -323,6 +311,7 @@ export class Controller extends Dom {
 				}
 			};
 			resource.onLoaded = function(state) {
+				alert(self == this);
 				displayFlashMessages.call(self, state);
 				if (controllerConfig.onLoaded) {
 					controllerConfig.onLoaded.call(self, state);
@@ -351,7 +340,7 @@ export class Controller extends Dom {
 					controllerConfig.onError.call(self,state);
 					return;
 				}
-				router.redirect("/ui/login/login.html");
+				router.redirect('/ui/login/login.html');
 			};
 			resource.onAccessDenied = function(state) {
 				displayFlashMessages.call(self, state);
@@ -375,11 +364,11 @@ export class Controller extends Dom {
 					return;
 				}
 			};
-			resource.onCreated = function(state,location) {
+			resource.onCreated = function(state) {
 				displayFlashMessages.call(self, state);
 				if (controllerConfig.onCreated) {
 					controllerConfig.onCreated.call(self, 
-							 			this.getResponseHeader("Location"),
+							 			this.headers.get('Location'),
 									    state);
 					return;
 				} 
@@ -392,7 +381,7 @@ export class Controller extends Dom {
 					// HTTP 3xx status codes must not have a response entity.
 					// Hence no messages can be displayed.
 					controllerConfig.onRedirect.call(self,
-										 this.getResponseHeader("Location"),
+										 this.headers.get('Location'),
 										 state);
 					return;
 				}
@@ -432,51 +421,50 @@ export class Controller extends Dom {
 	_onclick(event) {
 		// Clear all messageboxes (e.g. select date message box)
 		// TODO Remove this tailend fix to the date picker component! (Perhaps add a custom event!
-		this.elements(".messagebox").forEach(messagebox => messagebox.clear());
+		this.elements('.messagebox').forEach(messagebox => messagebox.clear());
 
-		if(!this._page.buttons){
+		if(!this._view.buttons){
 			// A page cannot handle a click event if no buttons are declared.
 			return false;
 		}
 			
 		// Search for the actual control being clicked
 		let element = event.target;
-		while(element && element.tagName !== "BUTTON" && element.tagName !== "A" && element.tagName !== "INPUT"){
+		while(element && element.tagName !== 'BUTTON' && element.tagName !== 'A' && element.tagName !== 'INPUT'){
 			element = element.parentNode;
 		}
 		
-		if(element && (element.tagName === "BUTTON" || element.tagName === "A" )) {
+		if(element && (element.tagName === 'BUTTON' || element.tagName === 'A' )) {
 			// Search a handler for the clicked element.
-			let handler = this._page.buttons[element.id];
+			let handler = this._view.buttons[element.id];
 			if (!handler) {
-				handler = this._page.buttons[element.name];
+				handler = this._view.buttons[element.name];
 			}
 			if (handler) {
 				event.preventDefault();
 				event.stopPropagation();
-				let form = document.querySelector('ui-form');
+				const form = document.querySelector('ui-form');
 				if(form){
-					let syncViewModel = new CustomEvent('UIPreExecuteAction');
-					form.dispatchEvent(syncViewModel);
+					form.dispatchEvent(new CustomEvent('UIPreExecuteAction'));
 				}
-				handler.call(this, new Location(window.location.href)); //SELF
+				handler.call(this, new Location(window.location.href)); 
 				// Page has handled the click. No further actions required.
 				return true;
 			}
 		}
-		// Page did not handle the click.
+		// Controller did not handle the click.
 		return false;	
 	}
 	
 	/**
 	 * Sets the view template.
-	 * @param {String} content the view template
+	 * @param {String} template the view template
 	 */
-	setViewTemplate(content) {
-		this._template = content;
+	set viewTemplate(template) {
+		this._template = template;
 	}
 
-	getViewTemplate(){
+	get viewTemplate(){
 		return this._template;
 	}
 	
@@ -490,23 +478,23 @@ export class Controller extends Dom {
 	 * @returns {boolean} <code>true</code> if the event was handled by this controller, <code>false</code> if not.
 	 */
 	_onchange(event) {
-		if(!this._page_selections){
+		if(!this._view.selections){
 			// Page cannot handle a select event if no selection handlers are declared.
 			return false;
 		}
 		
 		// Find registered selection handler
 		// First, try to select the event handler by the element id.
-		let element = event.target;
-		var handler = this._page.selections[element.id];
+		const element = event.target;
+		let handler = this._view.selections[element.id];
 		if (!handler) {
 			// Second, try to select the handler by the element name.
-			handler = this._page.selections[element.name];
+			handler = this._view.selections[element.name];
 			if(!handler){
 				// Third, scan for pattern matches to select a handler.
-				for (let pattern in this._page.selections) {
+				for (const pattern in this._view.selections) {
 					if (element.name.match(pattern)) {
-						handler = this._page.selections[pattern];
+						handler = this._view.selections[pattern];
 						break;
 					}
 				}
@@ -519,13 +507,13 @@ export class Controller extends Dom {
 
 		if (element.options) {
 			// Handle selected option
-			var value = element.options[element.selectedIndex].value;
-			handler.call(this, value, Element.wrap(element,this)); //SELF 2x
+			const value = element.options[element.selectedIndex].value;
+			handler.call(this, value, Element.wrap(element,this));
 			return true;
 		}
 		if (element.value) {
 			// Handle selected radio box or element
-			handler.call(this, element.value, Element.wrap(element,this)); //SELF 2x
+			handler.call(this, element.value, Element.wrap(element,this));
 			return true;
 		}
 		// Unsupported element selected.
@@ -547,9 +535,9 @@ export class Controller extends Dom {
 	 * @returns the <code>Element</code> that has triggered the currently processed event or <code>null</code> if the element is unknown.
 	 */
 	eventSource(){
-		let target = window.event.target;
+		const target = window.event.target;
 		if(target){
-			return Element.wrap(target,this); //SELF
+			return Element.wrap(target,this);
 		}
 		return null;
 	}
@@ -559,44 +547,30 @@ export class Controller extends Dom {
 	 * @param {Object} [params] the parameters to be send to the resource. Defaults to the query parameters of the current location if parameters were omitted.	
      */
 	load(params) {
-		if (this._page.resource.load) {
-			
-			if(!this._page.viewModel){
-				this._page.viewModel = function(model){
-					return model;
+		if (this._view.resource.load) {
+			// Register call back to process the returned resource and 
+			// decorates the view model if a decorator is present.
+			this._view.resource.onLoaded = async function(viewModel) {
+				// Use the result returned by the server as initial viewModel
+				this._viewModel = viewModel;
+				if(this._view.viewModel){
+					// Controller wants to morph or augment the server response.
+					// Could be a synchronous or asynchronous function (asynchronous if the controller need to fetch additional data).
+					// Await completion to support both, synchronous and asynchronous processing.
+					const augmentedViewModel = await this._view.viewModel.call(this,viewModel);
+					if(augmentedViewModel){
+						// A controller might also inject data into the view model, without returning it.
+						// View model gets only updated if an object is returned.
+						this._viewModel = augmentedViewModel;
+					}
 				}
-			};
-			
-			if (!this._page.init) {
-				this._page.init = function(settings) {					
-					this.render(settings);
-				}.bind(this);
-			}
-
-			this._page.resource.onLoaded = async function(state) {
-				// Initialize view model to support augmentations with this.updateViewModel in the viewModel implementation.
-				this._viewModel = state
-				// This allows the view model to aggregate data from various sources.
-				// Wait for the view model to be loaded.
-				this._viewModel = await this._page.viewModel.call(this,state);
-				let root = document.querySelector("ui-root");
-				root.setViewModel(this._viewModel);
-				root.setController(this);
-				if(this._page.init){
-					this._page.init.call(this, this._viewModel); //SELF
-				}
-				this.renderMenu();
-				this.renderView();
-				// view model is available
-				// => render menu 
-				// => render view
-				// => Inject view model in ui-root!
-				if(this._page.postRender){
-					this._page.postRender.call(this);
-				}
-				
+				document.querySelector('ui-view').dispatchEvent(new CustomEvent('UIRenderView',{bubbles:true,
+																								detail:{location:this.location,
+																										viewModel:this._viewModel,
+																										module:this.module}}));
 			}.bind(this);
-			this._page.resource.load(params ? params : this.location().params());
+			
+			this._view.resource.load(params ? params : this.location.params);
 		}
 	}
 	
@@ -607,21 +581,20 @@ export class Controller extends Dom {
 	 * @param {Object} [params] the parameters to be send to the resource. Defaults to the query parameters of the current location if parameters were omitted.	
      */
 	reload(params){
-		let location = this.location();
-		let context = location.params();
+		const context = this.location.params;
 		if(!params){
 			// Reload the current page as it is if no params exist.
 			this.load(context);
 			return;
 		}
 		// Check whether params are a subset of the existing params
-		let isSameContext = function(){
-			for (let p in params){
+		const isSameContext = function(){
+			for (const p in params){
 				if(params[p] != context[p]){
 					return false;
 				}
 			}
-			for (let p in context){
+			for (const p in context){
 				if(params[p] != context[p]){
 					return false;
 				}
@@ -636,7 +609,7 @@ export class Controller extends Dom {
 		
 		// Context has changed.
 		// Push it to browser history and reload the page.
-		this.push({'view' : `/ui/views/${location.module()}/${location.view()}`,
+		this.push({'view' : `/ui/views/${this.location.module}/${this.location.view}`,
 				   '?':params});
 		this.load(params); 
 	}
@@ -650,22 +623,16 @@ export class Controller extends Dom {
 		
 		if (path.charAt(0) == '/') {
 			// Absolute link can be used as is. 
-			let link = new Location(path);
-			router.navigate(link);
-			return;
+			return router.navigate(new Location(path));
 		}
 		
-		// Relative link must be converted to an absolute link to target page.
-		let location = this.location();
-		let module  = location.module();
-		let app     = location.app();
-		let folder  = module;
-		if(app){
-			folder+='/'+app;
+		// Relative link must be converted to an absolute link to target view.
+		let folder  = this.location.module;
+		if(this.location.app){
+			folder+='/'+this.location.app;
 		}
 		
-		let link = new Location(`/ui/views/${folder}/${path}`);
-		router.navigate(link);
+		return router.navigate(new Location(`/ui/views/${folder}/${path}`));
 	};
 	
 	/**
@@ -691,8 +658,9 @@ export class Controller extends Dom {
 	/**
 	 * Returns the location of the current view.
 	 * @returns {Location} the location of the current view.
+	 * @readonly
 	 */
-	location() {
+	get location() {
 		return new Location(window.location.href);
 	}
 
@@ -723,21 +691,21 @@ export class Controller extends Dom {
 	 */
 	selections(name) {
 		if (name) {
-			if (this._page.selections) {
-				let handler = this._page.selections[name];
+			if (this._view.selections) {
+				let handler = this._view.selections[name];
 				if(handler){
 					return handler.bind(this);
 				}
-				for (let pattern in this._page.selections) {
+				for (const pattern in this._view.selections) {
 					if (name.match(pattern)) {
-						handler = this._page.selections[pattern];
+						handler = this._view.selections[pattern];
 						return handler.bind(this);
 					}
 				}
 				return null;
 			}
 		}
-		return this._page.selections;
+		return this._view.selections;
 	}
 
 	/**
@@ -748,14 +716,14 @@ export class Controller extends Dom {
 	 * @return the event handler for the specified button or all registered event handlers if no name was specified
 	 */
 	buttons(name) {
-		if (this._page.buttons && name) {
-			let button = this._page.buttons[name];
+		if (this._view.buttons && name) {
+			const button = this._view.buttons[name];
 			if(button){
 				return button.bind(this);
 			}
 			return undefined;
 		}
-		return this._page.buttons;
+		return this._view.buttons;
 	}
 	
 	/**
@@ -764,7 +732,7 @@ export class Controller extends Dom {
 	 */
 	setViewModel(model){
 		this._viewModel = model;
-		document.querySelectorAll("ui-root").setViewModel(this._viewModel);
+		document.querySelector('ui-view').setViewModel(this._viewModel);
 	}
 
 	/**
@@ -774,19 +742,19 @@ export class Controller extends Dom {
 	 * @returns {Object} the updated view model
 	 */
 	updateViewModel(delta){
-		if(typeof this._viewModel === "array"){
+		if(Array.isArray(this._viewModel)){
 			this._viewModel = delta;
-			document.querySelector("ui-root").setViewModel(this._viewModel);
+			document.querySelector('ui-view').setViewModel(this._viewModel);
 			return this._viewModel;
 		}
 		if(this._viewModel){
-			for (let property in delta){
+			for (const property in delta){
+				const path = property.split(/\.|\[|\]/);
 				let ctx = this._viewModel;
-				let path = property.split(/\.|\[|\]/);
 				let i=0;
 				for (; ctx && i < path.length - 1;i++){
 					if(path[i]){
-						if(typeof ctx == "array"){
+						if(Array.isArray(ctx)){
 							// Token must be an array index in that particular case.
 							ctx = ctx[parseInt(path[i])];
 							continue;
@@ -808,11 +776,11 @@ export class Controller extends Dom {
 	 */
 	getViewModel(property){
 		if(property){
+			const path = property.split(/\.|\[|\]/);
 			let ctx = this._viewModel;
-			let path = property.split(/\.|\[|\]/);
 			for (let i=0; ctx && i < path.length;i++){
 				if(path[i]){
-					if(typeof ctx == "array"){
+					if(Array.isArray(ctx)){
 						// Token must be an array index in that particular case.
 						ctx = ctx[parseInt(path[i])];
 						continue;
@@ -830,30 +798,13 @@ export class Controller extends Dom {
 	 * Renders the module menu for the specified view model.
 	 * @param {Object} {model} the view model. Defaults to {@link #getViewModel()} if not specified.
 	 */
-	renderMenu(model){
-		if(!model){
-			model = this.getViewModel();
-		}
-		let location = this.location();
-		let module = this.module();
-		let menu = this.element("menu");
-		if(menu){
-			menu.html(Mustache.render(module.getMenuTemplate(), module.computeMenuViewModel(model)));
-			module.select(location);
-		}
-	}
-	
-	/**
-	 * Renders the module menu for the specified view model.
-	 * @param {Object} {model} the view model. Defaults to {@link #getViewModel()} if not specified.
-	 */
 	renderView(model){
 		if(!model){
 			model = this.getViewModel();
 		}
 
-		let html = this.template().html(model);
-		let container = this.element("view-container");
+		const html = this.template().html(model);
+		const container = this.element("ui-view");
 		container.html(html);
 		// Some browsers loose the autofocus when adding new objects to the DOM. Hence focus has to be set again.
 		let autofocus = container.select("[autofocus]");
@@ -864,23 +815,20 @@ export class Controller extends Dom {
 		if(heading){
 			document.title = heading.text();
 		}
-	}
+		if(this._view.postRender){
+			this._view.postRender.call(this);
+		}
 
-	/**
-	 * Renders the entire view by calling {@link #renderMenu(model)} and {@link #renderView(model)}.
-	 * @param {Object} [model] the view model. Defaults to {@link #getViewModel()} if not specified.
-	 */
-	render(model) {
-		this.renderMenu(model);
-		this.renderView(model);
+		
 	}
 	
 	/**
 	 * Returns the module name.
 	 * @returns the module name.
+	 * @readonly
 	 */
-	module(){
-		return Modules.getModule(this.location().module())
+	get module(){
+		return Modules.getModule(this.location.module)
 	}
 	
 	/**
@@ -920,8 +868,8 @@ export class Controller extends Dom {
 	 */
 	push(path) {
 		path = Location.href(path);
-		let state = {
-			"href" : window.location.href
+		const state = {
+			href : window.location.href
 		};
 		window.history.pushState(state, null, path);
 	}
@@ -932,8 +880,8 @@ export class Controller extends Dom {
 	 */
 	error(message) {
 		displayFlashMessages([ {
-			"severity" : "ERROR",
-			"message" : message
+			severity : 'ERROR',
+			message  : message
 		} ]);
 	}
 	
@@ -954,17 +902,17 @@ export class Controller extends Dom {
  * @param {string} message The error message
  */
 function displayInputError(inputElement, severity, message) {
-	let errorElement = document.createElement('div');
+	const errorElement = document.createElement('div');
 	errorElement.classList.add('error');
 	errorElement.appendChild(document.createTextNode(message));
 	try {
-		let inputContainer = inputElement.parentNode;
-		let formGroup = inputContainer.parentNode;
+		const inputContainer = inputElement.parentNode;
+		const formGroup = inputContainer.parentNode;
 		formGroup.classList.add('errored');
 		formGroup.insertBefore(errorElement, inputContainer.nextSibling);
 	} catch (e) {
 		displayFlashMessage(severity, message);
-		let container = document.querySelector("div[class~='flash-messages']");
+		const container = document.querySelector("div[class~='flash-messages']");
 		container.classList.remove('hidden');
 		window.setTimeout(clearFlashMessages, 5000);
 	}
@@ -974,9 +922,9 @@ function displayInputError(inputElement, severity, message) {
  * Clears an input error.
  */
 function clearInputError() {
-	let formGroup = event.target.parentNode.parentNode;
+	const formGroup = event.target.parentNode.parentNode;
 	formGroup.classList.remove('errored');
-	let error = formGroup.querySelector("div[class='error']");
+	const error = formGroup.querySelector("div[class='error']");
 	if (error) {
 		formGroup.removeChild(error);
 	}
@@ -984,17 +932,14 @@ function clearInputError() {
 // Clear input error if new input is provided for a input field.
 document.addEventListener('input', clearInputError);
 
-//** END MODULE API
-
-
 /**
  * Clears all flash messages.
  */
 function clearFlashMessages() {
-	let container = document.querySelector("div[class~='flash-messages']");
+	const container = document.querySelector("div[class~='flash-messages']");
 	container.classList.add('hidden');
-	let messages = container.querySelectorAll('div');
-	for (var i = 0; i < messages.length; i++) {
+	const messages = container.querySelectorAll('div');
+	for (let i = 0; i < messages.length; i++) {
 		container.removeChild(messages[i]);
 	}
 	container.classList.remove('hidden');
@@ -1023,7 +968,7 @@ function displayFlashMessages(messages) {
 							messages.reason, 
 							messages.message);
 	}
-	let container = document.querySelector("div[class~='flash-messages']");
+	const container = document.querySelector("div[class~='flash-messages']");
 	container.classList.remove('hidden');
 	window.setTimeout(clearFlashMessages, 5000);
 }
@@ -1035,7 +980,7 @@ function displayFlashMessages(messages) {
  * @param {String} text the human-friendly message text
  */
 function displayFlashMessage(severity, reason, text) {
-	let message = document.createElement('div');
+	const message = document.createElement('div');
 	message.classList.add('flash');
 	if (severity === 'WARNING') {
 		message.classList.add('flash-warn');
@@ -1071,7 +1016,7 @@ Menu.keydown = function(){
 	if(this.keyCodePressed){
 		switch(event.keyCode){
 			case KEY_1:{
-				let input = document.getElementsByTagName('input');
+				const input = document.getElementsByTagName('input');
 				if(input){
 					for (let i=0; i < input.length; i++){
 						if(input[i].disabled || input[i].readonly || input[i].type==='hidden'){

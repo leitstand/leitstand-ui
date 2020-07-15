@@ -1,3 +1,4 @@
+
 /* 
  * Copyright 2020 RtBrick Inc.
  * 
@@ -99,9 +100,9 @@
  */
 function http(uri,params) {
 	if(params){
-		var viewparams = {};
-		for(let p in params){
-			var v = params[p];
+		const viewparams = {};
+		for(const p in params){
+			const v = params[p];
 			if(v && v.toISOString){
 				viewparams[p] = v.toISOString();
 				continue;
@@ -113,97 +114,70 @@ function http(uri,params) {
 		uri = Mustache.render(uri,viewparams);
 	}
 	uri = encodeURI(uri);
-	let headers = {
-		'Accept' : 'application/json',
-		'Content-Type':'application/json'
+	// Request headers
+	const headers = {
+		'Accept':'application/json',	
+		'Content-Type':'application/json'	
 	};
-	let handlers = {};
-	let map;
-	
-	function invoke(method, payload){
-		
-		return new Promise(function(resolved,rejected){
-			//Create a new asynchronous HTTP request
-			try{
-				let request = new XMLHttpRequest();
-				request.open(method, // HTTP request method (GET, PUT, POST, DELETE, ...)
-							 uri,    // Request URI
-							 true);	 // Asynchronous invocation
-				// All all HTTP headers
-				for(let header in headers){
-					request.setRequestHeader(header,headers[header]);
+	// Response handlers by HTTP status code
+	const handlers = {};
+	function invoke(method,payload){
+		return new Promise((resolved,rejected) => {
+			function marshal(payload){
+				if(payload && headers['Content-Type'] == 'application/json'){
+					return JSON.stringify(payload);
 				}
-				request.onreadystatechange = function(){ //TODO Use load, error, timeout instead? Migrate to FetchAPI?
-					if(request.readyState == XMLHttpRequest.DONE){
-						// Request is executed
-						request.method = method; // Populate method as it is used later.
-						let response = request.responseText;
-						// Apply response text mapping if any.
-						if(map && response){
-							try {
-								response = map(response);
-							} catch (e){
-								console.error(`Cannot transform response: ${e}`);
-								console.debug(response);
-							}
-						}
-						
-						// Lookup handler to process the HTTP response status
-						let handler = handlers[request.status]; 
-						if(handler){
-							handler.call(this,
-										 response,
-										 this.getResponseHeader('Location'));
-						}
-						// Pass response to resolve method
-						if(200 <= request.status && request.status < 300){
-							resolved(response);
-						} else {
-							rejected(response);
-						}
-						return;
-					}
-				}
-				if (payload) {
-					if(headers['Content-Type'] == 'text/plain'){
-						// Sent plain text payload as it is.
-						request.send(payload);
-						return;
-					}
-					// Serialize JSON object, JSON array or JSON literal before sending it to the server
-					request.send(JSON.stringify(payload));
-					return;
-				}
-				// Send empty request if no payload is specified.
-				try{
-					request.send();
-				} catch (e){
-					alert(e);
-				}
-			} catch (e){
-				console.error(`${method} request to ${uri} failed. Details: ${e}`);
-				rejected({'severity':'ERROR',
-						  'reason':'WEB0001E',
-						  'message':''+e});
+				return payload;
 			}
-			
+			// Invoke REST API
+			fetch(uri, {
+			      headers: headers,
+  			      method : method,
+  			      body : marshal(payload)})
+			.then((response) => {
+				const processResponseData = function(data){
+					// Invoke handler registered for the returned HTTP status code, if any.
+					const handler = handlers[response.status];
+					if(handler){
+						const context = { method:method,
+										  uri:uri,
+										  status:response.status,
+										  headers:response.headers};
+						handler.call(context,data);
+					}
+					// Notify client about the REST API invocation outcome.
+					if(200 <= response.status && response.status < 300 ){
+						// Successful REST API invocation
+						resolved(data);
+					} else {
+						// Failed REST API invocation
+						rejected(data);
+					}
+				};
+				if(response.headers.get('Content-Type') == 'application/json'){
+					// Process JSON response
+					return response.json()
+								   .then(processResponseData);
+				}
+				// Plain text response
+				return response.text()
+							   .then(processResponseData);
+			})
+			.catch((e) => {
+				// Critical error (e.g. server not responding)
+				//TODO Proper log message
+				rejected(e);
+			});
 		});
+
 	}
+
 	
 	/**
 	 * HTTP request to invoke a REST API operation.
 	 */
 	class HttpRequest {
 		
-		/**
-		 * Registers a callback function to transform the response entity
-		 * @param {HttpRequest~map} handle the entity transformation callback
-		 * @returns a reference to this <code>HttpRequest</code> to continue with the request building
-		 */
-		map(handle) {
-			map = handle;
-			return this;
-		}
 		/**
 		 * Sets the <code>Accept</code> HTTP request header.
 		 * @param {String} mediaType the accept header value
@@ -412,11 +386,11 @@ export function merge(){
 	if(arguments.length == 1){
 		return arguments[0];
 	}
-	var union = {};
+	const union = {};
 	Array.from(arguments).forEach(function(argument){
 		if(argument && typeof argument === 'object'){
-			for(let p in argument){
-				let v = argument[p];
+			for(const p in argument){
+				const v = argument[p];
 				if(v){
 					union[p] = v;
 				}
@@ -580,7 +554,6 @@ export class Resource {
 		 */
 		this.onNotFound = function(messages){
 			window.dispatchEvent(new CustomEvent('ResourceNotFound',{'detail':messages}));
-			this.onError(messages);
 		}
 		
 		
@@ -618,13 +591,8 @@ export class Resource {
 	 * @returns {client~HttpRequest} the prepared HTTP call
 	 */
 	resource() {
-		let path = arguments[0];
-		let params = null;
-		if(arguments.length == 2){
-			params = arguments[1];
-		} else if(arguments.length > 2){
-			params = merge.apply(this,[...arguments].slice(1));
-		}
+		const path = arguments[0];
+		const params = (arguments.length == 2) ? arguments[1] : merge.apply(this,[...arguments].slice(1));
 		// Event handlers are always invoked in the scope of the XMLHTTPRequest to
 		// have access to the request and response. resource reference is needed to
 		// forward the event to the proper event handler.
@@ -694,7 +662,6 @@ export class Resource {
 		return this.resource.apply(this,arguments)
 				   .contentType('application/json')
 		           .accept('application/json')
-		           .map(JSON.parse);
 	};
 
 

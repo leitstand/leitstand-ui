@@ -18,6 +18,8 @@ dependencies {
     testCompile 'org.mockito:mockito-all:1.8.4'
     testCompile 'org.glassfish.jersey.core:jersey-client:2.6'
     testCompile 'com.h2database:h2:1.4.200'
+//    testRuntime 'org.glassfish:javax.json:1.1.4'
+//    testRuntime 'org.eclipse:yasson:1.0.3'
 }
 
 task sourcesJar(type: Jar) {

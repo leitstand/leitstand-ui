@@ -210,4 +210,4 @@ if (typeof module === "object" && module.exports) {
   global.Viz = Viz;
 }
   
-})(this);
+})(window);

@@ -30,7 +30,7 @@ class OidcAuthenticationFlowController extends Controller {
 		super({resource:new OidcAuthenticationFlow(),
 			   onSuccess:function(user){
 				   UserContext.init(user);
-				   this.redirect(decodeURIComponent(this.location().param('view')));
+				   this.redirect(decodeURIComponent(this.location.param('view')));
 			   },
 			   onUnauthorized:function(){
 				   this.redirect("/ui/login/login.html");
@@ -40,11 +40,11 @@ class OidcAuthenticationFlowController extends Controller {
 	
 	login(){
 		let redirectUri = `${window.origin}${window.location.pathname}`;
-		if(this.location().param('view')){
-			redirectUri+=`?view=${encodeURIComponent(this.location().param('view'))}`;
+		if(this.location.param('view')){
+			redirectUri+=`?view=${encodeURIComponent(this.location.param('view'))}`;
 		}
-		this._page.resource.login(this.location().param('code'), 
-		 			  			 encodeURIComponent(redirectUri));
+		this._view.resource.login(this.location.param('code'), 
+		 			  			  encodeURIComponent(redirectUri));
 	}
 	
 }
