@@ -1319,12 +1319,19 @@ export class Select extends InputControl {
 		return Promise.resolve(this._options);
 	}
 	
+	get multiple(){
+		return this.isOptionEnabled('multiple')
+	}
+	
 	get selected(){
 		const select = this.querySelector('select');
-		if(select.selectedIndex >= 0){
-			const selected = select.options[select.selectedIndex];
-			return {'label':selected.label,'value':selected.value};
+		const options = select.selectedOptions;
+		if(this.multiple){
+			return options;
 		}
+		if(options.length > 0){
+			return options[0];
+		}	
 		return null;
 	}
 	
@@ -1337,11 +1344,12 @@ export class Select extends InputControl {
 		const note = this.note;
 		this.options()
 			.then((options) => {
-				const optionsHtml = options.map(option => `<option value="${option.value}" ${this.isSelected(option) ? 'selected' : ''}>${option.label}</option>`)
+				const size = this.multiple ? options.length : 1;
+				const optionsHtml = options.map(option => `<option value="${option.value}" ${this.isSelected(option) ? 'selected' : ''}>${option.label || option.value}</option>`)
 										   .reduce((a,b) => a+b);
 				this.innerHTML=`<div class="form-group">
 									<div class="label"><label for="${name}">${label}</label></div>
-									<div class="input"><select id="${name}" class="form-select" ${this.readonly} ${this.disabled} name="${this.name}">${optionsHtml}</select></div>
+									<div class="input"><select id="${name}" class="${size == 1 ? 'form-select' : 'form-control'}" ${this.readonly} ${this.disabled} name="${this.name}" ${this.multiple ? "multiple" : ""} size="${size}">${optionsHtml}</select></div>
 									<p class="note">${note}</p>
 								</div>`;
 			
@@ -1351,9 +1359,17 @@ export class Select extends InputControl {
 			
 				this.form.addEventListener('UIPreExecuteAction',(evt) => {
 					const select = this.querySelector('select');
-					if(select.selectedIndex >= 0){
-						this.select(select.options[select.selectedIndex].value);
+					const options = select.selectedOptions;
+					if(this.multiple){
+						this.select([...options].map(option => option.value));
+						return;
 					}
+					if(options.length > 0){
+						this.select(options[0].value);
+					} else {
+						this.select(null);
+					}
+					
 				});
 			});
 	}
