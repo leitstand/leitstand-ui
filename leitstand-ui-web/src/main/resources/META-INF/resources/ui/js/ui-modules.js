@@ -302,10 +302,10 @@ class ViewModelPropertyMatcher{
 		const property = this.matcher.property;
 		const value = viewModel[property];
 		if(this.matcher.exists === true){
-			return !!viewModel;
+			return !!value;
 		}
 		if(this.matcher.exists === false){
-			return !viewModel;
+			return !value;
 		}
 		if(this.matcher.matches){
 			return value && value.matches && value.matches(this.matcher.matches); 
@@ -376,7 +376,6 @@ export class Module {
 			this._moduleTemplate = await templateLoader.load();
 			return this;
 		} catch (e){
-			console.log(JSON.stringify(module.applications));
 			console.error(`Failed to initialze module ${location.module}. Reported error: ${e}`);
 			throw e;
 		}
@@ -548,7 +547,7 @@ export class Module {
 				if(m.requires){
 					// Check that all required properties exist
 					for (let i=0; i < m.requires.length; i++){
-						if(!!model[m.requires[i]]){
+						if(!!model[m.requires[i]] || JSONPath(m.requires[i],model).length > 0){
 							continue;
 						}
 						if(!!m.query[m.requires[i]]){
@@ -580,7 +579,7 @@ export class Module {
 					delimiter='&';
 				}
 				
-				if(item.view.startsWith('/')){
+				if(item.view.match(/^(?:[a-z]+\:\/)?\//)){
 					return `${item.view}${queryString}`;
 				}
 				

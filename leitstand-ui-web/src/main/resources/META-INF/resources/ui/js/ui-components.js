@@ -249,6 +249,13 @@ export class UIElement extends HTMLElement {
 	}
 	
 	/**
+	 * Returns the view location.
+	 */
+	get location(){
+		return this.controller.location
+	}
+	
+	/**
 	 * Returns the form of the current view or <code>null</code> if no form is displayed.
 	 * return {Form} the form UI component
 	 */
@@ -283,11 +290,11 @@ export class UIElement extends HTMLElement {
 	}
 	
 	/**
-	 * Tests whether a component option is enabled.
-	 * An option is enabled when the corresponding element attribute value is either <code>true</code> or no value was specified and the attribute is present only.
+	 * Tests whether a component flag is set.
+	 * A flag is set when the corresponding element attribute value is either <code>true</code> or no value was specified and the attribute is present only.
 	 * @param {String} name the attribute name
 	 */
-	isOptionEnabled(name){
+	isFlagSet(name){
 		const attr = this.getAttribute(name);
 		return attr == '' || attr == 'true';
 	}
@@ -753,7 +760,7 @@ class Actions extends FormElement {
 	 * Renders the form actions container DOM.
 	 */
 	renderDom(){
-		this.outerHTML = `<div class="form-actions" style="margin-top: 10px">
+		this.innerHTML = `<div class="form-actions" style="margin-top: 10px">
 							${this.innerHTML}
 						  </div>`;
 	}
@@ -792,7 +799,7 @@ export class Control extends FormElement{
 			scopes = this.form.scopesAllowed
 		}
 		if(scopes){
-			return scopes.split(/\s*/g);
+			return scopes.split(/\s+/g);
 		}
 		return [];
 	}
@@ -803,7 +810,7 @@ export class Control extends FormElement{
 	 * @returns {boolean} <code>true</code> if this control is readonly, <code>false</code> otherwise.
 	 */
 	isReadonly(){
-		return this.readonly === 'readonly' || this.isOptionEnabled('readonly');
+		return this.readonly === 'readonly' || this.isFlagSet('readonly');
 	}
 	
 	/**
@@ -833,7 +840,7 @@ export class Control extends FormElement{
 	 * @returns {boolean} <code>true</code> if this control is disabled, <code>false</code> otherwise.
 	 */
 	isDisabled(){
-		if(this.disabled === 'disabled' || this.isOptionEnabled('disabled')){
+		if(this.disabled === 'disabled' || this.isFlagSet('disabled')){
 			return true;
 		}
 		
@@ -855,7 +862,7 @@ export class Control extends FormElement{
 	 * @returns {String} disabled if the control shall be rendered disabled, an empty string otherwise
 	 */
 	get disabled(){
-		if(this.hasAttribute('disabled')){
+		if(this.isFlagSet('disabled')){
 			return 'disabled';
 		}
 		const scopes = this.scopesAllowed;
@@ -1035,12 +1042,12 @@ class Button extends Control {
 		}
 		
 		const href = this.getAttribute('href');
-		if(href){
-			const target = this.isOptionEnabled('external') ? 'target="_blank"' : '';
+		if(href && !this.disabled){ // Render button because disabled links are not supported
+			const target = this.isFlagSet('external') ? 'target="_blank"' : '';
 			
 			this.outerHTML=`<a id="${this.name}" class="btn ${this._buttonSize} ${this._buttonStyle}" title="${this.title}" href="${href}" ${target}>${this.label}</a>`;
 		} else {
-			this.outerHTML=`<button id="${this.name}" name="${this.name}" class="btn ${this._buttonSize} ${this._buttonStyle}" title="${this.title}" ${this.readonly}>${this.label}</button>`;
+			this.outerHTML=`<button id="${this.name}" name="${this.name}" class="btn ${this._buttonSize} ${this._buttonStyle}" title="${this.title}" ${this.readonly} ${this.disabled}>${this.label}</button>`;
 		}
 	}
 }
@@ -1146,9 +1153,17 @@ class InputText extends InputControl {
 	 * Renders the DOM
 	 */
 	renderDom(){
+		// Search for buttons to be displayed next to the input field.
+		const buttons = this.querySelectorAll('ui-button');
+		
 		this.innerHTML=`<div class="form-group">
-						<div class="label"><label for="${this.name}">${this.label}</label></div>
-						<div class="input"><input id="${this.name}" type="text" class="form-control" ${this.readonly} ${this.disabled} name="${this.name}" value='${this.value}' placeholder="${this.placeholder}"></div>
+						<div class="label">
+							<label for="${this.name}">${this.label}</label>
+						</div>
+						<div class="input">
+							<input id="${this.name}" type="text" class="form-control" ${this.readonly} ${this.disabled} name="${this.name}" value='${this.value}' placeholder="${this.placeholder}">
+							${[...buttons].map(button => button.outerHTML).reduce((a,b)=>a+b,'')}
+						</div>
 						<p class="note">${this.note}</p>
 						</div>`;
 		this.addEventListener("change",function(evt){
@@ -1320,7 +1335,7 @@ export class Select extends InputControl {
 	}
 	
 	get multiple(){
-		return this.isOptionEnabled('multiple')
+		return this.isFlagSet('multiple')
 	}
 	
 	get selected(){
@@ -1346,7 +1361,7 @@ export class Select extends InputControl {
 			.then((options) => {
 				const size = this.multiple ? options.length : 1;
 				const optionsHtml = options.map(option => `<option value="${option.value}" ${this.isSelected(option) ? 'selected' : ''}>${option.label || option.value}</option>`)
-										   .reduce((a,b) => a+b);
+										   .reduce((a,b) => a+b,'');
 				this.innerHTML=`<div class="form-group">
 									<div class="label"><label for="${name}">${label}</label></div>
 									<div class="input"><select id="${name}" class="${size == 1 ? 'form-select' : 'form-control'}" ${this.readonly} ${this.disabled} name="${this.name}" ${this.multiple ? "multiple" : ""} size="${size}">${optionsHtml}</select></div>
@@ -1403,7 +1418,7 @@ class RadioButton extends InputControl {
 	 */
 	renderDom(){
 		const value = this.getAttribute('value');
-		const checkedByDefault = this.isOptionEnabled('default');
+		const checkedByDefault = this.isFlagSet('default');
 		const checked = (this.viewModel.contains(this.binding) && this.viewModel.test(this.binding,value) || !this.viewModel.contains(this.binding) && checkedByDefault ) ? 'checked' : '';
 		this.innerHTML=	`<div class="form-checkbox">
 						  <label>
@@ -1455,7 +1470,7 @@ class Checkbox extends InputControl {
 			if(isNaN(value)){
 				return value;
 			}
-			if(isInteger(value)){
+			if(Number.isInteger(value)){
 				return Number.parseInt(value);
 			}
 			return Number.parseFloat(value);
@@ -1463,7 +1478,7 @@ class Checkbox extends InputControl {
 		
 		
 		const value = this.getAttribute('value');
-		const checkedByDefault = this.isOptionEnabled('checked');
+		const checkedByDefault = this.isFlagSet('checked');
 		const checked = (this.viewModel.test(this.binding,typedValue(value)) || !this.viewModel.contains(this.binding) && checkedByDefault ) ? 'checked' : '';
 		let conditional = this.querySelector('ui-checked');
 		if(conditional) {
@@ -1596,7 +1611,7 @@ class Composition extends UIElement {
 			}
 			return ''
 		};
-		const cells = [...items].map(item => `<div class="column ${size(item)}">${item.innerHTML}</div>`).reduce((a,b)=>a+b);
+		const cells = [...items].map(item => `<div class="column ${size(item)}">${item.innerHTML}</div>`).reduce((a,b)=>a+b,'');
 		this.innerHTML=`<div>
 						${cells}
 						</div>`;
@@ -1740,7 +1755,7 @@ class Details extends UIElement {
 			this.classList.add(this.getAttribute('class'));
 		}
 		const properties = this.querySelectorAll('ui-property');
-		const table = `<table class="details">;
+		const table = `<table class="details">
 						${[...properties]
 						   .map(property => {
 									const label = property.querySelector('ui-label').innerHTML;
@@ -1754,7 +1769,7 @@ class Details extends UIElement {
 									}
 									return '';
 								})
-							.reduce((a,b) => a+b)}
+							.reduce((a,b) => a+b,'')}
 						</table>`;
 		this.innerHTML=table;
 	}
@@ -1837,7 +1852,7 @@ class MainMenu extends HTMLElement {
 												   data-title="${item.title}" 
 												   data-module="${item.module}">
 												   ${item.label}</a>`)
-								  .reduce((a,b)=>a+b)}
+								  .reduce((a,b)=>a+b,'')}
 					 	</nav>
 					 </div>
 					 <div id="module">
@@ -1854,7 +1869,7 @@ class MainMenu extends HTMLElement {
 			  .catch((e) => {
 				  console.error("Cannot create Leistand main menu.");
 				  console.log(e);
-				  rouder.redirect('/ui/error/500.html');
+				  router.redirect('/ui/login/login.html');
 			  });
 	}
 	
@@ -1915,13 +1930,13 @@ class ModuleMenu extends HTMLElement {
 	render(menus){
 		const concat = (a,b) => a+b;
 		const item2html = function(item){
-			return `<li><a class="menu-item" id="${item.view}" title="${item.title}" href="${item.viewpath}">${item.label}</a></li>`;
+			return `<li><a class="menu-item" id="${item.view}" title="${item.title}" href="${item.viewpath}" ${item.target ? `target="${item.target}"` :''}>${item.label}</a></li>`;
 		};
 		const menuDom = menus.map((menu) => `<nav class="menu">
 												${menu.label ? `<h3 class="menu-heading" title="${menu.title}">${menu.label}</h3>`:''}
-												<ul>${menu.items.map(item2html).reduce(concat)}</ul>
+												<ul>${menu.items.map(item2html).reduce(concat,'')}</ul>
 							 				 </nav>` )
-							 .reduce(concat);
+							 .reduce(concat,'');
 		this.innerHTML=menuDom;
 	}
 	
@@ -2314,7 +2329,7 @@ class Calendar {
 						</div>
 						<div class="input">
 			 				<select id="hour" name="hour" class="form-select">
-			 					${Calendar.HOURS_OF_DAY.map(hour => `<option value="${hour}" ${selected(this.getHours(),hour)} >${hour}</option>`).reduce((a,b) => a+b)}
+			 					${Calendar.HOURS_OF_DAY.map(hour => `<option value="${hour}" ${selected(this.getHours(),hour)} >${hour}</option>`).reduce((a,b) => a+b,'')}
 							</select>
 						</div>
 					</div><div class="form-group">
@@ -2323,7 +2338,7 @@ class Calendar {
 						</div>
 						<div class="input">
 							<select id="minute" name="minute" class="form-select">
-								${Calendar.MINUTES_OF_HOUR.map(minute => `<option value="${minute}" ${selected(this.getMinutes(),minute)} >${minute}</option>`).reduce((a,b) => a+b)}
+								${Calendar.MINUTES_OF_HOUR.map(minute => `<option value="${minute}" ${selected(this.getMinutes(),minute)} >${minute}</option>`).reduce((a,b) => a+b,'')}
 			 				</select>
 						</div>
 					</div>
@@ -2366,7 +2381,7 @@ class Calendar {
 						<span>Sun</span><span>Mon</span><span>Tue</span><span>Wen</span><span>Thu</span><span>Fri</span><span>Sat</span>
 					</div>
 					<div class="page">
-						${dayElements.reduce((a,b)=>a+b)}
+						${dayElements.reduce((a,b)=>a+b,'')}
 					</div>
 				<div>`;
 	};
@@ -2445,11 +2460,13 @@ class TagEditor extends InputControl{
 	 */
 	renderDom(){
 		
+		const note = this.note;
+		
 		const renderTags = function(){
 			const tags = this.viewModel.getProperty(this.binding);
 			if(this.readonly){
 				return `<ol class="tags">
-							${tags && tags.length > 0 ? tags.map(tag => `<li class="tag">${tag}</li>`).reduce((a,b) => a+b) : ''}
+							${tags && tags.map(tag => `<li class="tag">${tag}</li>`).reduce((a,b) => a+b,'')}
 						</ol>`;
 			}
 			
@@ -2459,7 +2476,7 @@ class TagEditor extends InputControl{
 					</ol>
 					<span style="position:relative"><input type="text" name="new-tag"><button name="add-tag" title="Add new tag" class="btn btn-sm btn-outline">+</button></span>
 					</div>
-					<p class="note">${this.note}</p>`;
+					<p class="note">${note}</p>`;
 		}.bind(this);
 		
 		this.innerHTML = renderTags();
@@ -2491,7 +2508,7 @@ class TagEditor extends InputControl{
 }
 
 // Register view first to avoid troubles with DOM rendering.
-customElements.define('ui-view',View,{'extends':'div'});
+customElements.define('ui-view',View);
 customElements.define('ui-module-menu',ModuleMenu);
 customElements.define('ui-module',Module);
 customElements.define('ui-modules',MainMenu);
@@ -2511,7 +2528,7 @@ customElements.define('ui-details',Details);
 customElements.define('ui-element',UIElement);
 customElements.define('ui-filter',Filter);
 customElements.define('ui-form',Form);
-customElements.define('ui-group',Group,{'extends':'fieldset'});
+customElements.define('ui-group',Group);
 customElements.define('ui-input',InputText);
 customElements.define('ui-number',InputNumber);
 customElements.define('ui-password',Password);

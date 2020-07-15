@@ -55,7 +55,7 @@ export class Dom {
 		}
 		if (query.tagName) {
 			// Decorate a native DOM element.
-			return new Element(id, this);
+			return new Element(query, this);
 		}
 
 		// Try to fetch element assuming the argument is the element id...
@@ -224,7 +224,7 @@ export class Element extends Dom{
 			return this._element.checked ? this._element.value : null;
 		}
 		if (this._element.type == 'radio') {
-			const selected = document.querySelectorAll(`input[name='${this._element.name}']:checked`);
+			const selected = document.querySelector(`input[name='${this._element.name}']:checked`);
 			if(selected){
 				return selected.value;
 			}

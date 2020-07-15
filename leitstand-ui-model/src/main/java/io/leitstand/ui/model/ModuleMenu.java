@@ -113,7 +113,7 @@ public class ModuleMenu extends BaseModuleItem {
 	}
 	
 	private String menu;
- 	private List<ModuleMenuItem> items;
+ 	private List<ModuleMenuItem> items = new LinkedList<>();
 
  	/**
  	 * Returns the name of this menu.
@@ -128,9 +128,6 @@ public class ModuleMenu extends BaseModuleItem {
 	 * @return the list of menu items.
 	 */
 	public List<ModuleMenuItem> getItems() {
-		if(items == null) {
-			return null;
-		}
 		return unmodifiableList(items);
 	}
 	

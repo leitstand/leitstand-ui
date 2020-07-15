@@ -16,7 +16,6 @@
 import {Resource} from '/ui/js/client.js';
 import {Controller} from '/ui/js/ui.js';
 import {UserContext,Location} from '/ui/js/ui-core.js';
-import {Modules} from '/ui/js/ui-modules.js';
 
 class User extends Resource {
 	login(userName,password){
