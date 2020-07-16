@@ -116,8 +116,7 @@ function http(uri,params) {
 	uri = encodeURI(uri).replace('+','%2B');
 	// Request headers
 	const headers = {
-		'Accept':'application/json',	
-		'Content-Type':'application/json'	
+		'Accept':'application/json'
 	};
 	// Response handlers by HTTP status code
 	const handlers = {};
@@ -154,7 +153,8 @@ function http(uri,params) {
 						rejected(data);
 					}
 				};
-				if(response.headers.get('Content-Type') == 'application/json'){
+				if(response.headers.get('Content-Type') &&
+				   response.headers.get('Content-Type').indexOf('application/json') >= 0){
 					// Process JSON response
 					return response.json()
 								   .then(processResponseData);
@@ -260,6 +260,17 @@ function http(uri,params) {
 		onInternalServerError(handler) {
 			handlers[500] = handler;
 			return this;
+		}
+		
+		
+        /**
+         * Registers a callback to process a <code>502 Bad Gateway</code> HTTP response.
+         * @param {HttpRequest~handler} handler the error handler
+         * @returns a reference to this <code>HttpRequest</code> to continue with the request building
+         */
+		onBadGateway(handler){
+		    handlers[502] = handler;
+		    return this;
 		}
 		
 		/**
@@ -576,6 +587,13 @@ export class Resource {
 		 * @param {String|Object|Message|Message[]} response the response of the successful operation, which is either the URI of a created resource, the response entity, or messages that describe the outcome of an operation
 		 */
 		this.onSuccess = function() {};
+		
+		/**
+		 * Bad gateway callback.
+		 * <p>
+		 * This callback is invoked if the server reponses with a bad gatway error message.
+		 */
+		this.onBadGateway = null;
 	}
 
 
@@ -644,6 +662,7 @@ export class Resource {
 			   .onBadRequest(this.onInputError ? this.onInputError : this.onError)
 			   .onConflict(this.onConflict ? this.onConflict : this.onError)
 			   .onInternalServerError(this.onError)
+			   .onBadGateway(this.onBadGateway)
 			   .onForbidden(this.onForbidden ? this.onForbidden : this.onError)
 			   .onUnauthorized(this.onUnauthorized ? this.onUnauthorized : this.onError)
 			   .onNotFound(this.onNotFound ? this.onNotFound : this.onError);
@@ -717,11 +736,17 @@ export class Json extends Resource  {
 	 * @returns {Promise} a promise to process the resource or reported errors
 	 */
 	load(params) {
-		return this.json(this._uri,
-						 this._cfg,
-						 params)
-				   .GET();
+		// Using resource rather than JSON because Content-Type must not be application/json for CORS requests.
+		// Set fetch API documentation for further information.
+		return this.resource(this._uri,
+						     this._cfg,
+						     params)
+					.accept('application/json')
+				    .GET();
 	}
+	
+	
+
 	
 }
 

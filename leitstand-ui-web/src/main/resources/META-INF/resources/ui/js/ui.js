@@ -206,7 +206,9 @@ export class Menu extends Dom {
 		const controller = this.controller(location.view);
 		const menu = document.querySelector("ui-module-menu");
 		const item = this.item(location.view);
-		menu.select(this,item);
+		if(menu){
+		    menu.select(this,item);
+		}
 		return controller;
 	}
 
@@ -290,6 +292,17 @@ export class Controller extends Dom {
 					return;
 				}
 			};
+			resource.onBadGateway = function(state){
+			    displayFlashMessages.call(self, state);
+                if (controllerConfig.onBadGateway) {
+                    controllerConfig.onBadGateway.call(self, state);
+                    return;
+                }
+                if(controllerConfig.onError){
+                    controllerConfig.onError.call(self,state);
+                    return;
+                } 
+			}
 			resource.onSuccess = function(state) {
 				if (this.status == 204) { // No content
 					displayFlashMessages.call(self, [ {
