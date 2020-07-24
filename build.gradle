@@ -7,20 +7,8 @@ def allTestCoverageFile = "$buildDir/jacoco/allTestCoverage.exec"
 allprojects {
 
     task version(type: Exec) {
-        println 'Resolve version for project ' + project.getName()
-        def stdout = new ByteArrayOutputStream()
-        def rc = exec {
-            commandLine 'git', 'describe', '--tags'
-            standardOutput = stdout
-            ignoreExitValue true
-        }
-        if (rc.exitValue == 0) {
-            version = stdout.toString().trim()
-        } else {
-            println 'WARNING: No version information available. Version defaults to 0.0.0-develop'
-            version = '0.0.0-develop'
-        }
-        println 'Project version: ' + version
+        def version = findProperty('versions.leitstand-ui')
+        println 'Project version ('+project.name+'): ' + version
         project.setVersion(version)
     }
 

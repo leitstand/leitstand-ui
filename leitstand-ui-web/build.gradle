@@ -4,9 +4,8 @@ plugins {
 }
 
 dependencies {
-	compile project(':leitstand-ui-model')
+    compile project(':leitstand-ui-model')
     compile 'io.leitstand:leitstand-commons:' + findProperty("versions.leitstand-commons")
-    compile 'io.leitstand.security:leitstand-auth:' + findProperty("versions.leitstand-security")
 
     compileOnly 'javax:javaee-api:8.0'
     compileOnly 'org.postgresql:postgresql:42.2.5'
