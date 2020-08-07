@@ -4,25 +4,25 @@ plugins {
 }
 
 dependencies {
-    compile project(':leitstand-ui-model')
-    compile 'io.leitstand:leitstand-commons:' + findProperty("versions.leitstand-commons")
+    implementation project(':leitstand-ui-model')
+    implementation 'io.leitstand:leitstand-commons:' + findProperty("versions.leitstand-commons")
 
     compileOnly 'javax:javaee-api:8.0'
     compileOnly 'org.postgresql:postgresql:42.2.5'
 
-    testCompile 'junit:junit:4.12'
-    testCompile 'io.leitstand:leitstand-test:' + findProperty("versions.leitstand-commons")
-    testCompile 'org.eclipse.persistence:eclipselink:2.7.1'
-    testCompile 'javax.xml.bind:jaxb-api:2.3.0'
-    testCompile 'org.hibernate:hibernate-validator:4.2.0.Final'
-    testCompile 'org.mockito:mockito-all:1.8.4'
-    testCompile 'org.glassfish.jersey.core:jersey-client:2.6'
-    testCompile 'com.h2database:h2:1.4.200'
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'io.leitstand:leitstand-test:' + findProperty("versions.leitstand-commons")
+    testImplementation 'org.mockito:mockito-all:1.8.4'
+    testImplementation 'com.h2database:h2:1.4.200'
+    testRuntimeOnly 'org.eclipse.persistence:eclipselink:2.7.1'
+    testRuntimeOnly 'javax.xml.bind:jaxb-api:2.3.0'
+    testRuntimeOnly 'org.hibernate:hibernate-validator:4.2.0.Final'
+    testRuntimeOnly 'org.glassfish.jersey.core:jersey-client:2.6'
 }
 
-task sourcesJar(type: Jar) {
-    from sourceSets.main.allJava
-    archiveClassifier = 'sources'
+java {
+    withSourcesJar()
+    withJavadocJar()
 }
 
 publishing {
@@ -31,8 +31,6 @@ publishing {
             artifactId = 'leitstand-ui-web'
             version = project.getVersion()
             from components.java
-            artifact sourcesJar
-
         }
     }
 }
