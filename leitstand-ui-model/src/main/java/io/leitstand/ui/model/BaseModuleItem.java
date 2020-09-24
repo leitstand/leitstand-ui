@@ -247,12 +247,15 @@ public abstract class BaseModuleItem implements Named {
 	 * @param parameters the query parameters to be added to this menu item.
 	 */
 	void addQueryParameters(Map<String,String> parameters) {
-		if(this.query == null || this.query.isEmpty()) {
+	    if(parameters == null) {
+	        return;
+	    }
+	    if(this.query == null || this.query.isEmpty()) {
 			this.query = parameters;
 			return;
 		}
 		for(Map.Entry<String, String> param : parameters.entrySet()) {
-			if(query.containsKey(param.getKey())) {
+			if(query != null && query.containsKey(param.getKey())) {
 				continue;
 			}
 			query.put(param.getKey(),
