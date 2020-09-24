@@ -450,7 +450,8 @@ div.package .details{
 
 .CACHED,
 .SUPERSEDED,
-.READY{
+.READY,
+.INIT{
 	background-color: #767676;
 	color: white;
 	font-weight: bold;
