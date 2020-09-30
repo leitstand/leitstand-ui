@@ -796,7 +796,7 @@ export class Control extends FormElement{
 	get scopesAllowed(){
 		let scopes = this.getAttribute('scopesAllowed');
 		if(!scopes && this.form){
-			scopes = this.form.scopesAllowed
+			scopes = this.form.getAttribute('scopesAllowed');
 		}
 		if(scopes){
 			return scopes.split(/\s+/g);
@@ -2088,6 +2088,7 @@ class DateTime extends InputControl {
 		}	
 	}
 	
+
 }
 
 
