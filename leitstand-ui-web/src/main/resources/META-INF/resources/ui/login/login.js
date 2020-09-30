@@ -43,7 +43,7 @@ class LoginForm extends HTMLElement {
 							if(config.oidc_enabled){
 								let view = document.referrer;
 								if(!view || !view.includes('/ui/views')){
-									view = "/ui/views/inventory/pods.html";
+									view = "/ui/welcome";
 								}
 								view = encodeURIComponent(view);
 								let landingPage = `${window.origin}/ui/login/oidc.html${encodeURIComponent(`?view=${view}`)}`;
@@ -96,7 +96,7 @@ class LoginForm extends HTMLElement {
 															}
 														}
 														// Default redirect if no referrer is set or the referrer does not 
-														this.redirect("/ui/views/inventory/pods.html");
+														this.redirect("/ui/welcome");
 													},
 													onUnauthorized: function(){
 														// Override default redirect to login page,
