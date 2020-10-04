@@ -7,9 +7,17 @@
       <servlet-name>Leitstand</servlet-name>
 	  <jsp-file>/leitstand.html</jsp-file>	
    </servlet>
+   <servlet>
+        <servlet-name>WelcomePage</servlet-name>
+        <servlet-class>io.leitstand.ui.web.WelcomePage</servlet-class>
+   </servlet>
    <servlet-mapping>
        <servlet-name>Leitstand</servlet-name>
        <url-pattern>/ui/views/*</url-pattern>
+   </servlet-mapping>
+   <servlet-mapping>
+        <servlet-name>WelcomePage</servlet-name>
+        <url-pattern>/ui/welcome</url-pattern>
    </servlet-mapping>
 	<error-page>
 		<error-code>401</error-code>
@@ -28,6 +36,6 @@
 		<location>/ui/error/500.html</location>
 	</error-page>
 	<welcome-file-list>
-		<welcome-file>/welcome.jsp</welcome-file>
+		<welcome-file>/ui/welcome</welcome-file>
 	</welcome-file-list>
 </web-fragment>

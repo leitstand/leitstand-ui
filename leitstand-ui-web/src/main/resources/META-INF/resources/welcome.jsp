@@ -1,1 +1,1 @@
-<%response.sendRedirect("/ui/views/inventory/pods.html");%>
+<%response.sendRedirect("/api/v1/ui/welcome");%>

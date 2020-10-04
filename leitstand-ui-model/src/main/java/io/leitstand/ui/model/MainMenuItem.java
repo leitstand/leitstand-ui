@@ -158,6 +158,7 @@ public class MainMenuItem extends ValueObject implements Named{
 	private String position;
 	private SortedSet<String> scopesAllowed; // Do not init with empty sorted set to avoid transmission of empty object.
 	private Map<String,Object> config; // Do not init with empty map to avoid transmission of empty object!
+	private boolean welcome;
 	
 	/**
 	 * Returns the name of the module represented by this menu item.
@@ -238,5 +239,14 @@ public class MainMenuItem extends ValueObject implements Named{
 	public String getName() {
 		return getModule();
 	}
+	
+	/**
+	 * Returns <code>true</code> if this module hosts the default welcome page.
+	 * @return whether this module renders the default welcome page.
+	 */
+	@JsonbTransient
+	public boolean isWelcomeModule() {
+        return welcome;
+    }
 	
 }

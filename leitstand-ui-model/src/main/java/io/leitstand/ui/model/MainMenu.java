@@ -53,7 +53,7 @@ public class MainMenu extends ValueObject{
 	public List<MainMenuItem> getItems() {
 		return unmodifiableList(menu);
 	}
-
+	
 	public void addExtensions(List<Extension> extensions) {
 		LinkedHashMap<MainMenuItem,ExtensionPoint> points = new LinkedHashMap<>();
 		for(Extension extension : extensions) {
@@ -64,5 +64,21 @@ public class MainMenu extends ValueObject{
 		// Sort all points according to the injection point hints!
 		ExtensionSorter<MainMenuItem> sorter = new ExtensionSorter<>(points, menu);
 		this.menu = sorter.sort();
+	}
+	
+	public MainMenuItem findWelcomePageModule() {
+	    
+	    for(MainMenuItem item : menu) {
+	        if(item.isWelcomeModule()) {
+	            return item;
+	        }
+	    }
+
+        if(menu.isEmpty()) {
+            return null;
+        }
+	    
+	    return menu.get(0);
+	    
 	}
 }
