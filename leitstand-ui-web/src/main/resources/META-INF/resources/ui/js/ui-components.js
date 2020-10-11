@@ -537,7 +537,7 @@ class ViewHeader extends UIElement{
 			} else {
 				breadcrumb+=`<span ${title}>${item.innerHTML}</span>`;
 			}
-			breadcrumbDelimiter = ' &gt; ';
+			breadcrumbDelimiter = ' / ';
 		});
 		// TODO Use ol or ul for breadcrumbs to obey accessibility constraints.
 		breadcrumb = `<div class="breadcrumbs">${breadcrumb}</div>`;	
