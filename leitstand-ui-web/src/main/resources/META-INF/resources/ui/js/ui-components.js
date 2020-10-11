@@ -427,17 +427,15 @@ class View extends HTMLElement {
 	 */
 	connectedCallback(){
 		this.addEventListener('UIRenderView',(evt) =>{
-			this._viewModel = new ViewModel(evt.detail.viewModel);
-			const location = evt.detail.location;
-			const module = Modules.getModule(location.module);
-			this._controller = module.getController(location);
-			if(!evt.detail.viewOnly){
-				this.dispatchEvent(new CustomEvent('UIRenderMenu',
-												   { bubbles : true,
-													 detail : evt.detail }));
-			}
-			this._controller.renderView();
-
+	       if(!evt.detail.viewOnly){
+	           const detail = evt.detail;
+	           detail.renderView = true;
+	           this.dispatchEvent(new CustomEvent('UIRenderMenu',
+	                                              { bubbles : true,
+	                                                detail : detail }));
+	        } else {
+	            this.renderView(evt.detail);
+	        }
 		});
 		
 		this.addEventListener('change',function(event) {
@@ -461,6 +459,14 @@ class View extends HTMLElement {
 		});
 		
 		
+	}
+	
+	renderView(view){
+        this._viewModel = new ViewModel(view.viewModel);
+        const location = view.location;
+        const module = Modules.getModule(location.module);
+        this._controller = module.getController(location);
+        this._controller.renderView();   
 	}
 	
 	get module() {
@@ -539,7 +545,7 @@ class ViewHeader extends UIElement{
 		
 		let title = this.querySelector('ui-title');
 		if(title){
-			title = `<h2>${title.innerHTML}</h2>`;
+			title = `<h3>${title.innerHTML}</h3>`;
 		} else {
 			title = '';
 		}
@@ -1855,8 +1861,9 @@ class MainMenu extends HTMLElement {
 								  .reduce((a,b)=>a+b,'')}
 					 	</nav>
 					 </div>
-					 <div id="module">
-					 </div>
+			        <ui-module-container>
+			            <!-- Module content ... -->
+			        </ui-module-container>
 					 `;
 		};
 		
@@ -1874,7 +1881,10 @@ class MainMenu extends HTMLElement {
 	}
 	
 	openModule(module){
-		this.querySelector("div#module").innerHTML=module.template;
+	    const template = module.template;
+	    const menus = module.computeMenuViewModel({},
+	                                              menu => !menu.category || menu.category == 'module');
+	    this.querySelector("ui-module-container").innerHTML=Mustache.to_html(module.template,menus);
 	}
 	
 	select(tab){	
@@ -1899,18 +1909,52 @@ class MainMenu extends HTMLElement {
 
 }
 
-class Module extends HTMLElement {
+class ModuleContainer extends HTMLElement {
 	
 	connectedCallback(){
 		this.addEventListener('UIRenderMenu', evt => {
 			const module = evt.detail.module;
-			const nav = this.querySelector('ui-module-menu');
-			if(nav){
-				const menus = module.computeMenuViewModel(evt.detail.viewModel,
-														  menu => !menu.category || menu.category == 'module');
-				nav.render(menus);
-				module.select(evt.detail.location);
+            const menus = module.computeMenuViewModel(evt.detail.viewModel,
+                                                      menu => !menu.category || menu.category == 'module');
+            
+            if(evt.detail.renderView){
+                this.innerHTML=Mustache.to_html(module.template,{"menus":menus,
+                                                                 "multipleChoices": function(){
+                                                                    const sel = menus.filter(m => m.selected);
+                                                                    return sel.length > 1  || sel.length == 1 && sel[0].items.length >1 ;
+                                                                 }});
+                const moduleMenu = this.querySelector('ui-module-menu');
+                if(moduleMenu){
+                    moduleMenu.render(menus);
+                }
+                const viewTitle = this.querySelector('ui-view-title');
+                if(viewTitle){
+                    viewTitle.render(menus);
+                }
+                const viewMenu = this.querySelector('ui-view-menu');
+    			if(viewMenu){
+    				viewMenu.render(menus);
+    				module.select(evt.detail.location);
+    			}
+    			const view = this.querySelector('ui-view');
+    			view.renderView(evt.detail);
+			} else {
+                const moduleMenu = this.querySelector('ui-module-menu');
+                if(moduleMenu){
+                    moduleMenu.render(menus);
+                }
+                const viewTitle = this.querySelector('ui-view-title');
+                if(viewTitle){
+                    viewTitle.render(menus);
+                }
+                
+                const viewMenu = this.querySelector('ui-view-menu');
+                if(viewMenu){
+                    viewMenu.render(menus);
+                    module.select(evt.detail.location);
+                }
 			}
+
 		});
 	}
 }
@@ -1922,41 +1966,66 @@ class Module extends HTMLElement {
  * The <code>&lt;ui-module-menu&gt;</code> component renders the module menus as list of menus.
  * @extends HTMLElement
  * @example <caption>Render module menus</caption>
- * 	 <ui-module-menu></ui-module-menu>
+ *   <ui-module-menu></ui-module-menu>
  *   
  */
 class ModuleMenu extends HTMLElement {
 
-	connectedCallback(){
-		this.addEventListener('click',(evt)=>{
-			if(evt.target.nodeName == 'BUTTON'){
-				const items = evt.target.parentElement.parentElement.querySelector('ul');
-				if(items.classList.contains('hidden')){
-					evt.target.innerHTML='&ndash;';
-					evt.target.title='Hide menu items';
-					items.classList.remove('hidden');
-				} else {
-					evt.target.innerHTML='+';
-					evt.target.title='Show menu items';
-					items.classList.add('hidden');
-				}
-			}
-		
-		});
-	}
-	
+    render(menus){
+        const concat = (a,b) => a+b;
+        const item2html = function(item){
+            return `<li><a class="menu-item" id="${item.view}" title="${item.title}" href="${item.viewpath}" ${item.target ? `target="${item.target}"` :''}>${item.label}</a></li>`;
+        };
+        let menuDom = menus.filter((menu) => !menu.selected)
+                           .map((menu) => `<div style="display: inline-block; position: relative; padding: 0.5em 1em;" class="popup_menu">    
+                                             ${menu.items.length > 1 ? `
+                                             <h4 class="chevron bottom">
+                                                 ${menu.label}
+                                                 ${menu.entity || ''}
+                                             </h4>
+                                             <nav class="menu">
+                                                 <ul>${menu.items.map(item2html).reduce(concat,'')}</ul>
+                                             </nav> ` :
+                                             `
+                                              <h4>
+                                                 <a class="menu-item" id="${menu.items[0].view}" title="${menu.items[0].title}" href="${menu.items[0].viewpath}">${menu.items[0].label}</a>
+                                              </h4>
+                                             `}
+                                           </div>`)
+                             .reduce(concat,'');
+     
+        const selected = menus.filter((menu) => menu.selected);
+        if (menuDom && selected && selected.length){
+            menuDom += `<div style="display: inline-block; position: relative; padding: 0.5em 1em;" class="entity">
+                        <h4>${ selected[0].label} ${selected[0].entity || ''}</h4>
+                        </div>`;
+        }
+        this.innerHTML=menuDom;
+    }
+        
+}
+
+/**
+ * Module menu component.
+ * <p>
+ * The <code>&lt;ui-module-menu&gt;</code> component renders the module menus as list of menus.
+ * @extends HTMLElement
+ * @example <caption>Render module menus</caption>
+ * 	 <ui-module-menu></ui-module-menu>
+ *   
+ */
+class ViewMenu extends HTMLElement {
+
 	render(menus){
 		const concat = (a,b) => a+b;
 		const item2html = function(item){
 			return `<li><a class="menu-item" id="${item.view}" title="${item.title}" href="${item.viewpath}" ${item.target ? `target="${item.target}"` :''}>${item.label}</a></li>`;
 		};
-		const menuDom = menus.map((menu) => `${menu.entity ? `<p class="note">${menu.entity}</p>` : ''}
-											 <nav class="menu">
-												${menu.label ? `<h3 class="menu-heading" style="position:relative" title="${menu.title}">${menu.label} <button class="btn btn-sm" style="position:absolute; top: 5px; right:5px" name="toggle">${menu.expand=='auto'?'&ndash;':'+'}</button></h3>`:''}
-												<ul ${menu.expand=='auto' || !menu.label?'':'class="hidden"'}>${menu.items.map(item2html).reduce(concat,'')}</ul>
-							 				 </nav>
-							 				 ` )
-							 .reduce(concat,'');
+        const menuDom = menus.filter((menu) => menu.selected)
+                             .map((menu) => `<nav class="menu">
+                                                 ${menu.label ? `<h3 class="menu-heading" style="position:relative" title="${menu.title}">${menu.label}</h3>`:''}<ul>${menu.items.map(item2html).reduce(concat,'')}</ul>
+                                             </nav>`)
+                             .reduce(concat,'');
 		this.innerHTML=menuDom;
 	}
 	
@@ -1967,11 +2036,6 @@ class ModuleMenu extends HTMLElement {
 		}
 		if (item) {
 			item.css.add("selected");
-			const button = item.up('nav').select("button");
-			if(button){
-				button.html("&ndash;");
-				item.up('ul').css.remove("hidden");
-			}
 		}
 	}
 	
@@ -2535,8 +2599,9 @@ class TagEditor extends InputControl{
 
 // Register view first to avoid troubles with DOM rendering.
 customElements.define('ui-view',View);
+customElements.define('ui-view-menu',ViewMenu);
 customElements.define('ui-module-menu',ModuleMenu);
-customElements.define('ui-module',Module);
+customElements.define('ui-module-container',ModuleContainer);
 customElements.define('ui-modules',MainMenu);
 customElements.define('ui-link',Link);
 customElements.define('ui-section',Section);

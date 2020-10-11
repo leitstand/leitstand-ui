@@ -23,6 +23,60 @@ nav li:last-child {
 	padding:0;
 }
 
+.chevron::after {
+    border-style: solid;
+    border-width: 2px 2px 0 0;
+    content: ' ';
+    display: inline-block;
+    height: 4px;
+    left: 0px;
+    transform: rotate(-45deg);
+    vertical-align: top;
+    width: 4px;
+}
+
+.chevron.bottom:after {
+    top: 0;
+    transform: rotate(135deg);
+}
+
+.popup_menu:hover nav{
+    display: block;
+    position: absolute;
+    top: 28px;
+    left: 4px;
+    z-index: 100;
+    min-width: 14em;
+    padding: 0px;
+}
+
+.entity {
+	border-left: 2px solid #d26911;
+}
+
+.entity h4{
+    font-weight: normal;
+}
+
+.popup_menu {
+    border-left: 2px solid #d26911;
+    cursor: pointer;
+}
+
+.popup_menu:first-of-type {
+    border: none;
+    margin-left: -10px;
+}
+
+.popup_menu nav{
+    display: none;
+}
+
+.popup_menu h4 a{
+	color: black;
+	background: none;
+}
+
 .form-group.flattened div.label {
 	line-height: 32px
 }

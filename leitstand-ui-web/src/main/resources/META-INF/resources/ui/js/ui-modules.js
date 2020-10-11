@@ -358,20 +358,6 @@ export class Module {
 			// Load the module controller
 			const moduleController = await import(`/ui/modules/${location.module}/${this._descriptor.controller||'controller.js'}`);
 			this._menu = moduleController.menu;
-			// Load all application controllers.
-			if(module.applications && module.applications.length > 0){
-				const applications = await Promise.all(module.applications
-															 .filter(app => !app.defer)
-															 .map((app) => import(`/ui/modules/${location.module}/${app.controller||`${app.name}/controller.js`}`)
-												  						   .then((lib) => { return {app:app,controller:controller}}))
-												  						   .catch((e) => console.log(`Attempt to load application ${location.app} of module ${location.module} failed with ${e}`)));	
-				// Merge all applications into the main menu
-				applications.forEach((app) => {
-					if(app && app.controller.menu){
-						this._menu.merge(app.controller.menu,app.app);
-					}
-				});
-			}
 			const templateLoader = new Html(`/ui/modules/${this._descriptor.module}/${this._descriptor.template}`);
 			this._moduleTemplate = await templateLoader.load();
 			return this;
@@ -535,6 +521,7 @@ export class Module {
 			const location = new Location(window.location.href);
 			const menus = JSON.parse(Mustache.render(JSON.stringify(this._descriptor.menus),merge(location,model)));
 			const user = UserContext.get();
+			const masterView = this._menu.masterView(location.view);
 			
 			// Filter for enabled menus and menu items
 			const enabled = function(m){
@@ -590,10 +577,15 @@ export class Module {
 			const enabledMenus = menus.filter(m => !filter || filter(m))
 									  .filter(m => enabled(m));
 
+			let selected = false;
 			// Compute view path for all active menu items.
 			enabledMenus.forEach((m) => {
 				m.items = m.items.filter((item) => enabled(item));
-				m.items.forEach((item) => {item.viewpath = viewpath(item)});
+				m.items.forEach((item) => {
+				    item.viewpath = viewpath(item)
+				    selected |= (item.view == masterView);
+				});
+				m.selected = selected;
 			});
 			
 			return enabledMenus;
