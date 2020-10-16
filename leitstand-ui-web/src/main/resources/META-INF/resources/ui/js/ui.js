@@ -192,6 +192,10 @@ export class Menu extends Dom {
 		return null;
 	}
 	
+	masterView(view){
+	    return this._items[view];
+	}
+	
 	isFocused(view){
 		return this._items[view] != null;
 	}
@@ -204,7 +208,7 @@ export class Menu extends Dom {
 	 */
 	select(location) {
 		const controller = this.controller(location.view);
-		const menu = document.querySelector("ui-module-menu");
+		const menu = document.querySelector("ui-view-menu");
 		const item = this.item(location.view);
 		if(menu){
 		    menu.select(this,item);
