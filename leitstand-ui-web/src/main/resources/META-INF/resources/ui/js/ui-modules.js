@@ -141,7 +141,7 @@ export class Modules {
 		            	            	  return Promise.resolve(module);
 		            	              	});
 		             })
-		             .catch((e) => alert(e));
+		             .catch((e) => console.error(e));
 					  
 		
 	}
