@@ -1841,6 +1841,7 @@ class MainMenu extends HTMLElement {
 	
 	connectedCallback(){
 		const render = function(menu){
+		    const user = UserContext.get();
 			return  `<div class="header">
 						<h1 id="title"></h1>
 						<p id="subtitle" class="lead"></p>
@@ -1851,7 +1852,8 @@ class MainMenu extends HTMLElement {
 							   style="margin-left: 10px; margin-top:5px" 
 							   href="/api/v1/_logout">
 							   Logout</a>
-							${menu.map(item => `<a class="tabnav-tab ${item.position ? item.position : ''}" 
+							${menu.filter(item => user.scopesIncludeOneOf(item.scopes_allowed)) 
+							      .map(item => `<a class="tabnav-tab ${item.position ? item.position : ''}" 
 												   role="tab" 
 												   href="/ui/views${item.path}" 
 												   title="${item.subtitle}" 
