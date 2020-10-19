@@ -122,6 +122,12 @@ nav li:last-child {
 /* Common UI styles */
 /*--------------------------------------------------------*/
 
+ui-view,
+ui-view-menu {
+    display: block;
+}
+
+
 .error-page h1 {
 	background-image: url('/ui/images/logo.png');
 	background-position: center;
@@ -577,9 +583,9 @@ span.ACTIVE,
 }
 	
 /* State in view headlines */	
-h2>span,
-h3>span,
-h4>span{
+h2 span,
+h3 span,
+h4 span{
 	margin-left: 1em !important;
 	display: inline-block !important;
 	vertical-align: middle !important;
