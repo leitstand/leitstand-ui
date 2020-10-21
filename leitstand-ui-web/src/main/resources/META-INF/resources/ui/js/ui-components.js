@@ -1365,7 +1365,12 @@ export class Select extends InputControl {
 		const note = this.note;
 		this.options()
 			.then((options) => {
-				const size = this.multiple ? options.length : 1;
+			    if(this.noptions && !options && !options.length){
+			        this.noptions();
+			        return;
+			    }
+			    
+			    const size = this.multiple ? options.length : 1;
 				const optionsHtml = options.map(option => `<option value="${option.value}" ${this.isSelected(option) ? 'selected' : ''}>${option.label || option.value}</option>`)
 										   .reduce((a,b) => a+b,'');
 				this.innerHTML=`<div class="form-group">
@@ -1973,6 +1978,29 @@ class ModuleContainer extends HTMLElement {
  */
 class ModuleMenu extends HTMLElement {
 
+    constructor(){
+        super();
+        this.addEventListener('mouseover', (evt) => {
+            if(evt.target.classList.contains("entity") || evt.target.parentNode.classList.contains("entity")){
+                return;
+            } 
+            if(!this._fadedOut){
+                document.querySelector("ui-view").style.opacity="0.33";
+                document.querySelector("ui-view-menu").style.opacity="0.33"
+                this._fadedOut = true;
+            }
+        });
+        this.addEventListener('mouseout', (evt) => {
+            if(this._fadedOut){
+                document.querySelector("ui-view").style.opacity="1";
+                document.querySelector("ui-view-menu").style.opacity="1";              
+                this._fadedOut = false;
+            }
+
+
+        });
+    }
+    
     render(menus){
         const concat = (a,b) => a+b;
         const item2html = function(item){
@@ -1987,7 +2015,7 @@ class ModuleMenu extends HTMLElement {
                                              </h4>
                                              <nav class="menu">
                                                  <ul>${menu.items.map(item2html).reduce(concat,'')}</ul>
-                                             </nav> ` :
+                                             </nav>` :
                                              `
                                               <h4>
                                                  <a class="menu-item" id="${menu.items[0].view}" title="${menu.items[0].title}" href="${menu.items[0].viewpath}">${menu.items[0].label}</a>
