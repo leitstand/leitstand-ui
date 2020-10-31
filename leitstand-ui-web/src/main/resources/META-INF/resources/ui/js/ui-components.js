@@ -1509,14 +1509,14 @@ class Checkbox extends InputControl {
 						  <label>
 						   <input type="checkbox" class="form-control" name="${this.name}" ${this.readonly} ${this.disabled} value="${value}" ${checked}>${this.label}
 						   <p class="note">${this.note}</p>
-						   ${conditional||''}
 						  </label> 
+						  ${conditional||''}
 						 </div>`;
 
 
 		
 		
-		this.addEventListener('change',(evt) => {
+		this.querySelector('.form-checkbox label').addEventListener('change',(evt) => {
 			const checkboxes = document.querySelectorAll(`input[name='${this.name}']`);
 			if(checkboxes.length > 1){
 				//Multivalue field
