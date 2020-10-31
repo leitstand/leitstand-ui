@@ -144,6 +144,7 @@ function http(uri,params) {
 										  headers:response.headers};
 						handler.call(context,data);
 					}
+					console.log(`handler: ${handler}, resolved: ${resolved}, rejected: ${rejected}`);
 					// Notify client about the REST API invocation outcome.
 					if(200 <= response.status && response.status < 300 ){
 						// Successful REST API invocation
@@ -239,6 +240,14 @@ function http(uri,params) {
 		 */
 		DELETE() {
 			return invoke('DELETE');
+		}
+		
+		/**
+		 * Registers status handlers using the HTTP status code as key and the function to handle the HTTP status code as argument.
+		 */
+		handlers(handlers){
+		    this.handlers = handlers;
+		    return this;
 		}
 		
 		/**

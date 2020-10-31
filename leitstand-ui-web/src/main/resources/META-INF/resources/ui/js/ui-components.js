@@ -1363,6 +1363,9 @@ export class Select extends InputControl {
 		const label = this.label;
 		const name = this.name;
 		const note = this.note;
+	    // Search for buttons to be displayed next to the input field.
+        const buttons = this.querySelectorAll('ui-button');
+
 		this.options()
 			.then((options) => {
 			    if(this.noptions && !options && !options.length){
@@ -1375,7 +1378,10 @@ export class Select extends InputControl {
 										   .reduce((a,b) => a+b,'');
 				this.innerHTML=`<div class="form-group">
 									<div class="label"><label for="${name}">${label}</label></div>
-									<div class="input"><select id="${name}" class="${size == 1 ? 'form-select' : 'form-control'}" ${this.readonly} ${this.disabled} name="${this.name}" ${this.multiple ? "multiple" : ""} size="${size}">${optionsHtml}</select></div>
+									<div class="input">
+									    <select id="${name}" class="${size == 1 ? 'form-select' : 'form-control'}" ${this.readonly} ${this.disabled} name="${this.name}" ${this.multiple ? "multiple" : ""} size="${size}">${optionsHtml}</select>
+									    ${[...buttons].map(button => button.outerHTML).reduce((a,b)=>a+b,'')}
+									</div>
 									<p class="note">${note}</p>
 								</div>`;
 			
@@ -1623,7 +1629,7 @@ class Composition extends UIElement {
 			return ''
 		};
 		const cells = [...items].map(item => `<div class="column ${size(item)}">${item.innerHTML}</div>`).reduce((a,b)=>a+b,'');
-		this.innerHTML=`<div>
+		this.innerHTML=`<div class="row">
 						${cells}
 						</div>`;
 	}
