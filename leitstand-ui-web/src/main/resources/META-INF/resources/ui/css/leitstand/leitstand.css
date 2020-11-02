@@ -481,8 +481,7 @@ div.package .details{
 	font-size: 8pt;
 	display:block;
 	text-align: center;
-    width: 7.8em;
-	margin:auto;
+    width: 8em;
 }
 
 
@@ -496,8 +495,7 @@ div.package .details{
 	font-size: 8pt;
 	display:block;
 	text-align: center;
-    width: 7.8em;
-    margin:auto;
+    width: 8em;
 }
 
 .ERROR,
@@ -518,8 +516,7 @@ div.package .details{
 	font-size: 8pt;
 	display:block;
 	text-align:center;
-    width: 7.8em;
-    margin:auto;
+    width: 8em;
 }
 
 .CACHED,
@@ -534,8 +531,7 @@ div.package .details{
 	font-size: 8pt;
 	display:block;
 	text-align:center;
-	width: 7.8em;
-    margin:auto;
+	width: 8em;
 }
 
 .ROLLEDBACK{
@@ -546,8 +542,7 @@ div.package .details{
 	border-radius: 2px;
 	font-size: 8pt;
 	display:block;
-    width: 7.8em;
-    margin:auto;
+    width: 8em;
 }
 
 .WARNING,
@@ -563,8 +558,7 @@ div.package .details{
 	font-size: 8pt;
 	display:block;
 	text-align: center;
-    width: 7.8em;
-    margin:auto;
+    width: 8em;
 }
 
 span.NEW,
@@ -585,8 +579,7 @@ span.ACTIVE,
 	font-size: 8pt;
 	display:block;
 	text-align: center;
-    width: 7.8em;
-    margin:auto;
+    width: 8em;
 }
 
 .INFORMATION.SUCCESS{

@@ -144,7 +144,6 @@ function http(uri,params) {
 										  headers:response.headers};
 						handler.call(context,data);
 					}
-					console.log(`handler: ${handler}, resolved: ${resolved}, rejected: ${rejected}`);
 					// Notify client about the REST API invocation outcome.
 					if(200 <= response.status && response.status < 300 ){
 						// Successful REST API invocation

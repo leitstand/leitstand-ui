@@ -146,7 +146,10 @@ class ViewModel{
 			}
 		}
 		ctx[segments[i]] = value;
-		document.querySelector('ui-form').dispatchEvent(new CustomEvent('UIViewModelUpdate'));
+		const form = document.querySelector('ui-form');
+		if(form){
+		    form.dispatchEvent(new CustomEvent('UIViewModelUpdate'));
+		}
 	}
 	
 	/**
@@ -672,10 +675,10 @@ class FormElement extends UIElement{
 		if(label){
 			return label.innerHTML;
 		}
-		if(this.innerHTML){
-			return this.innerHTML;
-		}
-		return this.name;
+        if(this.innerHTML){
+            return this.innerHTML;
+        }
+        return this.name;
 	}
 	
 	/**
@@ -1170,7 +1173,7 @@ class InputText extends InputControl {
 							<input id="${this.name}" type="text" class="form-control" ${this.readonly} ${this.disabled} name="${this.name}" value='${this.value}' placeholder="${this.placeholder}">
 							${[...buttons].map(button => button.outerHTML).reduce((a,b)=>a+b,'')}
 						</div>
-						<p class="note">${this.note}</p>
+						${this.note ? `<p class="note">${this.note}</p>` : ''}
 						</div>`;
 		this.addEventListener("change",function(evt){
 			this.viewModel.setProperty(this.binding,evt.target.value);
@@ -1203,7 +1206,7 @@ class InputNumber extends InputControl {
 		this.innerHTML=`<div class="form-group">
 						<div class="label"><label for="${this.name}">${this.label}</label></div>
 						<div class="input"><input id="${this.name}" type="number" class="form-control" ${this.readonly} ${this.disabled} name="${this.name}" value="${this.value}" placeholder="${this.placeholder}"></div>
-						<p class="note">${this.note}</p>
+                        ${this.note ? `<p class="note">${this.note}</p>` : ''}
 						</div>`;
 		this.addEventListener("change",function(evt){
 			this.viewModel.setProperty(this.binding,evt.target.value);
@@ -1233,7 +1236,7 @@ class Password extends InputControl {
 		this.innerHTML=`<div class="form-group">
 			<div class="label"><label for="${this.name}">${this.label}</label></div>
 			<div class="input"><input id="${this.name}" type="password" class="form-control" ${this.readonly} ${this.disabled} name="${this.name}" value='${this.value}' placeholder="${this.placeholder}"></div>
-			<p class="note">${this.note}</p>
+            ${this.note ? `<p class="note">${this.note}</p>` : ''}
 			</div>`;
 		this.addEventListener("change",function(evt){
 			this.viewModel.setProperty(this.binding,evt.target.value);
@@ -1260,7 +1263,7 @@ class Textarea extends InputControl {
 		this.innerHTML=`<div class="form-group">
 						  <div class="label"><label for="${this.name}">${this.label}</label></div>
 						  <div class="input"><textarea id="${this.name}" type="text" class="form-control" ${this.readonly} ${this.disabled} name="${this.name}">${this.value}</textarea></div>
-						  <p class="note">${this.note}</p>
+                        ${this.note ? `<p class="note">${this.note}</p>` : ''}
 						</div>`;
 		this.addEventListener("change",function(evt){
 			this.viewModel.setProperty(this.binding,evt.target.value);
@@ -1382,27 +1385,29 @@ export class Select extends InputControl {
 									    <select id="${name}" class="${size == 1 ? 'form-select' : 'form-control'}" ${this.readonly} ${this.disabled} name="${this.name}" ${this.multiple ? "multiple" : ""} size="${size}">${optionsHtml}</select>
 									    ${[...buttons].map(button => button.outerHTML).reduce((a,b)=>a+b,'')}
 									</div>
-									<p class="note">${note}</p>
+				                    ${this.note ? `<p class="note">${this.note}</p>` : ''}
 								</div>`;
 			
 				this.addEventListener('change',(evt) => {
 					this.select(evt.target.value);
 				});
-			
-				this.form.addEventListener('UIPreExecuteAction',(evt) => {
-					const select = this.querySelector('select');
-					const options = select.selectedOptions;
-					if(this.multiple){
-						this.select([...options].map(option => option.value));
-						return;
-					}
-					if(options.length > 0){
-						this.select(options[0].value);
-					} else {
-						this.select(null);
-					}
-					
-				});
+				
+				if(this.form){
+				    this.form.addEventListener('UIPreExecuteAction',(evt) => {
+				        const select = this.querySelector('select');
+				        const options = select.selectedOptions;
+				        if(this.multiple){
+				            this.select([...options].map(option => option.value));
+				            return;
+				        }
+				        if(options.length > 0){
+				            this.select(options[0].value);
+				        } else {
+				            this.select(null);
+				        }
+				        
+				    });
+				}
 			});
 	}
 	
@@ -1440,7 +1445,7 @@ class RadioButton extends InputControl {
 		this.innerHTML=	`<div class="form-checkbox">
 						  <label>
 						   <input type="radio" class="form-control" name="${this.name}" ${this.readonly} ${this.disabled} value="${value}" ${checked}>${this.label}
-						   <p class="note">${this.note}</p>
+		                   ${this.note ? `<p class="note">${this.note}</p>` : ''}
 						  </label> 
 						 </div>`;
 		
@@ -2182,9 +2187,11 @@ class DateTime extends InputControl {
 				}
 
 			});
-			this.form.addEventListener('UIPreExecuteAction',(evt) => {
-				this.viewModel.setProperty(this.binding,calendar.getSelectedDate().toISOString());
-			});
+			if(this.form){
+	            this.form.addEventListener('UIPreExecuteAction',(evt) => {
+	                this.viewModel.setProperty(this.binding,calendar.getSelectedDate().toISOString());
+	            });   
+			}
 		}	
 	}
 	
