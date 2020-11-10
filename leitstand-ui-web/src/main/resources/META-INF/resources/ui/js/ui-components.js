@@ -1205,7 +1205,7 @@ class InputNumber extends InputControl {
 	renderDom(){
 		this.innerHTML=`<div class="form-group">
 						<div class="label"><label for="${this.name}">${this.label}</label></div>
-						<div class="input"><input id="${this.name}" type="number" class="form-control" ${this.readonly} ${this.disabled} name="${this.name}" value="${this.value}" placeholder="${this.placeholder}"></div>
+						<div class="input"><input id="${this.name}" type="number" inputmode="numeric" pattern="[0-9]*" class="form-control" ${this.readonly} ${this.disabled} name="${this.name}" value="${this.value}" placeholder="${this.placeholder}"></div>
                         ${this.note ? `<p class="note">${this.note}</p>` : ''}
 						</div>`;
 		this.addEventListener("change",function(evt){
@@ -1385,7 +1385,7 @@ export class Select extends InputControl {
 									    <select id="${name}" class="${size == 1 ? 'form-select' : 'form-control'}" ${this.readonly} ${this.disabled} name="${this.name}" ${this.multiple ? "multiple" : ""} size="${size}">${optionsHtml}</select>
 									    ${[...buttons].map(button => button.outerHTML).reduce((a,b)=>a+b,'')}
 									</div>
-				                    ${this.note ? `<p class="note">${this.note}</p>` : ''}
+				                    ${this.note ? this.note : ''}
 								</div>`;
 			
 				this.addEventListener('change',(evt) => {
@@ -2603,7 +2603,16 @@ class TagEditor extends InputControl{
 						</ol>`;
 			}
 			
+			let label = '';
+			if(this.label){
+			    label = `<div>
+			                <label>${this.label}</label>
+			            </div>`;
+			}
+			    
+			
 			return `<div class="tag-editor">
+			        ${label}
 					<ol class="tags">
 						${tags && tags.length > 0 ? tags.map(tag => `<li class="tag"><span>${tag}</span><button name="remove-tag" class="btn btn-sm btn-danger" title="Remove tag ${tag}" data-tag="${tag}">-</button></li>`).reduce((a,b) => a+b) : ''}
 					</ol>
@@ -2640,6 +2649,33 @@ class TagEditor extends InputControl{
 	
 }
 
+class RefreshButton extends Button {
+    
+    constructor(){
+        super();
+    }
+    
+    get name(){
+        const name = super.name;
+        if (name){
+            return name;
+        }
+        return 'refresh';
+    }
+    
+    renderDom(){
+        const form = this.form;
+        super.renderDom();
+        form.querySelector(`button#${this.name}`).addEventListener('click',(evt) => {
+            this.controller.reload();
+            evt.stopPropagation();
+            evt.preventDefault();
+        });
+    }
+    
+}
+
+
 // Register view first to avoid troubles with DOM rendering.
 customElements.define('ui-view',View);
 customElements.define('ui-view-menu',ViewMenu);
@@ -2675,6 +2711,6 @@ customElements.define('ui-view-header',ViewHeader);
 //Nested elements must be registered at the end to avoid troubles when rendering the DOM
 customElements.define('ui-label',Label);
 customElements.define('ui-note',Note);
-
+customElements.define('ui-refresh',RefreshButton);
 
 
