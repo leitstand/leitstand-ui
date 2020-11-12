@@ -237,195 +237,188 @@ export class Controller extends Dom {
 		this._view = controllerConfig;
 		this._viewModel = {};
 		this._attachEventListener = function(resource) {
-			const self = this;
-			resource.onInputError = function(messages){
-				clearFlashMessages();
-				const global = [];
-				if (messages.length) {
-					let firstInvalidInput = null;
-					for (let i = 0; i < messages.length; i++) {
-						const message = messages[i];
-						if (message.property) {
-							const input = self.elements(`#${message.property}`, message.value);
-							if (input.length == 1) {
-								displayInputError.call(	self,
-														input[0].unwrap(),
-														message.severity,
-														message.message);
-								if (!firstInvalidInput) {
-									firstInvalidInput = input[0];
-								}
-								continue;
-							}
-						}
-						global.push(message);
-					}
-					if (firstInvalidInput) {
-						firstInvalidInput.focus();
-					}
-					displayFlashMessages.call(self,global);
-					return;
-				}
-				displayFlashMessages.call(self,messages);
-			};
-			resource.onError = function(state) {
-				displayFlashMessages.call(self, state);
-				if (controllerConfig.onError) {
-					controllerConfig.onError.call(self, state);
-				}
-			};
-			resource.onConflict = function(state){
+			
+			const handleInputErrors = (messages,response) => {
+                clearFlashMessages();
+                const global = [];
+                if (messages.length) {
+                    let firstInvalidInput = null;
+                    for (let i = 0; i < messages.length; i++) {
+                        const message = messages[i];
+                        if (message.property) {
+                            const input = this.elements(`#${message.property}`, message.value);
+                            if (input.length == 1) {
+                                displayInputError.call( this,
+                                                        input[0].unwrap(),
+                                                        message.severity,
+                                                        message.message);
+                                if (!firstInvalidInput) {
+                                    firstInvalidInput = input[0];
+                                }
+                                continue;
+                            }
+                        }
+                        global.push(message);
+                    }
+                    if (firstInvalidInput) {
+                        firstInvalidInput.focus();
+                    }
+                    displayFlashMessages.call(this,
+                                              global);
+                    return;
+                }
+                displayFlashMessages.call(this,
+                                          messages);
+            };
+            
+            const defaultErrorHandler = (state) => {
+                displayFlashMessages.call(this, state);
+                if (controllerConfig.onError) {
+                    controllerConfig.onError.call(this, state);
+                }                
+            };
+			
+			
+			resource.onInputError(handleInputErrors);
+			resource.onError((state) => {
+				defaultErrorHandler(state);
+			});
+			resource.onConflict((state) => {
 				if(state.property){
-					resource.onInputError([state]);
+					handleInputErrors([state]);
 					return;
 				}
 				if(state[0] && state[0].property){
-					resource.onInputError(state);
+					handleInputErrors(state);
 					return;
 				}
-				resource.onError(state);
-			};
-			resource.onBadRequest = function(state) {
-				displayFlashMessages.call(self, state);
-				if (controllerConfig.onBadRequest) {
-					controllerConfig.onBadRequest.call(self, state);
-					return;
-				}
-				if(controllerConfig.onError){
-					controllerConfig.onError.call(self,state);
-					return;
-				}
-			};
-			resource.onBadGateway = function(state){
-			    displayFlashMessages.call(self, state);
+				defaultErrorHandler(state);
+			});
+			resource.onBadGateway((state) => {
+			    displayFlashMessages.call(this, state);
                 if (controllerConfig.onBadGateway) {
-                    controllerConfig.onBadGateway.call(self, state);
+                    controllerConfig.onBadGateway.call(this, state);
                     return;
                 }
                 if(controllerConfig.onError){
-                    controllerConfig.onError.call(self,state);
+                    controllerConfig.onError.call(this,state);
                     return;
                 } 
-			}
-			resource.onSuccess = function(state) {
+			});
+			resource.onSuccess((state,response) => {
 				if (this.status == 204) { // No content
-					displayFlashMessages.call(self, [ {
+					displayFlashMessages.call(this, [ {
 						'severity' : 'INFO',
 						'reason' : 'WUI0000I',
 						'message' : 'All changes applied successfully.'
 					} ]);
 				} else {
-					displayFlashMessages.call(self, state);
+					displayFlashMessages.call(this, state);
 				}
 				if (controllerConfig.onSuccess) {
-					controllerConfig.onSuccess.call(self, state);
+					controllerConfig.onSuccess.call(this, 
+					                                state, 
+					                                response);
 				}
-			};
-			resource.onRemoved = function(state) {
-				displayFlashMessages.call(self, state);
+			});
+			resource.onRemoved((state) => {
+				displayFlashMessages.call(this, state);
 				if (controllerConfig.onRemoved) {
-					controllerConfig.onRemoved.call(self, state);
+					controllerConfig.onRemoved.call(this, state);
 					return;
 				}
 				if (controllerConfig.onSuccess){
-					controllerConfig.onSuccess.call(self, state);
+					controllerConfig.onSuccess.call(this, state);
 					return;
 				}
-			};
-			resource.onLoaded = function(state) {
-				displayFlashMessages.call(self, state);
+			});
+			resource.onLoaded((state,response) => {
+				displayFlashMessages.call(this, state);
 				if (controllerConfig.onLoaded) {
-					controllerConfig.onLoaded.call(self, state);
+					controllerConfig.onLoaded.call(this, 
+					                               state, 
+					                               response);
 					return;
 				}
 				if(controllerConfig.onSuccess){
-					controllerConfig.onSuccess.call(self, state);
+					controllerConfig.onSuccess.call(this, 
+					                                state, 
+					                                response);
 					return;
 				}
-			};
-			resource.onForbidden = function(state){
+			});
+			resource.onForbidden((state) => {
 				// Provide details why access is not granted.
 				let container = document.getElementById('page-container');
 				if(!container){
 					container = document.getElementById('module-container');
 				}	
 				container.innerHTML = `<ui-blankslate><ui-title>Access Denied</ui-title><ui-note>${state.message}</ui-note></ui-blankslate>`
-			};
-			resource.onUnauthorized = function(state) {
-				displayFlashMessages.call(self, state);
+			});
+			resource.onUnauthorized((state) => {
+				displayFlashMessages.call(this, state);
 				if (controllerConfig.onUnauthorized) {
-					controllerConfig.onUnauthorized.call(self, state);
+					controllerConfig.onUnauthorized.call(this, state);
 					return;
 				} 
 				if (controllerConfig.onError){
-					controllerConfig.onError.call(self,state);
+					controllerConfig.onError.call(this,state);
 					return;
 				}
 				router.redirect('/ui/login/login.html');
-			};
-			resource.onAccessDenied = function(state) {
-				displayFlashMessages.call(self, state);
-				if (controllerConfig.onAccessDenied) {
-					controllerConfig.onAccessDenied.call(self, state);
-					return;
-				} 
-				if (controllerConfig.onError){
-					controllerConfig.onSuccess.call(self);
-					return;
-				}
-			};
-			resource.onNotFound = function(state) {
-				displayFlashMessages.call(self, state);
+			});
+			resource.onNotFound((state) => {
+				displayFlashMessages.call(this, state);
 				if (controllerConfig.onNotFound) {
-					controllerConfig.onNotFound.call(self, state);
+					controllerConfig.onNotFound.call(this, state);
 					return;
 				} 
 				if (controllerConfig.onError){
-					controllerConfig.onError.call(self);
+					controllerConfig.onError.call(this);
 					return;
 				}
-			};
-			resource.onCreated = function(state) {
-				displayFlashMessages.call(self, state);
+			});
+			resource.onCreated((state,response) => {
+				displayFlashMessages.call(this, state);
 				if (controllerConfig.onCreated) {
-					controllerConfig.onCreated.call(self, 
-							 			this.headers.get('Location'),
-									    state);
+					controllerConfig.onCreated.call(this, 
+							 			            response.headers.get('Location'),
+							 			            state);
 					return;
 				} 
 				if(controllerConfig.onSuccess){
-					controllerConfig.onSuccess.call(self,state);
+					controllerConfig.onSuccess.call(this,state);
 				}			
-			};
-			resource.onRedirect = function(){
+			});
+			resource.onRedirect((state,response) => {
 				if(controllerConfig.onRedirect) {
 					// HTTP 3xx status codes must not have a response entity.
 					// Hence no messages can be displayed.
-					controllerConfig.onRedirect.call(self,
-										 this.headers.get('Location'),
-										 state);
+					controllerConfig.onRedirect.call(this,
+					                                 response.headers.get('Location'),
+					                                 state);
 					return;
 				}
 				// A redirect can be both outcome of successful and a failed operation.
 				// Hence onSuccess must not be invoked by default.
 				
-			};
-			resource.onUpdated = function(state) {
-				displayFlashMessages.call(self, state);
+			});
+			resource.onUpdated((state) => {
+				displayFlashMessages.call(this, state);
 				if (controllerConfig.onUpdated) {
-					controllerConfig.onUpdated.call(self);
+					controllerConfig.onUpdated.call(this);
 					return;
 				} 
 				if(controllerConfig.onSuccess){
-					controllerConfig.onSuccess.call(self,state);
+					controllerConfig.onSuccess.call(this,state);
 				}
-			};
+			});
 		};
 		if(controllerConfig.resource){
-			this._attachEventListener.call(this,controllerConfig.resource); //SELF
+			this._attachEventListener.call(this,controllerConfig.resource);
 		}
 		if(controllerConfig.refresh){
-			controllerConfig.refresh = controllerConfig.refresh.bind(this); //SELF
+			controllerConfig.refresh = controllerConfig.refresh.bind(this);
 		}
 
 	}
@@ -569,29 +562,35 @@ export class Controller extends Dom {
      */
 	load(params) {
 		if (this._view.resource.load) {
-			// Register call back to process the returned resource and 
-			// decorates the view model if a decorator is present.
-			this._view.resource.onLoaded = async function(viewModel) {
-				// Use the result returned by the server as initial viewModel
-				this._viewModel = viewModel;
-				if(this._view.viewModel){
-					// Controller wants to morph or augment the server response.
-					// Could be a synchronous or asynchronous function (asynchronous if the controller need to fetch additional data).
-					// Await completion to support both, synchronous and asynchronous processing.
-					const augmentedViewModel = await this._view.viewModel.call(this,viewModel);
-					if(augmentedViewModel){
-						// A controller might also inject data into the view model, without returning it.
-						// View model gets only updated if an object is returned.
-						this._viewModel = augmentedViewModel;
-					}
-				}
-				document.querySelector('ui-view').dispatchEvent(new CustomEvent('UIRenderView',{bubbles:true,
-																								detail:{location:this.location,
-																										viewModel:this._viewModel,
-																										module:this.module}}));
-			}.bind(this);
-			
-			this._view.resource.load(params ? params : this.location.params);
+		    
+            // Call back to process the returned resource and 
+            // decorating the view model if a decorator is present.
+		    const renderView = async function(viewModel, response){
+		        this._viewModel = viewModel;
+		        if(this._view.viewModel){
+		            // Controller wants to morph or augment the server response.
+                    // Could be a synchronous or asynchronous function (asynchronous if the controller need to fetch additional data).
+                    // Await completion to support both, synchronous and asynchronous processing.
+                    const augmentedViewModel = await this._view.viewModel.call(this,
+                                                                               viewModel,
+                                                                               response);
+                    
+                    if(augmentedViewModel){
+                        this._viewModel = augmentedViewModel;
+                    }
+                 
+		        }
+                document.querySelector('ui-view')
+                        .dispatchEvent(new CustomEvent('UIRenderView',{bubbles:true,
+                                                                       detail:{location:this.location,
+                                                                               viewModel:this._viewModel,
+                                                                               module:this.module}}));
+		    }.bind(this);
+		    
+			this._view
+			    .resource
+			    .onLoaded(renderView)
+			    .load(params ? params : this.location.params);
 		}
 	}
 	

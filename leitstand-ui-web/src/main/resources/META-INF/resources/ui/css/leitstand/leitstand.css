@@ -519,6 +519,17 @@ div.package .details{
     width: 8em;
 }
 
+.ERROR {
+    background-color:#e82000; /*#ff4107;*/
+    color: white;
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 2px;
+    font-size: 8pt;
+    display:block;
+    text-align:center;
+}
+
 .CACHED,
 .SUPERSEDED,
 .READY,
@@ -561,6 +572,17 @@ div.package .details{
     width: 8em;
 }
 
+.WARNING {
+    background-color: #a76000;
+    color: white;
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 2px;
+    font-size: 8pt;
+    display:block;
+    text-align: center;
+}
+
 span.NEW,
 span.ACTIVE,
 .CANDIDATE,
@@ -580,6 +602,17 @@ span.ACTIVE,
 	display:block;
 	text-align: center;
     width: 8em;
+}
+
+.INFORMATION{
+    background-color:#2d5c9b; /*#4078c0;*/
+    color: white;
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 2px;
+    font-size: 8pt;
+    display:block;
+    text-align: center;
 }
 
 .INFORMATION.SUCCESS{

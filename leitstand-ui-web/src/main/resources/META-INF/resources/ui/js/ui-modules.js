@@ -181,6 +181,10 @@ class Html extends Resource {
 		super();
 		this._uri = uri;
 		this._params = params;
+		this.onNotFound((messages, response)=>{
+		    console.log("HTML file "+response.uri+" not found!");
+		    window.dispatchEvent(new CustomEvent('ResourceNotFound',{'detail':messages}))
+		});
 	}
 	
 	/**
@@ -466,9 +470,9 @@ export class Module {
 			this.loadApplication(location)
 			    .then(view => {
 			    	const template = new Html(`/ui/modules/${location.module}/${location.view}`);
-			    	template.onNotFound = function(){
+			    	template.onNotFound(()=>{
 			    		rejected(location);
-			    	};
+			    	});
 			    	return template.load()
 							   	   .then(template => {
 							   		   	  	// Cache the template.

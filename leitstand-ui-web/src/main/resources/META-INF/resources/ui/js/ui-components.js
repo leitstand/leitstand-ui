@@ -2594,6 +2594,13 @@ class TagEditor extends InputControl{
 	renderDom(){
 		
 		const note = this.note;
+
+        let label = '';
+        if(this.label){
+            label = `<div>
+                        <label>${this.label}</label>
+                    </div>`;
+        }
 		
 		const renderTags = function(){
 			const tags = this.viewModel.getProperty(this.binding);
@@ -2602,14 +2609,6 @@ class TagEditor extends InputControl{
 							${tags && tags.map(tag => `<li class="tag">${tag}</li>`).reduce((a,b) => a+b,'')}
 						</ol>`;
 			}
-			
-			let label = '';
-			if(this.label){
-			    label = `<div>
-			                <label>${this.label}</label>
-			            </div>`;
-			}
-			    
 			
 			return `<div class="tag-editor">
 			        ${label}
