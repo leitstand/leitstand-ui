@@ -789,3 +789,9 @@ code.hljs {
 .confirm h2 {
 	color: #b33630;
 }
+
+ui-composition::after{
+	display:table;
+	content:"";
+	clear:both;
+}
