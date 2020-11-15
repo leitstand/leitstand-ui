@@ -1997,18 +1997,22 @@ class ModuleMenu extends HTMLElement {
             } 
             if(!this._fadedOut){
                 document.querySelector("ui-view").style.opacity="0.33";
-                document.querySelector("ui-view-menu").style.opacity="0.33"
+                const menu = document.querySelector("ui-view-menu");
+                if(menu){
+                    menu.style.opacity="0.33"
+                }
                 this._fadedOut = true;
             }
         });
         this.addEventListener('mouseout', (evt) => {
             if(this._fadedOut){
                 document.querySelector("ui-view").style.opacity="1";
-                document.querySelector("ui-view-menu").style.opacity="1";              
+                const menu = document.querySelector("ui-view-menu");
+                if(menu){
+                    menu.style.opacity="1"
+                }                
                 this._fadedOut = false;
             }
-
-
         });
     }
     
@@ -2673,7 +2677,6 @@ class RefreshButton extends Button {
     }
     
 }
-
 
 // Register view first to avoid troubles with DOM rendering.
 customElements.define('ui-view',View);
