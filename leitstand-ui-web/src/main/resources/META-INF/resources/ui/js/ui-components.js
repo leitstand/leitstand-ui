@@ -1371,12 +1371,12 @@ export class Select extends InputControl {
 
 		this.options()
 			.then((options) => {
-			    if(this.noptions && !options && !options.length){
-			        this.noptions();
+			    if(this.noOptions && (!options || !options.length)){
+			        this.noOptions();
 			        return;
 			    }
 			    
-			    const size = this.multiple ? options.length : 1;
+			    const size = this.multiple ? Math.max(2,options.length) : 1;
 				const optionsHtml = options.map(option => `<option value="${option.value}" ${this.isSelected(option) ? 'selected' : ''}>${option.label || option.value}</option>`)
 										   .reduce((a,b) => a+b,'');
 				this.innerHTML=`<div class="form-group">
@@ -2678,6 +2678,35 @@ class RefreshButton extends Button {
     
 }
 
+class Paginator extends UIElement {
+    
+    renderDom(){
+        const params = this.location.params;
+        const offset = parseInt(this.getAttribute('offset'));
+        const limit  = parseInt(this.getAttribute('limit'));
+        const size   = parseInt(this.getAttribute('size'))
+        const eof    = (this.getAttribute('eof') == 'true');
+        
+        this.innerHTML=`<ui-actions>
+                            <ui-button name="next" small ${eof ? "disabled" : ""}>Next</ui-button>                
+                            <ui-button name="prev" small ${offset == 0 ? "disabled" : ""}>Previous</ui-button>
+                        </ui-actions>`;
+        
+        this.addEventListener('click',(evt) => {
+           evt.stopPropagation();
+           evt.preventDefault();
+           if(evt.target.name == 'next'){
+               params.offset=offset+limit;
+               this.controller.reload(params);
+           } else {
+               params.offset=Math.max(0,offset-limit);
+               this.controller.reload(params);
+           }
+        });
+    }
+}
+
+
 // Register view first to avoid troubles with DOM rendering.
 customElements.define('ui-view',View);
 customElements.define('ui-view-menu',ViewMenu);
@@ -2714,5 +2743,4 @@ customElements.define('ui-view-header',ViewHeader);
 customElements.define('ui-label',Label);
 customElements.define('ui-note',Note);
 customElements.define('ui-refresh',RefreshButton);
-
-
+customElements.define('ui-paginator',Paginator);
