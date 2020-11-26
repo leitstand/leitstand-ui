@@ -242,6 +242,7 @@ table.list td.large {
 table.list th.text,
 table.list td.text {
 	text-align: left;
+	vertical-align: top;
 }
 
 table.list th.key,
@@ -498,7 +499,6 @@ div.package .details{
     width: 8em;
 }
 
-.ERROR,
 .FAILED,
 .INVALID,
 .DENIED,
@@ -556,7 +556,6 @@ div.package .details{
     width: 8em;
 }
 
-.WARNING,
 .CANCELLED,
 .PULL,
 .SKIPPED,
@@ -585,9 +584,9 @@ div.package .details{
 
 span.NEW,
 span.ACTIVE,
+.NEW,
 .CANDIDATE,
 .IN_PROGRESS,
-.INFORMATION,
 .ROLLBACK,
 .MAINTENANCE,
 .platform .CACHED,
