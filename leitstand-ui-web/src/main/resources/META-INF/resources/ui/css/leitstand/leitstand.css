@@ -794,3 +794,8 @@ ui-composition::after{
 	content:"";
 	clear:both;
 }
+
+.CodeMirror {
+	border: 1px solid #d8d8d8;
+	min-height: 40em;
+}

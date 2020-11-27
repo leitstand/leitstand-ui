@@ -622,7 +622,7 @@ class Code extends UIElement {
 			code = code.replace(/>/g,'&gt;');
 			code = code.trim();
 		}
-		this.innerHTML=`<code><pre>${code}</pre></code>`;
+		this.innerHTML= `<code><pre>${code}</pre></code>`;
 		if(hljs){
 			hljs.highlightBlock(this.querySelector("code"));
 		}
