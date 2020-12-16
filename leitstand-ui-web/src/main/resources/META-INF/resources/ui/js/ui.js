@@ -116,6 +116,7 @@ import {Resource,Json} from './client.js';
 import {Dom,Element} from './ui-dom.js';
 import {router,Location} from './ui-core.js';
 import {Modules} from './ui-modules.js';
+import {html} from './ui-components.js';
 
 /**
  * The menu binds the views of a module to their respective controllers.
@@ -239,7 +240,7 @@ export class Controller extends Dom {
 		this._attachEventListener = function(resource) {
 			
 			const handleInputErrors = (messages,response) => {
-                clearFlashMessages();
+                clearFlashMessages(true);
                 const global = [];
                 if (messages.length) {
                     let firstInvalidInput = null;
@@ -461,7 +462,7 @@ export class Controller extends Dom {
 				if(form){
 					form.dispatchEvent(new CustomEvent('UIPreExecuteAction'));
 				}
-				handler.call(this, new Location(window.location.href)); 
+				handler.call(this, new Location(window.location.href), element); 
 				// Page has handled the click. No further actions required.
 				return true;
 			}
@@ -934,7 +935,7 @@ function displayInputError(inputElement, severity, message) {
 		displayFlashMessage(severity, message);
 		const container = document.querySelector("div[class~='flash-messages']");
 		container.classList.remove('hidden');
-		window.setTimeout(clearFlashMessages, 5000);
+		window.setTimeout(clearFlashMessages, 10000);
 	}
 }
 
@@ -951,17 +952,25 @@ function clearInputError() {
 }
 // Clear input error if new input is provided for a input field.
 document.addEventListener('input', clearInputError);
-
+document.querySelector("div[class~='flash-messages']").addEventListener('click',(evt)=>{
+    document.querySelector("div[class~='flash-messages']").removeChild(evt.target.parentNode.parentNode);
+});
 /**
  * Clears all flash messages.
  */
-function clearFlashMessages() {
+function clearFlashMessages(all) {
 	const container = document.querySelector("div[class~='flash-messages']");
-	container.classList.add('hidden');
+	const clear = [];
 	const messages = container.querySelectorAll('div');
-	for (let i = 0; i < messages.length; i++) {
-		container.removeChild(messages[i]);
+	for(let i=0; i < messages.length; i++){
+	    const message = messages[i];
+	    if(all || !message.querySelector('button')){
+	        clear.push(message);
+	    }
 	}
+	
+	container.classList.add('hidden');
+	clear.forEach(message => container.removeChild(message));
 	container.classList.remove('hidden');
 }
 
@@ -972,7 +981,7 @@ function clearFlashMessages() {
  * @param messages {Message|Message[]} the flash messages
  */
 function displayFlashMessages(messages) {
-	clearFlashMessages();
+	clearFlashMessages(true);
 	if (Array.isArray(messages)) {
 		messages.forEach(message => {
 			displayFlashMessage(message.severity, 
@@ -986,7 +995,7 @@ function displayFlashMessages(messages) {
 	}
 	const container = document.querySelector("div[class~='flash-messages']");
 	container.classList.remove('hidden');
-	window.setTimeout(clearFlashMessages, 5000);
+	window.setTimeout(clearFlashMessages, 10000);
 }
 
 /**
@@ -998,15 +1007,18 @@ function displayFlashMessages(messages) {
 function displayFlashMessage(severity, reason, text) {
 	const message = document.createElement('div');
 	message.classList.add('flash');
+	let button = '';
 	if (severity === 'WARNING') {
 		message.classList.add('flash-warn');
+        button = '<ui-button small class="right" danger>Dismiss</ui-button>';       
 	} else if (severity === 'ERROR') {
 		message.classList.add('flash-error');
+        button = '<ui-button small class="right" danger>Dismiss</ui-button>';       
 	}
 	if(reason){
-		message.innerHTML = `<p>${reason} - ${text}</p>`;
+		message.innerHTML = html `<div>$${reason} - $${text}&nbsp;${button}</div>`;
 	} else {
-		message.innerHTML = `<p>${text}</p>`;
+		message.innerHTML = html `<p>$${text}&nbsp;${button}</p>`;
 	}
 	document.querySelector("div[class~='flash-messages']")
 			.appendChild(message);
