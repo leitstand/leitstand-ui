@@ -612,7 +612,7 @@ class Code extends UIElement {
 	 * Renders the DOM.
 	 */
 	renderDom(){
-		this.innerHTML= `<code><pre>${this.textContent}</pre></code>`;
+		this.innerHTML= html `<code><pre>$${this.textContent}</pre></code>`;
 		if(hljs){
 			hljs.highlightBlock(this.querySelector('code'));
 		}
@@ -1052,6 +1052,7 @@ class Button extends Control {
 		} else {
 			this.outerHTML=html `<button id="${this.name}" 
 			                             name="${this.name}" ${this.readonly} ${this.disabled}
+			                             value="$${this.getAttribute('value')}"
 			                             class="btn ${this._buttonSize} ${this._buttonStyle}" 
 			                             title="$${this.title}">${this.label}</button>`;
 		}
