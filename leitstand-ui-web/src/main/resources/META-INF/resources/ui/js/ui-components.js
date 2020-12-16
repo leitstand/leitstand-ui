@@ -146,7 +146,10 @@ class ViewModel{
 			}
 		}
 		ctx[segments[i]] = value;
-		document.querySelector('ui-form').dispatchEvent(new CustomEvent('UIViewModelUpdate'));
+		const form = document.querySelector('ui-form');
+		if(form){
+		    form.dispatchEvent(new CustomEvent('UIViewModelUpdate'));
+		}
 	}
 	
 	/**
@@ -528,14 +531,10 @@ class ViewHeader extends UIElement{
 		let breadcrumbDelimiter = ''
 		this.querySelectorAll('ui-breadcrumb').forEach(item => {
 			breadcrumb += breadcrumbDelimiter;
-			let title = '';
-			if(item.hasAttribute('title')){
-				title = `title="${item.getAttribute('title')}"`;
-			}
 			if(item.hasAttribute('href')){
-				breadcrumb+=`<a href="${item.getAttribute('href')}" ${title}>${item.innerHTML}</a>`;
+				breadcrumb+= (html `<a href="$${item.getAttribute('href')}" title="$${item.getAttribute('title')}">${item.innerHTML}</a>`);
 			} else {
-				breadcrumb+=`<span ${title}>${item.innerHTML}</span>`;
+				breadcrumb+= (html `<span $${item.getAttribute('title')}>${item.innerHTML}</span>`);
 			}
 			breadcrumbDelimiter = ' / ';
 		});
@@ -555,7 +554,11 @@ class ViewHeader extends UIElement{
 		} else {
 			subtitle = '';	
 		}
-		this.innerHTML = `<div class="title">${breadcrumb}${title}${subtitle}</div>`;
+		this.innerHTML = `<div class="title">
+		                    ${breadcrumb}
+		                    ${title}
+		                    ${subtitle}
+		                  </div>`;
 	}
 	
 }
@@ -609,19 +612,9 @@ class Code extends UIElement {
 	 * Renders the DOM.
 	 */
 	renderDom(){
-		let code = this.textContent;
-		try{
-			code = JSON.stringify(JSON.parse(code),null,' ');
-		} catch (e){
-			// Code is not in JSON format. Not a problem.
-			code = code.replace(/&/g,'&nbsp;');
-			code = code.replace(/</g,'&lt;');
-			code = code.replace(/>/g,'&gt;');
-			code = code.trim();
-		}
-		this.innerHTML=`<code><pre>${code}</pre></code>`;
+		this.innerHTML= html `<code><pre>$${this.textContent}</pre></code>`;
 		if(hljs){
-			hljs.highlightBlock(this.querySelector("code"));
+			hljs.highlightBlock(this.querySelector('code'));
 		}
 	}
 	
@@ -672,10 +665,10 @@ class FormElement extends UIElement{
 		if(label){
 			return label.innerHTML;
 		}
-		if(this.innerHTML){
-			return this.innerHTML;
-		}
-		return this.name;
+        if(this.innerHTML){
+            return this.innerHTML;
+        }
+        return this.name;
 	}
 	
 	/**
@@ -739,10 +732,10 @@ class Group extends FormElement {
 	 */
 	renderDom(){
 		if(!this.querySelector("fieldset")){
-			this.innerHTML = `<fieldset>
-								<legend title="${this.title}">${this.label}</legend>
-								${this.innerHTML}
-							  </fieldset>`;
+			this.innerHTML = html `<fieldset>
+								     <legend title="$${this.title}">${this.label}</legend>
+								     ${this.innerHTML}
+							       </fieldset>`;
 		}
 	}
 }
@@ -928,8 +921,8 @@ export class Link extends UIElement {
 		const location = new Location(href);
 		Modules.selectModule(location.module)
 			   .then((module) => module.viewExists(location))
-			   .then(() => {this.innerHTML=`<a href="${href}" title="${title||''}">${this._content}</a>`})
-			   .catch(() => {this.innerHTML=this._content});
+			   .then(() => {this.innerHTML= html `<a href="$${href}" title="$${this.title}">${this._content}</a>`})
+			   .catch(() => {this.innerHTML= this._content});
 	}
 	
 }
@@ -1051,9 +1044,17 @@ class Button extends Control {
 		if(href && !this.disabled){ // Render button because disabled links are not supported
 			const target = this.isFlagSet('external') ? 'target="_blank"' : '';
 			
-			this.outerHTML=`<a id="${this.name}" class="btn ${this._buttonSize} ${this._buttonStyle}" title="${this.title}" href="${href}" ${target}>${this.label}</a>`;
+			this.outerHTML=html `<a id="${this.name}" 
+			                        class="btn ${this._buttonSize} ${this._buttonStyle}" 
+			                        title="$${this.title}" 
+			                        href="$${href}" 
+			                        ${target}>${this.label}</a>`;
 		} else {
-			this.outerHTML=`<button id="${this.name}" name="${this.name}" class="btn ${this._buttonSize} ${this._buttonStyle}" title="${this.title}" ${this.readonly} ${this.disabled}>${this.label}</button>`;
+			this.outerHTML=html `<button id="${this.name}" 
+			                             name="${this.name}" ${this.readonly} ${this.disabled}
+			                             value="$${this.getAttribute('value')}"
+			                             class="btn ${this._buttonSize} ${this._buttonStyle}" 
+			                             title="$${this.title}">${this.label}</button>`;
 		}
 	}
 }
@@ -1162,16 +1163,21 @@ class InputText extends InputControl {
 		// Search for buttons to be displayed next to the input field.
 		const buttons = this.querySelectorAll('ui-button');
 		
-		this.innerHTML=`<div class="form-group">
-						<div class="label">
-							<label for="${this.name}">${this.label}</label>
-						</div>
-						<div class="input">
-							<input id="${this.name}" type="text" class="form-control" ${this.readonly} ${this.disabled} name="${this.name}" value='${this.value}' placeholder="${this.placeholder}">
-							${[...buttons].map(button => button.outerHTML).reduce((a,b)=>a+b,'')}
-						</div>
-						<p class="note">${this.note}</p>
-						</div>`;
+		this.innerHTML=html `<div class="form-group">
+		                       <div class="label">
+    		                     <label for="${this.name}">${this.label}</label>
+    		                   </div>
+    		                   <div class="input">
+    		                     <input id="${this.name}" 
+                                        type="text" ${this.readonly} ${this.disabled}
+                                        class="form-control" 
+                                        name="${this.name}" 
+                                        value="$${this.value}" 
+                                        placeholder="$${this.placeholder}">							
+                                        ${[...buttons].map(button => button.outerHTML).reduce((a,b)=>a+b,'')}
+    				           </div>
+    		                   ${this.note ? `<p class="note">${this.note}</p>` : ''}
+						     </div>`;
 		this.addEventListener("change",function(evt){
 			this.viewModel.setProperty(this.binding,evt.target.value);
 		}.bind(this));
@@ -1200,11 +1206,22 @@ class InputNumber extends InputControl {
 	 * Renders the DOM
 	 */
 	renderDom(){
-		this.innerHTML=`<div class="form-group">
-						<div class="label"><label for="${this.name}">${this.label}</label></div>
-						<div class="input"><input id="${this.name}" type="number" class="form-control" ${this.readonly} ${this.disabled} name="${this.name}" value="${this.value}" placeholder="${this.placeholder}"></div>
-						<p class="note">${this.note}</p>
-						</div>`;
+		this.innerHTML=html `<div class="form-group">
+						       <div class="label">
+						         <label for="${this.name}">${this.label}</label>
+						       </div>
+						       <div class="input">
+						         <input id="${this.name}" 
+						                type="number" ${this.readonly} ${this.disabled} 
+						                inputmode="numeric" 
+						                pattern="[0-9]*" 
+						                class="form-control" 
+						                name="${this.name}" 
+						                value="$${this.value}" 
+						                placeholder="$${this.placeholder}">
+						       </div>
+                               ${this.note ? `<p class="note">${this.note}</p>` : ''}
+						     </div>`;
 		this.addEventListener("change",function(evt){
 			this.viewModel.setProperty(this.binding,evt.target.value);
 		}.bind(this));
@@ -1230,11 +1247,20 @@ class Password extends InputControl {
 	 * Renders the DOM.
 	 */
 	renderDom(){
-		this.innerHTML=`<div class="form-group">
-			<div class="label"><label for="${this.name}">${this.label}</label></div>
-			<div class="input"><input id="${this.name}" type="password" class="form-control" ${this.readonly} ${this.disabled} name="${this.name}" value='${this.value}' placeholder="${this.placeholder}"></div>
-			<p class="note">${this.note}</p>
-			</div>`;
+		this.innerHTML=html `<div class="form-group">
+			                   <div class="label">
+			                     <label for="${this.name}">${this.label}</label>
+			                   </div>
+			                   <div class="input">
+			                     <input id="${this.name}" 
+			                            type="password" ${this.readonly} ${this.disabled} 
+			                            class="form-control" 
+			                            name="${this.name}" 
+			                            value="$${this.value}" 
+			                            placeholder="$${this.placeholder}">
+			                   </div>
+		                       ${this.note ? `<p class="note">${this.note}</p>` : ''}
+			                </div>`;
 		this.addEventListener("change",function(evt){
 			this.viewModel.setProperty(this.binding,evt.target.value);
 		}.bind(this));
@@ -1257,11 +1283,18 @@ class Textarea extends InputControl {
 	 * Renders the DOM.
 	 */
 	renderDom(){
-		this.innerHTML=`<div class="form-group">
-						  <div class="label"><label for="${this.name}">${this.label}</label></div>
-						  <div class="input"><textarea id="${this.name}" type="text" class="form-control" ${this.readonly} ${this.disabled} name="${this.name}">${this.value}</textarea></div>
-						  <p class="note">${this.note}</p>
-						</div>`;
+		this.innerHTML=html `<div class="form-group">
+						       <div class="label">
+						         <label for="${this.name}">${this.label}</label>
+						       </div>
+						       <div class="input">
+						         <textarea id="${this.name}" 
+						                   type="text" ${this.readonly} ${this.disabled}
+						                   class="form-control" 
+						                   name="${this.name}">$${this.value}</textarea>
+						       </div>
+                               ${this.note ? `<p class="note">${this.note}</p>` : ''}
+						    </div>`;
 		this.addEventListener("change",function(evt){
 			this.viewModel.setProperty(this.binding,evt.target.value);
 		}.bind(this));
@@ -1363,45 +1396,57 @@ export class Select extends InputControl {
 		const label = this.label;
 		const name = this.name;
 		const note = this.note;
+	    // Search for buttons to be displayed next to the input field.
+        const buttons = this.querySelectorAll('ui-button');
+
 		this.options()
 			.then((options) => {
-			    if(this.noptions && !options && !options.length){
-			        this.noptions();
+			    if(this.noOptions && (!options || !options.length)){
+			        this.noOptions();
 			        return;
 			    }
 			    
-			    const size = this.multiple ? options.length : 1;
-				const optionsHtml = options.map(option => `<option value="${option.value}" ${this.isSelected(option) ? 'selected' : ''}>${option.label || option.value}</option>`)
+			    const size = this.multiple ? Math.max(2,options.length) : 1;
+				const optionsHtml = options.map(option => html `<option value="$${option.value}" ${this.isSelected(option) ? 'selected' : ''}>$${option.label || option.value}</option>`)
 										   .reduce((a,b) => a+b,'');
-				this.innerHTML=`<div class="form-group">
-									<div class="label"><label for="${name}">${label}</label></div>
-									<div class="input"><select id="${name}" class="${size == 1 ? 'form-select' : 'form-control'}" ${this.readonly} ${this.disabled} name="${this.name}" ${this.multiple ? "multiple" : ""} size="${size}">${optionsHtml}</select></div>
-									<p class="note">${note}</p>
-								</div>`;
+				this.innerHTML=html `<div class="form-group">
+									   <div class="label">
+									     <label for="${name}">${label}</label></div>
+									   <div class="input">
+									     <select id="${name}" 
+									             class="${size == 1 ? 'form-select' : 'form-control'}" ${this.readonly} ${this.disabled} 
+									             name="${this.name}" 
+									             ${this.multiple ? "multiple" : ""} 
+									             size="${size}">${optionsHtml}</select>
+									     ${[...buttons].map(button => button.outerHTML).reduce((a,b)=>a+b,'')}
+									   </div>
+				                       ${this.note ? this.note : ''}
+								     </div>`;
 			
 				this.addEventListener('change',(evt) => {
 					this.select(evt.target.value);
 				});
-			
-				this.form.addEventListener('UIPreExecuteAction',(evt) => {
-					const select = this.querySelector('select');
-					const options = select.selectedOptions;
-					if(this.multiple){
-						this.select([...options].map(option => option.value));
-						return;
-					}
-					if(options.length > 0){
-						this.select(options[0].value);
-					} else {
-						this.select(null);
-					}
-					
-				});
+				
+				if(this.form){
+				    this.form.addEventListener('UIPreExecuteAction',(evt) => {
+				        const select = this.querySelector('select');
+				        const options = select.selectedOptions;
+				        if(this.multiple){
+				            this.select([...options].map(option => option.value));
+				            return;
+				        }
+				        if(options.length > 0){
+				            this.select(options[0].value);
+				        } else {
+				            this.select(null);
+				        }
+				        
+				    });
+				}
 			});
 	}
 	
 }
-
 
 /**
  * Radio button control.
@@ -1431,13 +1476,15 @@ class RadioButton extends InputControl {
 		const value = this.getAttribute('value');
 		const checkedByDefault = this.isFlagSet('default');
 		const checked = (this.viewModel.contains(this.binding) && this.viewModel.test(this.binding,value) || !this.viewModel.contains(this.binding) && checkedByDefault ) ? 'checked' : '';
-		this.innerHTML=	`<div class="form-checkbox">
-						  <label>
-						   <input type="radio" class="form-control" name="${this.name}" ${this.readonly} ${this.disabled} value="${value}" ${checked}>${this.label}
-						   <p class="note">${this.note}</p>
-						  </label> 
-						 </div>`;
-		
+		this.innerHTML=	html `<div class="form-checkbox">
+						        <label>
+						          <input type="radio" 
+						                 class="form-control" ${this.readonly} ${this.disabled}
+						                 name="${this.name}"  
+						                 value="$${value}" ${checked}>${this.label}
+		                          ${this.note ? `<p class="note">${this.note}</p>` : ''}
+						        </label> 
+						      </div>`;
 		this.addEventListener('change',function(evt){
 			this.viewModel.setProperty(this.binding,evt.target.value);
 		}.bind(this));
@@ -1499,18 +1546,19 @@ class Checkbox extends InputControl {
 			}
 			conditional = `<ui-element when="${condition}">${conditional.innerHTML}</ui-element>`;
 		}
-		this.innerHTML= `<div class="form-checkbox">
-						  <label>
-						   <input type="checkbox" class="form-control" name="${this.name}" ${this.readonly} ${this.disabled} value="${value}" ${checked}>${this.label}
-						   <p class="note">${this.note}</p>
-						   ${conditional||''}
-						  </label> 
-						 </div>`;
-
-
+		this.innerHTML= html `<div class="form-checkbox">
+						        <label>
+						          <input type="checkbox" 
+						                 class="form-control" ${this.readonly} ${this.disabled}
+						                 name="${this.name}"
+						                 value="$${value}" 
+						                 ${checked}>${this.label}
+						          <p class="note">${this.note}</p>
+						        </label> 
+						        ${conditional||''}
+						      </div>`;
 		
-		
-		this.addEventListener('change',(evt) => {
+		this.querySelector('.form-checkbox label').addEventListener('change',(evt) => {
 			const checkboxes = document.querySelectorAll(`input[name='${this.name}']`);
 			if(checkboxes.length > 1){
 				//Multivalue field
@@ -1565,9 +1613,9 @@ class Blankslate extends UIElement {
 			const title = this.querySelector('ui-title').innerHTML;
 			const note = this.querySelector('ui-note').innerHTML;
 			this.innerHTML = `<div class="blankslate">
-				<h4>${title}</h4>
-				<ui-note>${note}</ui-note>
-				</div>`;
+				                <h4>${title}</h4>
+				                <ui-note>${note}</ui-note>
+				              </div>`;
 		}
 	}
 }
@@ -1623,8 +1671,8 @@ class Composition extends UIElement {
 			return ''
 		};
 		const cells = [...items].map(item => `<div class="column ${size(item)}">${item.innerHTML}</div>`).reduce((a,b)=>a+b,'');
-		this.innerHTML=`<div>
-						${cells}
+		this.innerHTML=`<div class="row">
+						  ${cells}
 						</div>`;
 	}
 	
@@ -1679,26 +1727,30 @@ export class Filter extends InputControl {
 		let options = this.querySelector('ui-options');
 		let autofocus = 'autofocus';
 		if(options){
-			note += ` <a href="#" name="show_options" title="Show advanced filter options">Show advanced filtering options</a>
+			note += `<a href="#" name="show_options" title="Show advanced filter options">Show advanced filtering options</a>
 					 <a href="#" name="hide_options" class="hidden" title="Hide advanced filter options">Hide advanced filtering options</a>`;
 			
 			options=`<ui-group label="Options" class="hidden">
-				${options.innerHTML}
-				</ui-group>`;
+				       ${options.innerHTML}
+				     </ui-group>`;
 		}
 		
 		
-		this.innerHTML = `<div class="form-group">
-						  	<div class="label">
-						  		<label for="${this.name}">${this.label}</label>
-						  	</div>
-						  	<div class="input">
-						  		<input id="${this.name}" type="text" class="form-control" ${this.readonly} ${this.disabled} ${autofocus} name="${this.name}" value="${this.value}" placeholder="${this.placeholder}">
-						  		<button name="filter" class="btn btn-outline">Filter</button>
-						  	</div>
-						  	<ui-note>${note}</ui-note>
-						  </div>
-						  ${options||''}`;
+		this.innerHTML = html `<div class="form-group">
+						  	     <div class="label">
+						  		   <label for="${this.name}">${this.label}</label>
+						  	     </div>
+						  	     <div class="input">
+						  		   <input id="${this.name}" 
+						  		          type="text" 
+						  		          class="form-control" ${this.readonly} ${this.disabled} ${autofocus} 
+						  		          name="${this.name}" 
+						  		           value="$${this.value}" placeholder="$${this.placeholder}">
+						  		   <button name="filter" class="btn btn-outline">Filter</button>
+						  	     </div>
+						  	     <ui-note>${note}</ui-note>
+						       </div>
+						       ${options||''}`;
 
 		this.addEventListener("change",(evt) => {
 			if(evt.target.name==this.name){
@@ -1776,7 +1828,7 @@ class Details extends UIElement {
 										value = valueTag.getAttribute("default");
 									}
 									if(value){
-										return `<tr><th class="text top">${label}</th><td>${value}</td></tr>`;
+										return html `<tr><th class="text top">${label}</th><td>${value}</td></tr>`;
 									}
 									return '';
 								})
@@ -1847,24 +1899,24 @@ class MainMenu extends HTMLElement {
 	connectedCallback(){
 		const render = function(menu){
 		    const user = UserContext.get();
-			return  `<div class="header">
-						<h1 id="title"></h1>
-						<p id="subtitle" class="lead"></p>
-					 </div>
-					 <div class="tabnav" role="tablist">
-						<nav class="tabnav-tabs" style="position:relative">
-							<a class="btn btn-outline btn-sm right" 
-							   style="margin-left: 10px; margin-top:5px" 
-							   href="/api/v1/_logout">
-							   Logout</a>
-							${menu.filter(item => user.scopesIncludeOneOf(item.scopes_allowed)) 
-							      .map(item => `<a class="tabnav-tab ${item.position ? item.position : ''}" 
-												   role="tab" 
-												   href="/ui/views${item.path}" 
-												   title="${item.subtitle}" 
-												   data-title="${item.title}" 
-												   data-module="${item.module}">
-												   ${item.label}</a>`)
+			return  html `<div class="header">
+						    <h1 id="title"></h1>
+						    <p id="subtitle" class="lead"></p>
+					      </div>
+					      <div class="tabnav" role="tablist">
+						    <nav class="tabnav-tabs" style="position:relative">
+							  <a class="btn btn-outline btn-sm right" 
+							     style="margin-left: 10px; margin-top:5px" 
+							     href="/api/v1/_logout">
+							     Logout</a>
+							  ${menu.filter(item => user.scopesIncludeOneOf(item.scopes_allowed)) 
+							        .map(item => html `<a class="tabnav-tab ${item.position ? item.position : ''}" 
+												          role="tab" 
+												          href="/ui/views${item.path}" 
+												          title="${item.subtitle}" 
+												          data-title="$${item.title}" 
+												          data-module="${item.module}">
+												          $${item.label}</a>`)
 								  .reduce((a,b)=>a+b,'')}
 					 	</nav>
 					 </div>
@@ -1986,49 +2038,54 @@ class ModuleMenu extends HTMLElement {
             } 
             if(!this._fadedOut){
                 document.querySelector("ui-view").style.opacity="0.33";
-                document.querySelector("ui-view-menu").style.opacity="0.33"
+                const menu = document.querySelector("ui-view-menu");
+                if(menu){
+                    menu.style.opacity="0.33"
+                }
                 this._fadedOut = true;
             }
         });
         this.addEventListener('mouseout', (evt) => {
             if(this._fadedOut){
                 document.querySelector("ui-view").style.opacity="1";
-                document.querySelector("ui-view-menu").style.opacity="1";              
+                const menu = document.querySelector("ui-view-menu");
+                if(menu){
+                    menu.style.opacity="1"
+                }                
                 this._fadedOut = false;
             }
-
-
         });
     }
     
     render(menus){
         const concat = (a,b) => a+b;
         const item2html = function(item){
-            return `<li><a class="menu-item" id="${item.view}" title="${item.title}" href="${item.viewpath}" ${item.target ? `target="${item.target}"` :''}>${item.label}</a></li>`;
+            return html `<li><a class="menu-item" id="${item.view}" title="${item.title}" href="${item.viewpath}" ${item.target ? `target="${item.target}"` :''}>${item.label}</a></li>`;
         };
         let menuDom = menus.filter((menu) => !menu.selected)
                            .map((menu) => `<div style="display: inline-block; position: relative; padding: 0.5em 1em;" class="popup_menu">    
-                                             ${menu.items.length > 1 ? `
-                                             <h4 class="chevron bottom">
-                                                 ${menu.label}
-                                                 ${menu.entity || ''}
-                                             </h4>
-                                             <nav class="menu">
-                                                 <ul>${menu.items.map(item2html).reduce(concat,'')}</ul>
-                                             </nav>` :
-                                             `
-                                              <h4>
-                                                 <a class="menu-item" id="${menu.items[0].view}" title="${menu.items[0].title}" href="${menu.items[0].viewpath}">${menu.items[0].label}</a>
-                                              </h4>
-                                             `}
+                                             ${menu.items.length > 1 
+                                             ? html `<h4 class="chevron bottom">
+                                                       ${menu.label}
+                                                       ${menu.entity||''}
+                                                     </h4>
+                                                     <nav class="menu">
+                                                       <ul>${menu.items.map(item2html).reduce(concat,'')}</ul>
+                                                     </nav>` 
+                                             : html `<h4>
+                                                       <a class="menu-item" 
+                                                          id="${menu.items[0].view}" 
+                                                          title="$${menu.items[0].title}" 
+                                                          href="${menu.items[0].viewpath}">$${menu.items[0].label}</a>
+                                                     </h4>`}
                                            </div>`)
                              .reduce(concat,'');
      
         const selected = menus.filter((menu) => menu.selected);
         if (menuDom && selected && selected.length){
-            menuDom += `<div style="display: inline-block; position: relative; padding: 0.5em 1em;" class="entity">
-                        <h4>${ selected[0].label} ${selected[0].entity || ''}</h4>
-                        </div>`;
+            menuDom += html `<div style="display: inline-block; position: relative; padding: 0.5em 1em;" class="entity">
+                              <h4>${selected[0].label} ${selected[0].entity}</h4>
+                             </div>`;
         }
         this.innerHTML=menuDom;
     }
@@ -2049,11 +2106,13 @@ class ViewMenu extends HTMLElement {
 	render(menus){
 		const concat = (a,b) => a+b;
 		const item2html = function(item){
-			return `<li><a class="menu-item" id="${item.view}" title="${item.title}" href="${item.viewpath}" ${item.target ? `target="${item.target}"` :''}>${item.label}</a></li>`;
+			return html `<li><a class="menu-item" id="${item.view}" title="$${item.title}" href="${item.viewpath}" ${item.target ? `target="${item.target}"` :''}>$${item.label}</a></li>`;
 		};
         const menuDom = menus.filter((menu) => menu.selected)
                              .map((menu) => `<nav class="menu">
-                                                 ${menu.label ? `<h3 class="menu-heading" style="position:relative" title="${menu.title}">${menu.label}</h3>`:''}<ul>${menu.items.map(item2html).reduce(concat,'')}</ul>
+                                                 ${menu.label ? html `<h3 class="menu-heading" 
+                                                                          style="position:relative" 
+                                                                          title="$${menu.title}">$${menu.label}</h3>`:''}<ul>${menu.items.map(item2html).reduce(concat,'')}</ul>
                                              </nav>`)
                              .reduce(concat,'');
 		this.innerHTML=menuDom;
@@ -2176,9 +2235,11 @@ class DateTime extends InputControl {
 				}
 
 			});
-			this.form.addEventListener('UIPreExecuteAction',(evt) => {
-				this.viewModel.setProperty(this.binding,calendar.getSelectedDate().toISOString());
-			});
+			if(this.form){
+	            this.form.addEventListener('UIPreExecuteAction',(evt) => {
+	                this.viewModel.setProperty(this.binding,calendar.getSelectedDate().toISOString());
+	            });   
+			}
 		}	
 	}
 	
@@ -2581,21 +2642,29 @@ class TagEditor extends InputControl{
 	renderDom(){
 		
 		const note = this.note;
+
+        let label = '';
+        if(this.label){
+            label = `<div>
+                        <label>${this.label}</label>
+                    </div>`;
+        }
 		
 		const renderTags = function(){
 			const tags = this.viewModel.getProperty(this.binding);
 			if(this.readonly){
-				return `<ol class="tags">
-							${tags && tags.map(tag => `<li class="tag">${tag}</li>`).reduce((a,b) => a+b,'')}
-						</ol>`;
+				return html `<ol class="tags">
+							   ${tags && tags.map(tag => html `<li class="tag">$${tag}</li>`).reduce((a,b) => a+b,'')}
+						     </ol>`;
 			}
 			
 			return `<div class="tag-editor">
-					<ol class="tags">
-						${tags && tags.length > 0 ? tags.map(tag => `<li class="tag"><span>${tag}</span><button name="remove-tag" class="btn btn-sm btn-danger" title="Remove tag ${tag}" data-tag="${tag}">-</button></li>`).reduce((a,b) => a+b) : ''}
-					</ol>
-					<span style="position:relative"><input type="text" name="new-tag"><button name="add-tag" title="Add new tag" class="btn btn-sm btn-outline">+</button></span>
-					</div>
+			          ${label}
+					  <ol class="tags">
+						  ${tags && tags.length > 0 ? tags.map(tag => html `<li class="tag"><span>$${tag}</span><button name="remove-tag" class="btn btn-sm btn-danger" title="Remove tag $${tag}" data-tag="$${tag}">-</button></li>`).reduce((a,b) => a+b) : ''}
+					  </ol>
+					  <span style="position:relative"><input type="text" name="new-tag"><button name="add-tag" title="Add new tag" class="btn btn-sm btn-outline">+</button></span>
+				    </div>
 					<p class="note">${note}</p>`;
 		}.bind(this);
 		
@@ -2626,6 +2695,61 @@ class TagEditor extends InputControl{
 	}
 	
 }
+
+class RefreshButton extends Button {
+    
+    constructor(){
+        super();
+    }
+    
+    get name(){
+        const name = super.name;
+        if (name){
+            return name;
+        }
+        return 'refresh';
+    }
+    
+    renderDom(){
+        const form = this.form;
+        super.renderDom();
+        form.querySelector(`button#${this.name}`).addEventListener('click',(evt) => {
+            this.controller.reload();
+            evt.stopPropagation();
+            evt.preventDefault();
+        });
+    }
+    
+}
+
+class Paginator extends UIElement {
+    
+    renderDom(){
+        const params = this.location.params;
+        const offset = parseInt(this.getAttribute('offset'));
+        const limit  = parseInt(this.getAttribute('limit'));
+        const size   = parseInt(this.getAttribute('size'))
+        const eof    = (this.getAttribute('eof') == 'true');
+        
+        this.innerHTML=`<ui-actions>
+                            <ui-button name="next" small ${eof ? "disabled" : ""}>Next</ui-button>                
+                            <ui-button name="prev" small ${offset == 0 ? "disabled" : ""}>Previous</ui-button>
+                        </ui-actions>`;
+        
+        this.addEventListener('click',(evt) => {
+           evt.stopPropagation();
+           evt.preventDefault();
+           if(evt.target.name == 'next'){
+               params.offset=offset+limit;
+               this.controller.reload(params);
+           } else {
+               params.offset=Math.max(0,offset-limit);
+               this.controller.reload(params);
+           }
+        });
+    }
+}
+
 
 // Register view first to avoid troubles with DOM rendering.
 customElements.define('ui-view',View);
@@ -2662,6 +2786,38 @@ customElements.define('ui-view-header',ViewHeader);
 //Nested elements must be registered at the end to avoid troubles when rendering the DOM
 customElements.define('ui-label',Label);
 customElements.define('ui-note',Note);
+customElements.define('ui-refresh',RefreshButton);
+customElements.define('ui-paginator',Paginator);
 
+//html escape function
+//List of the characters we want to escape and their HTML escaped version
+const chars = {
+  "&": "&amp;",
+  ">": "&gt;",
+  "<": "&lt;",
+  '"': "&quot;",
+  "'": "&#39;",
+  "`": "&#96;"
+};
 
+//Dynamically create a RegExp from the `chars` object
+const re = new RegExp(Object.keys(chars).join("|"), "g");
 
+//Return the escaped string
+const htmlEscape = (str = "") => String(str).replace(re, match => chars[match]);
+
+export const html = (literals, ...substs) => {
+  return literals.raw.reduce((acc, lit, i) => {
+      let subst = substs[i - 1];
+      if (Array.isArray(subst)) {
+          subst = subst.join("");
+      } else if (literals.raw[i - 1] && literals.raw[i - 1].endsWith("$")) {
+          // If the interpolation is preceded by a dollar sign,
+          // substitution is considered unsafe and will be escaped
+          acc = acc.slice(0, -1);
+          subst = htmlEscape(subst);
+      }
+
+      return acc + subst + lit;
+  });
+};

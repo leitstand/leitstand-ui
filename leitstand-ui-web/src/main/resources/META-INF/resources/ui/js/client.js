@@ -57,11 +57,11 @@
  * </p>
  * <code><pre>
  *  let profile = new UserProfile();
- *  profile.onError=function(messages){
+ *  profile.onError((messages) =>{
  *  	// Display error messages
- *  };
+ *  });
  *  // Register callback to process the profile settings.
- *  profile.onLoaded=function(settings){
+ *  profile.onLoaded((settings) {
  *  	// Process the user profile
  *  };
  *  // Load user profile
@@ -137,20 +137,20 @@ function http(uri,params) {
 				const processResponseData = function(data){
 					// Invoke handler registered for the returned HTTP status code, if any.
 					const handler = handlers[response.status];
+					const context = { method:method,
+					                  uri:uri,
+					                  status:response.status,
+					                  headers:response.headers };
 					if(handler){
-						const context = { method:method,
-										  uri:uri,
-										  status:response.status,
-										  headers:response.headers};
-						handler.call(context,data);
+						handler(data,context);
 					}
 					// Notify client about the REST API invocation outcome.
 					if(200 <= response.status && response.status < 300 ){
 						// Successful REST API invocation
-						resolved(data);
+						resolved(data,context);
 					} else {
 						// Failed REST API invocation
-						rejected(data);
+						rejected(data,context);
 					}
 				};
 				if(response.headers.get('Content-Type') &&
@@ -239,6 +239,14 @@ function http(uri,params) {
 		 */
 		DELETE() {
 			return invoke('DELETE');
+		}
+		
+		/**
+		 * Registers status handlers using the HTTP status code as key and the function to handle the HTTP status code as argument.
+		 */
+		handlers(handlers){
+		    this.handlers = handlers;
+		    return this;
 		}
 		
 		/**
@@ -424,178 +432,233 @@ export class Resource {
 	 * Creates a new <code>Resource</code> instance.
 	 */
 	constructor(){
-		/**
-		 * Input error callback.
-		 * <p>
-		 * This callback is invoked when the server was not able to process the request entity and responded with <code>400 Bad Request</code>
-		 * or <code>422 Unprocessable Entity</code>. 
-		 * The resource calls the <code>onError</code> callback if no <code>onInputError</code> callback was registered.
-		 * </p>
-		 * @param {Message[]} messages a message array that provides details about why the request entity cannot be processed
-		 */
-		this.onInputError = null;
-		
-		/**
-		 * 
-		 * Conflict error callback.
-		 * <p>
-		 * This callback is invoked when server responded with <code>409 Conflict</code> because the request conflicts with the server-side state of the resource.
-		 * The resource calls the <code>onError</code> callback if no <code>onInputError</code> callback was registered.
-		 * </p>
-		 * @param {Message[]} messages a message array that provides details about why the request conflicts with the server-side resource state
-		 */
-		this.onConflict = null;
-		
-		/**
-		 * Resource gone callback.
-		 * <p>
-		 * This callback is invoked when a requested resource does not exist anymore and the server responded with <code>410 Gone</code>.
-		 * This callback calls the <code>onRemoved</code> callback by default and invokes the <code>onError</code> if no <code>onRemoved</code> callback was specified.
-		 * </p>
-		 * @param {Message} message a message that provides details about what resources was attempted to access
-		 */
-		this.onGone = null;
-		
-		
-		/**
-		 * Method not allowed callback.
-		 * <p>
-		 * This callback is invoked when the server responded with <code>405 Method Not Allowed</code> because the resource does not accept the specified HTTP request method.
-		 * The resource calls the <code>onError</code> callback if no <code>onMethodNotAllowed</code> callback was specified.
-		 * </p>
-		 * @param {Message} message a message that provides details about what resources was attempted to access
-		 */
-		this.onMethodNotAllowed = null;
-		
-		
-		/**
-		 * Precondition failed callback.
-		 * <p>
-		 * This callback is invoked when the server responded with a <code>412 Precondition Failed</code> response, because a condition 
-		 * specified in a <code>If-Match</code>,<code>If-None-Match</code>, <code>If-Modified-Since</code>, or <code>If-Not-Modified-Since</code> 
-		 * header is not satisfied.
-		 * The resource calls the <code>onError</code> callback if no <code>onPreconditionFailed</code> callback was specified.
-		 * </p>
-		 * @param {Message} message a message that provides details about what pre-condition failed
-		 */
-		this.onPreconditionFailed=null;
-		
-		/**
-		 * Resource loaded callback.
-		 * <p>
-		 * This callback is invoked if a resource was loaded, i.e. the server responded with a <code>200 OK</code> to a <code>HTTP GET</code> request.
-		 * The resource calls the <code>onSuccess</code> callback if no <code>onLoaded</code> callback was specified.
-		 * </p>
-		 * @param {String|Object} entity The response entity as JSON object (for <code>appliation/json</code> MIME type) or the entity's raw data (for all other MIME types).
-		 */
-		this.onLoaded=null;
-		
-		/**
-		 * Resource created callback.
-		 * <p>
-		 * This callback is invoked when the server responses with <code>201 Created</code> because a new resource was created on the server.
-		 * The resource invokes the <code>onSuccess</code> callback if no <code>onCreated</code> callback was specified.
-		 * @param {String} location The location (URI) of the created resource
-		 */
-		this.onCreated;
-
-		/**
-		 * Resource removed callback.
-		 * <p>
-		 * This callback is invoked when a resource has been successfully removed from a server, i.e. the server responded with <code>200 OK</code> or <code>204 No Content</code> to a <code>HTTP DELETE</code> request.
-		 * The resource calls the <code>onSuccess</code> callback if no <code>onRemoved</code> callback was specified.
-		 * @param {Message[]} [messages] messages that provide details about the removed resource
-		 */
-		this.onRemoved;
-		
-		/**
-		 * Resource updated callback.
-		 * <p>
-		 * This callback is invoked when an existing resources has been updated, i.e. the server responded with <code>200 OK</code> or <code>204 No Content</code> to a <code>HTTP PUT</code> or <code>HTTP POST</code> operation. 
-		 * The resource calls the <code>onSuccess</code> callback if no <code>onUpdate</code> callback was specified.
-		 * <p>
-		 * @param {Message[]} [messages] messages that provide details about what resource was updated
-		 */
-		this.onUpdated = null;
-		
-		/**
-		 * Request accepted callback.
-		 * <p>
-		 * This callback is invoked when the server responded with <code>201 Accepted</code> because the resource has accepted a request but the execution has been deferred. 
-		 * The resource calls the <code>onSuccess</code> callback if not <code>onAccepted</code> callback was specified.
-		 * </p>
- 		 * @param {Messages[]} [messages] messages that provide details about the scheduled operation
-		 */
-		this.onAccepted = null;
-		
-		
-		/**
-		 * Caller unauthorized callback.
-		 * <p>
-		 * This callback is invoked when the server responded with <code>401 Unauthorized</code> because the caller is not authorized to execute the request.
-		 * The resource calls the <code>onError</code> callback if no <code>onUnauthorized</code> callback was specified.
-		 * 
-		 * @param {Message} message a message that provides details about the attempted operation
-		 */
-		this.onUnauthorized = function(message){
-			window.dispatchEvent(new CustomEvent('ClientUnauthenticated',{'detail':message}));
-		};
-		
-		/**
-		 * Operation forbidden callback.
-		 * <p>
-		 * This callback is invoked when the server responded with <code>403 Forbidden</code> because the caller is not allowed to execute the request.
-		 * The resource calls the <code>onError</code> callback if no <code>onForbidden</code> callback was specified.
-		 * 
-		 * @param {Message} message a message that provides details about the attempted operation
-		 */
-		this.onForbidden = function(message){
-			window.dispatchEvent(new CustomEvent('ClientForbidden',{'detail':message}));
-		};
-		
-		/**
-		 * Resource not found callback.
-		 * <p>
-		 * This callback is invoked when the server responded with <code>404 Not Found</code> because the requested resource does not exist.
-		 * The resource calls the <code>onError</code> callback if no <code>onNotFound</code> callback was specified. 
-		 * In addition, the resource fires a custom <code>ResourceNotFound</code> event by default if a resource does not exist. 
-		 * This event is not fired if a custom <code>onNotFound</code> callback was specified.
-		 * 
-		 * @param {Message} message a message that provides details about which resource was not found
-		 */
-		this.onNotFound = function(messages){
-			window.dispatchEvent(new CustomEvent('ResourceNotFound',{'detail':messages}));
-		}
-		
-		
-		/**
-		 * Error callback.
-		 * <p>
-		 * This callback is invoked in case of an error, unless a more-applicable error callback exists.
-		 * The error callback fires a custom <code>ResourceError</code> event by default. 
-		 * This event is not fired if a custom <code>onError</code> callback was specified.
-		 * @param {Message|Message[]} message a message or an array of messages that provides details about the error
-		 */
-		this.onError = function(message){
-			window.dispatchEvent(new CustomEvent('ResourceError'),{'detail':message});
-		}
-		
-		/**
-		 * Success callback.
-		 * <p>
-		 * This callback is invoked for all successful operations, unless a more-applicable success callback exists.
-		 * @param {String|Object|Message|Message[]} response the response of the successful operation, which is either the URI of a created resource, the response entity, or messages that describe the outcome of an operation
-		 */
-		this.onSuccess = function() {};
-		
-		/**
-		 * Bad gateway callback.
-		 * <p>
-		 * This callback is invoked if the server reponses with a bad gatway error message.
-		 */
-		this.onBadGateway = null;
+	    this.onUnauthorized((message)=>{
+	        console.log(message.reason+' - '+message.message);
+	        window.dispatchEvent(new CustomEvent('ClientUnauthenticated',{'detail':message}));
+	    });
+	    
+	    this.onForbidden((message)=>{
+            console.log(message.reason+' - '+message.message);
+	        window.dispatchEvent(new CustomEvent('ClientForbidden',{'detail':message}));
+	    });
+        
+	    this.onNotFound((message,response)=>{
+            console.log('Resource not found: '+response.uri);
+        });
+        
+        this.onError((message,response)=>{
+            window.dispatchEvent(new CustomEvent('ResourceError',{'detail':message}));
+        });
+	    
 	}
 
+    /**
+     * Register input error callback.
+     * <p>
+     * This callback is invoked when the server was not able to process the request entity and responded with <code>400 Bad Request</code>
+     * or <code>422 Unprocessable Entity</code>. 
+     * The resource calls the <code>onError</code> callback if no <code>onInputError</code> callback was registered.
+     * </p>
+     * @param {Message[]} messages a message array that provides details about why the request entity cannot be processed
+     */
+    onInputError(handler){
+        this._onInputError = handler;
+        return this;
+    }
+    
+    /**
+     * 
+     * Register conflict error callback.
+     * <p>
+     * This callback is invoked when server responded with <code>409 Conflict</code> because the request conflicts with the server-side state of the resource.
+     * The resource calls the <code>onError</code> callback if no <code>onInputError</code> callback was registered.
+     * </p>
+     * @param {Message[]} messages a message array that provides details about why the request conflicts with the server-side resource state
+     */
+    onConflict(handler){
+        this._onConflict = handler;
+        return this;
+    }
+	
+    /**
+     * Resource gone callback.
+     * <p>
+     * This callback is invoked when a requested resource does not exist anymore and the server responded with <code>410 Gone</code>.
+     * This callback calls the <code>onRemoved</code> callback by default and invokes the <code>onError</code> if no <code>onRemoved</code> callback was specified.
+     * </p>
+     * @param {Message} message a message that provides details about what resources was attempted to access
+     */
+    onGone(handler){
+        this._onGone = handler;
+        return this;
+    }
+	
+    /**
+     * Method not allowed callback.
+     * <p>
+     * This callback is invoked when the server responded with <code>405 Method Not Allowed</code> because the resource does not accept the specified HTTP request method.
+     * The resource calls the <code>onError</code> callback if no <code>onMethodNotAllowed</code> callback was specified.
+     * </p>
+     * @param {Message} message a message that provides details about what resources was attempted to access
+     */
+    onMethodNotAllowed(handler){
+        this._onMethodNotAllowed = handler;
+        return this;
+    } 
+    
+    /**
+     * Precondition failed callback.
+     * <p>
+     * This callback is invoked when the server responded with a <code>412 Precondition Failed</code> response, because a condition 
+     * specified in a <code>If-Match</code>,<code>If-None-Match</code>, <code>If-Modified-Since</code>, or <code>If-Not-Modified-Since</code> 
+     * header is not satisfied.
+     * The resource calls the <code>onError</code> callback if no <code>onPreconditionFailed</code> callback was specified.
+     * </p>
+     * @param {Message} message a message that provides details about what pre-condition failed
+     */
+    onPreconditionFailed(handler){
+        this._onPreconditionFailed = handler;
+        return this;
+    }
+    
+    /**
+     * Resource loaded callback.
+     * <p>
+     * This callback is invoked if a resource was loaded, i.e. the server responded with a <code>200 OK</code> to a <code>HTTP GET</code> request.
+     * The resource calls the <code>onSuccess</code> callback if no <code>onLoaded</code> callback was specified.
+     * </p>
+     * @param {String|Object} entity The response entity as JSON object (for <code>appliation/json</code> MIME type) or the entity's raw data (for all other MIME types).
+     */
+    onLoaded(handler){
+        this._onLoaded = handler;
+        return this;
+    }
+    
+    /**
+     * Resource created callback.
+     * <p>
+     * This callback is invoked when the server responses with <code>201 Created</code> because a new resource was created on the server.
+     * The resource invokes the <code>onSuccess</code> callback if no <code>onCreated</code> callback was specified.
+     * @param {String} location The location (URI) of the created resource
+     */
+    onCreated(handler){
+        this._onCreated = handler;
+        return this;
+    }
+    
+    /**
+     * Resource removed callback.
+     * <p>
+     * This callback is invoked when a resource has been successfully removed from a server, i.e. the server responded with <code>200 OK</code> or <code>204 No Content</code> to a <code>HTTP DELETE</code> request.
+     * The resource calls the <code>onSuccess</code> callback if no <code>onRemoved</code> callback was specified.
+     * @param {Message[]} [messages] messages that provide details about the removed resource
+     */
+    onRemoved(handler){
+        this._onRemoved = handler;
+        return this;
+    }
+    
+    /**
+     * Resource updated callback.
+     * <p>
+     * This callback is invoked when an existing resources has been updated, i.e. the server responded with <code>200 OK</code> or <code>204 No Content</code> to a <code>HTTP PUT</code> or <code>HTTP POST</code> operation. 
+     * The resource calls the <code>onSuccess</code> callback if no <code>onUpdate</code> callback was specified.
+     * <p>
+     * @param {Message[]} [messages] messages that provide details about what resource was updated
+     */
+    onUpdated(handler){
+        this._onUpdated = handler;
+        return this;
+    }
+    
+    /**
+     * Request accepted callback.
+     * <p>
+     * This callback is invoked when the server responded with <code>201 Accepted</code> because the resource has accepted a request but the execution has been deferred. 
+     * The resource calls the <code>onSuccess</code> callback if not <code>onAccepted</code> callback was specified.
+     * </p>
+     * @param {Messages[]} [messages] messages that provide details about the scheduled operation
+     */
+    onAccepted(handler){
+        this._onAccepted = handler;
+        return this;
+    };
+    
+    
+    /**
+     * Caller unauthorized callback.
+     * <p>
+     * This callback is invoked when the server responded with <code>401 Unauthorized</code> because the caller is not authorized to execute the request.
+     * The resource calls the <code>onError</code> callback if no <code>onUnauthorized</code> callback was specified.
+     * 
+     * @param {Message} message a message that provides details about the attempted operation
+     */
+    onUnauthorized(handler){
+        this._onUnauthorized = handler;
+        return this;
+    };
+    
+    /**
+     * Operation forbidden callback.
+     * <p>
+     * This callback is invoked when the server responded with <code>403 Forbidden</code> because the caller is not allowed to execute the request.
+     * The resource calls the <code>onError</code> callback if no <code>onForbidden</code> callback was specified.
+     * 
+     * @param {Message} message a message that provides details about the attempted operation
+     */
+    onForbidden(handler){
+        this._onForbidden = handler;
+        return this;
+    };
+    
+    /**
+     * Resource not found callback.
+     * <p>
+     * This callback is invoked when the server responded with <code>404 Not Found</code> because the requested resource does not exist.
+     * The resource calls the <code>onError</code> callback if no <code>onNotFound</code> callback was specified. 
+     * In addition, the resource fires a custom <code>ResourceNotFound</code> event by default if a resource does not exist. 
+     * This event is not fired if a custom <code>onNotFound</code> callback was specified.
+     * 
+     * @param {Message} message a message that provides details about which resource was not found
+     */
+    onNotFound(handler){
+        this._onNotFound = handler;
+        return this;
+    }
+    
+    /**
+     * Error callback.
+     * <p>
+     * This callback is invoked in case of an error, unless a more-applicable error callback exists.
+     * The error callback fires a custom <code>ResourceError</code> event by default. 
+     * This event is not fired if a custom <code>onError</code> callback was specified.
+     * @param {Message|Message[]} message a message or an array of messages that provides details about the error
+     */
+    onError(handler){
+        this._onError = handler;
+        return this;
+    }
+    
+    /**
+     * Success callback.
+     * <p>
+     * This callback is invoked for all successful operations, unless a more-applicable success callback exists.
+     * @param {String|Object|Message|Message[]} response the response of the successful operation, which is either the URI of a created resource, the response entity, or messages that describe the outcome of an operation
+     */
+    onSuccess(handler){
+        this._onSuccess = handler;
+        return this;
+    }
+    
+    onRedirect(handler){
+        this._onRedirect = handler;
+        return this;
+    }
+
+    onBadGateway(handler) {
+        this._onBadGateway = handler;
+        return this;
+    }
 
 	/**
 	 * Returns a prepared HTTP call to submit a GET, PUT, POST, or DELETE request.
@@ -614,58 +677,60 @@ export class Resource {
 		// Event handlers are always invoked in the scope of the XMLHTTPRequest to
 		// have access to the request and response. resource reference is needed to
 		// forward the event to the proper event handler.
-		function dispatchResponse(resource){
-			return function(){
-				if(this.method == 'GET'){
-					if(resource.onLoaded){
-						resource.onLoaded.apply(this,arguments);
-						return;
-					}
-					if(resource.onSuccess){
-						resource.onSuccess.apply(this,arguments);
-					}
-					return;
-				}
-				if(this.method == 'POST' || this.method == 'PUT'){
-					if(resource.onUpdated){
-						resource.onUpdated.apply(this,arguments);
-						return;
-					}
-					if(resource.onSuccess){
-						resource.onSuccess.apply(this,arguments);
-					}
-					return;
-				}
-				if(this.method == 'DELETE'){
-					if(resource.onRemoved){
-						resource.onRemoved.apply(this,arguments);
-						return;
-					}
-					if(resource.onSuccess){
-						resource.onSuccess.apply(this,arguments);
-					}
-					return;
-				}
-				// Catch all
-				if(resource.onSuccess){
-					resource.onSuccess.apply(this,arguments);
-				}
-			};
-		};	
+		const dispatchResponse = function(data,context){
+            if(context.method == 'GET'){
+                 if(this._onLoaded){
+                     this._onLoaded(data,context);
+                     return;
+                 }
+                 if(this._onSuccess){
+                     this._onSuccess(data,context);
+                 }
+                 return;
+             }
+             if(context.method == 'POST' || context.method == 'PUT'){
+                 if(this._onUpdated){
+                     this._onUpdated(data,context);
+                     return;
+                 }
+                 if(this._onSuccess){
+                     this._onSuccess(data,context);
+                 }
+                 return;
+             }
+             if(context.method == 'DELETE'){
+                 if(this._onRemoved){
+                     this._onRemoved(data,context);
+                     return;
+                 }
+                 if(this._onSuccess){
+                     this._onSuccess(data,context);
+                 }
+                 return;
+             }
+             // Catch all
+             if(this._onSuccess){
+                 this._onSuccess(data,context);
+             }
+		}.bind(this);
+		
 		
 		return http(path,params)
-			   .onAccepted(this.onAccepted ? this.onAccepted : this.onSuccess)
-			   .onCreated(this.onCreated ? this.onCreated : this.onSuccess)
-			   .onGone(this.onRemoved ? this.onRemoved : this.onError)
-			   .onMethodNotAllowed(this.onMethodNotAllowed ? this.methodNotAllowed : this.onError)
-			   .onSuccess(dispatchResponse(this))
-			   .onBadRequest(this.onInputError ? this.onInputError : this.onError)
-			   .onConflict(this.onConflict ? this.onConflict : this.onError)
-			   .onInternalServerError(this.onError)
-			   .onBadGateway(this.onBadGateway)
-			   .onForbidden(this.onForbidden ? this.onForbidden : this.onError)
-			   .onUnauthorized(this.onUnauthorized ? this.onUnauthorized : this.onError)
-			   .onNotFound(this.onNotFound ? this.onNotFound : this.onError);
+			   .onAccepted(this._onAccepted ? this._onAccepted : this._onSuccess)
+			   .onCreated(this._onCreated ? this._onCreated : this._onSuccess)
+			   .onGone(this._onRemoved ? this._onRemoved : this._onError)
+			   .onMethodNotAllowed(this._onMethodNotAllowed ? this._methodNotAllowed : this._onError)
+			   .onBadRequest(this._onInputError ? this._onInputError : this._onError)
+			   .onConflict(this._onConflict ? this._onConflict : this._onError)
+			   .onInternalServerError(this._onError)
+			   .onBadGateway(this._onBadGateway)
+			   .onForbidden(this._onForbidden ? this._onForbidden : this._onError)
+			   .onUnauthorized(this._onUnauthorized ? this._onUnauthorized : this._onError)
+			   .onNotFound(this._onNotFound ? this._onNotFound : this._onError)
+			   .onRedirect(this._onRedirect)
+			   .onPreconditionFailed(this._onPreconditionFailed ? this._onPreconditionFailed : this._onError)
+			   .onSuccess(dispatchResponse);
+
 	};
 
 	/**

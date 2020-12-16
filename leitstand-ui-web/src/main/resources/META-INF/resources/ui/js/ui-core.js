@@ -424,7 +424,7 @@ export class Location {
 						continue;
 					}
 					const multivalue = this._params[keyvalue[0]];
-					if(typeof multivalue === 'array'){
+					if(Array.isArray(multivalue)){
 						multivalue.push( decodeURIComponent(keyvalue[1]));
 						continue;
 					}

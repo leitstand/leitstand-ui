@@ -6,6 +6,14 @@
 /* Primer accessibility enhancements */
 /*--------------------------------------------------------*/
 
+/* Override Primer default width.*/
+.container {
+    width: 1200px !important;
+    margin-right: auto;
+    margin-left: auto
+}
+
+
 /* Declare menu items as list items.*/
 nav li {
 	list-style-type: none;
@@ -234,6 +242,13 @@ table.list td.large {
 table.list th.text,
 table.list td.text {
 	text-align: left;
+	vertical-align: top;
+}
+
+table.list tr.middle th.text,
+table.list tr.middle td.text {
+    text-align: left;
+    vertical-align: middle;
 }
 
 table.list th.key,
@@ -299,8 +314,7 @@ table.details {
 	margin-bottom: 12px;
 }
 
-table.details th,
-table.details td:nth-child(2n-1){
+table.details th{
 	text-align: left;
 	font-weight:normal;
 	padding: 1em;
@@ -473,6 +487,46 @@ div.package .details{
 	font-size: 8pt;
 	display:block;
 	text-align: center;
+    width: 8em;
+}
+
+.subscriber.ESTABLISHED {
+    background-color:#308720; /*#8bc34a;*/
+    color: white;
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 2px;
+    font-size: 8pt;
+    text-align: center;
+    width: 8em;
+}
+
+.subscriber.REJECTED,
+.subscriber.INAVLID {
+    background-color:#e82000;
+    color: white;
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 2px;
+    font-size: 8pt;
+    text-align: center;
+    width: 8em;
+    display:inline;
+}
+
+
+
+.subscriber {
+    background-color:#767676; 
+    color: white;
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 2px;
+    font-size: 8pt;
+    text-align: center;
+    width: 8em;
+    display:inline !important;
+    
 }
 
 
@@ -486,9 +540,9 @@ div.package .details{
 	font-size: 8pt;
 	display:block;
 	text-align: center;
+    width: 8em;
 }
 
-.ERROR,
 .FAILED,
 .INVALID,
 .DENIED,
@@ -506,7 +560,32 @@ div.package .details{
 	font-size: 8pt;
 	display:block;
 	text-align:center;
+    width: 8em;
 }
+
+.ERROR {
+    background-color:#e82000; /*#ff4107;*/
+    color: white;
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 2px;
+    font-size: 8pt;
+    display:block;
+    text-align:center;
+}
+
+.UNKNOWN,
+.DEBUG{
+    background-color: #767676;
+    color: white;
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 2px;
+    font-size: 8pt;
+    display:block;
+    text-align:center;
+}
+
 
 .CACHED,
 .SUPERSEDED,
@@ -520,6 +599,7 @@ div.package .details{
 	font-size: 8pt;
 	display:block;
 	text-align:center;
+	width: 8em;
 }
 
 .ROLLEDBACK{
@@ -530,9 +610,9 @@ div.package .details{
 	border-radius: 2px;
 	font-size: 8pt;
 	display:block;
+    width: 8em;
 }
 
-.WARNING,
 .CANCELLED,
 .PULL,
 .SKIPPED,
@@ -545,13 +625,25 @@ div.package .details{
 	font-size: 8pt;
 	display:block;
 	text-align: center;
+    width: 8em;
+}
+
+.WARNING {
+    background-color: #a76000;
+    color: white;
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 2px;
+    font-size: 8pt;
+    display:block;
+    text-align: center;
 }
 
 span.NEW,
 span.ACTIVE,
+.NEW,
 .CANDIDATE,
 .IN_PROGRESS,
-.INFORMATION,
 .ROLLBACK,
 .MAINTENANCE,
 .platform .CACHED,
@@ -565,6 +657,18 @@ span.ACTIVE,
 	font-size: 8pt;
 	display:block;
 	text-align: center;
+    width: 8em;
+}
+
+.INFORMATION{
+    background-color:#2d5c9b; /*#4078c0;*/
+    color: white;
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 2px;
+    font-size: 8pt;
+    display:block;
+    text-align: center;
 }
 
 .INFORMATION.SUCCESS{
@@ -740,4 +844,15 @@ code.hljs {
 
 .confirm h2 {
 	color: #b33630;
+}
+
+ui-composition::after{
+	display:table;
+	content:"";
+	clear:both;
+}
+
+.CodeMirror {
+	border: 1px solid #d8d8d8;
+	min-height: 40em;
 }

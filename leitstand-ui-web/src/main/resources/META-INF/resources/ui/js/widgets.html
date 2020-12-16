@@ -56,18 +56,20 @@
 	 	font-color: #888;
 	 }
 	</style>
-	<script src="/ui/js/ext/highlight.pack.js"></script>
+	<script src="/ui/js/ext/source/highlight.pack.js"></script>
 	<script src="/ui/js/ui-components.js" type="module"></script>
 	<script>
-		window.addEventListener("DOMContentLoaded",function(){
+	   import('/ui/js/ui-core.js').then(mod => new mod.UserContext({user_name:"user"}))
+	                              .then(() => {
+	   window.addEventListener("DOMContentLoaded",function(){
 			
-			let root = document.querySelector("ui-root");
+			let root = document.querySelector("ui-view");
 			let viewModel = {};
 			viewModel.dyn_fruits = [{'value':'lemon','display_value':'Lemon'}, 
 									{'value':'grape','display_value':'Grape'},
 									{'value':'ananas','display_value':'Ananas','default':true}];
-			root.setViewModel(viewModel);
 
+			
 			root.innerHTML = `
 				<ui-view-header>
 					<ui-title>UI Component Catalog</ui-title>
@@ -212,23 +214,6 @@
 </ui-select>
 </xmp>
 </ui-code>
-					</div>
-					<div class="example">
-						<h4>Selectbox with dynamic options set</h4>
-						<div class="widget">
-							<ui-select name="dyn_fruit" options="dyn_fruits">
-								<ui-label>Select a fruit</ui-label>
-								<ui-note>Select from a dynamic set of options</ui-note>
-							</ui-select>
-						</div>
-<ui-code>
-<xmp>
-<ui-select name="dyn_fruit" options="dyn_fruits">
- <ui-label>Select a fruit</ui-label>
- <ui-note>Select from a dynamic set of options</ui-note>
-</ui-select>
-</xmp>
-</ui-code>						
 					</div>
 					<div class="example">
 						<h4>Radio Buttons</h4>
@@ -582,14 +567,15 @@
 </div>	
 		</ui-form>`;
 
+			})
 			});
 	</script>
 </head>
 <body>
 <div style="width:80%; margin:auto">
-<ui-root>
+<ui-view>
 
-</ui-root>
+</ui-view>
 </div>
 
 
