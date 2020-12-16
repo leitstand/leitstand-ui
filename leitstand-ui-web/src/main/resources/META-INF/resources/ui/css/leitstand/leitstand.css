@@ -245,6 +245,12 @@ table.list td.text {
 	vertical-align: top;
 }
 
+table.list tr.middle th.text,
+table.list tr.middle td.text {
+    text-align: left;
+    vertical-align: middle;
+}
+
 table.list th.key,
 table.list td.key {
 	text-align: right;
@@ -308,8 +314,7 @@ table.details {
 	margin-bottom: 12px;
 }
 
-table.details th,
-table.details td:nth-child(2n-1){
+table.details th{
 	text-align: left;
 	font-weight:normal;
 	padding: 1em;
@@ -485,6 +490,45 @@ div.package .details{
     width: 8em;
 }
 
+.subscriber.ESTABLISHED {
+    background-color:#308720; /*#8bc34a;*/
+    color: white;
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 2px;
+    font-size: 8pt;
+    text-align: center;
+    width: 8em;
+}
+
+.subscriber.REJECTED,
+.subscriber.INAVLID {
+    background-color:#e82000;
+    color: white;
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 2px;
+    font-size: 8pt;
+    text-align: center;
+    width: 8em;
+    display:inline;
+}
+
+
+
+.subscriber {
+    background-color:#767676; 
+    color: white;
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 2px;
+    font-size: 8pt;
+    text-align: center;
+    width: 8em;
+    display:inline !important;
+    
+}
+
 
 .DETACHED,
 .TIMEOUT {
@@ -529,6 +573,19 @@ div.package .details{
     display:block;
     text-align:center;
 }
+
+.UNKNOWN,
+.DEBUG{
+    background-color: #767676;
+    color: white;
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 2px;
+    font-size: 8pt;
+    display:block;
+    text-align:center;
+}
+
 
 .CACHED,
 .SUPERSEDED,
