@@ -2166,7 +2166,7 @@ class Label extends UIElement {
  *   
  */
 class DateTime extends InputControl {
-	
+
 	/**
 	 * Renders the DOM.
 	 */
@@ -2181,21 +2181,21 @@ class DateTime extends InputControl {
 				return Calendar.formatDateTime;
 			}
 			return Calendar.formatTimestamp;
-		}.bind(this); 
-		
+		}.bind(this);
+
 		const format_date = selectFormatter();
 
 		if(this.isReadonly()){
 			this.outerHTML=`<time datetime="${date}">${format_date(date)}</time>`;
-			
+
 		} else {
-			const calendar = new Calendar({'date': date,
+			let calendar = new Calendar({'date': date,
 										   'mode': this.getAttribute('format'),
 										   'root': this});
-			
-			
-			this.innerHTML=calendar.render({'show':false}); 
-		
+
+
+			this.innerHTML=calendar.render({'show':false});
+
 			this.addEventListener("click",(evt) => {
 				evt.stopPropagation();
 				evt.preventDefault();
@@ -2218,11 +2218,15 @@ class DateTime extends InputControl {
 					this.innerHTML = calendar.render({'show':true});
 				} else if(evt.target.id==='previous'){
 					calendar = calendar.previousMonth();
-					this.innerHTML = calendar.render({'show':false});
+					this.innerHTML = calendar.render({'show':true});
+				} else if (evt.target.id === 'minute') {
+					stop = false;
+				} else if (evt.target.id === 'hour') {
+					stop = false;
 				} else {
 					this.innerHTML = calendar.render({'show':true});
 				}
-				
+				evt.stopPropagation();
 			});
 			this.addEventListener('change',(evt) => {
 				evt.stopPropagation();
@@ -2230,7 +2234,7 @@ class DateTime extends InputControl {
 				if(evt.target.name==='hour'){
 					calendar.setHours(evt.target.value);
 				}
-				if(evt.target.name==='minute'){
+				if(evt.target.name ==='minute'){
 					calendar.setMinutes(evt.target.value);
 				}
 
@@ -2238,11 +2242,11 @@ class DateTime extends InputControl {
 			if(this.form){
 	            this.form.addEventListener('UIPreExecuteAction',(evt) => {
 	                this.viewModel.setProperty(this.binding,calendar.getSelectedDate().toISOString());
-	            });   
+	            });
 			}
-		}	
+		}
 	}
-	
+
 
 }
 
@@ -2277,25 +2281,25 @@ class Calendar {
 		let day   = Calendar.dateSegment(date.getDate())
 		let month = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][date.getMonth()];
 		let year  = date.getFullYear();
-		return `${day}-${month}-${year} ${Calendar.dateSegment(date.getHours())}:${Calendar.dateSegment(date.getMinutes())}:${Calendar.dateSegment(date.getSeconds())}.${Calendar.dateSegment(date.getMilliseconds(),3)}`; 
+		return `${day}-${month}-${year} ${Calendar.dateSegment(date.getHours())}:${Calendar.dateSegment(date.getMinutes())}:${Calendar.dateSegment(date.getSeconds())}.${Calendar.dateSegment(date.getMilliseconds(),3)}`;
 	};
 
 	/**
 	 * Formats a date as date/time in the format <code>dd-MMM-yyyy HH:mm</code>, e.g. 09-SEP-2019 14:23.
 	 * @param {Date} date the date to be formatted
-	 * @returns {String} the date as string in date/time format 
+	 * @returns {String} the date as string in date/time format
 	 */
 	static formatDateTime(date) {
 		let day   = Calendar.dateSegment(date.getDate())
 		let month = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][date.getMonth()];
 		let year  = date.getFullYear();
-		return `${day}-${month}-${year} ${Calendar.dateSegment(date.getHours())}:${Calendar.dateSegment(date.getMinutes())}`; 
+		return `${day}-${month}-${year} ${Calendar.dateSegment(date.getHours())}:${Calendar.dateSegment(date.getMinutes())}`;
 	};
 
 	/**
 	 * Formats a date as date in the format <code>dd-MMM-yyyy</code>, e.g. 09-SEP-2019
 	 * @param {Date} date the date to be formatted
-	 * @returns {String} the date as string in date format 
+	 * @returns {String} the date as string in date format
 	 */
 	static formatDate(date){
 		let day   = Calendar.dateSegment(date.getDate());
@@ -2303,11 +2307,11 @@ class Calendar {
 		let year  = date.getFullYear();
 		return `${day}-${month}-${year}`;
 	};
-	
+
 	static get DAYS_IN_MONTH(){
 		return [ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 ];
 	}
-	
+
 	/**
 	 * Tests whether the given year is a leap year.
 	 * @param {Number} year the full year
@@ -2324,7 +2328,7 @@ class Calendar {
 		}
 		return false;
 	};
-	
+
 	static get MONTHS(){
 		return ['January',
 				'February',
@@ -2339,12 +2343,12 @@ class Calendar {
 				'November',
 				'December']
 	}
-	
+
 	static get HOURS_OF_DAY(){
 		return ['00','01','02','03','04','05','06','07','08','09','10','11',
 				'12','13','14','15','16','17','18','19','20','21','22','23']
 	}
-	
+
 	static get MINUTES_OF_HOUR(){
 		return ['00','01','02','03','04','05','06','07','08','09','10','11',
 				'12','13','14','15','16','17','18','19','20','21','22','23',
@@ -2352,7 +2356,7 @@ class Calendar {
 				'36','37','38','39','40','41','42','43','44','45','46','47',
 				'48','49','50','51','52','53','54','55','56','57','58','59'];
 	}
-	
+
 	/**
 	 * Creates a new <code>Calendar</code> instance.
 	 * @param {Element} cfg.root the root element of the date picker
@@ -2375,7 +2379,7 @@ class Calendar {
 		}
 		this._selected = new Date(this._date);
 	}
-	
+
 	/**
 	 * Returns the full year of the initial calendar date.
 	 * The initial calendar date is the date that was specified when the calendar was instantiated.
@@ -2384,7 +2388,7 @@ class Calendar {
 	getYear(){
 		return this._date.getFullYear();
 	}
-	
+
 	/**
 	 * Returns the month  of the initial calendar date.
  	 * The initial calendar date is the date that was specified when the calendar was instantiated.
@@ -2397,7 +2401,7 @@ class Calendar {
 	/**
 	 * Returns the first day in month of the initial calendar date.
  	 * The initial calendar date is the date that was specified when the calendar was instantiated.
-	 * The first day is expressed as an integer between <code>0</code> (Sunday, first day in week) 
+	 * The first day is expressed as an integer between <code>0</code> (Sunday, first day in week)
 	 * and <code>6</code> (Saturday, last day of week)
 	 * @return {Number} the month of the calendar date.
 	 */
@@ -2406,7 +2410,7 @@ class Calendar {
 		date.setDate(1);
 		return date.getDay();
 	}
-	
+
 	/**
 	 * Returns the day in month of the initial calendar date.
  	 * The initial calendar date is the date that was specified when the calendar was instantiated.
@@ -2415,7 +2419,7 @@ class Calendar {
 	getDayInMonth(){
 		return this._date.getDate();
 	}
-	
+
 	/**
 	 * Returns the total number of days in the month of the initial calendar date.
 	 * The initial calendar date is the date that was specified when the calendar was instantiated.
@@ -2426,9 +2430,9 @@ class Calendar {
 			return 29;
 		}
 		return Calendar.DAYS_IN_MONTH[this._date.getMonth()];
-		
+
 	}
-	
+
 	/**
 	 * Returns the hours of the initial calendar date.
 	 * The initial calendar date is the date that was specified when the calendar was instantiated.
@@ -2437,7 +2441,7 @@ class Calendar {
 	getHours(){
 		return this._date.getHours();
 	}
-	
+
 	/**
 	 * Returns the minutes of the inital calendar date.
 	 * The initial calendar date is the date that was specified when the calendar was instantiated.
@@ -2446,7 +2450,7 @@ class Calendar {
 	getMinutes(){
 		return this._date.getMinutes();
 	}
-	
+
 	/**
 	 * Returns the seconds of the initial calendar date.
 	 * The initial calendar date is the date that was specified when the calendar was instantiated.
@@ -2455,7 +2459,7 @@ class Calendar {
 	getSeconds(){
 		return this._date.getSeconds();
 	}
-	
+
 	/**
 	 * Returns the milliseconds of the initial calendar date.
 	 * The initial calendar date is the date that was specified when the calendar was instantiated.
@@ -2478,8 +2482,8 @@ class Calendar {
 							 		 'date':date});
 		calendar._selected = this._selected;
 		return calendar;
-	}	
-	
+	}
+
 	/**
 	 * Creates a new calendar that displays the month before the month in the initial calendar date.
  	 * The initial calendar date is the date that was specified when the calendar was instantiated.
@@ -2492,9 +2496,9 @@ class Calendar {
 	 		 						 'root':this._root,
 	 		 						 'date':date});
 		calendar._selected = this._selected;
-		return calendar;	
+		return calendar;
 	}
-	
+
 	/**
 	 * Renders the calendar time section.
 	 */
@@ -2502,7 +2506,7 @@ class Calendar {
 		let selected = function(a,b){
 			return a==b ? 'selected' : '';
 		};
-		
+
 		return `<div class="time">
 					<div class="form-group">
 						<div class="label">
@@ -2510,7 +2514,7 @@ class Calendar {
 						</div>
 						<div class="input">
 			 				<select id="hour" name="hour" class="form-select">
-			 					${Calendar.HOURS_OF_DAY.map(hour => `<option value="${hour}" ${selected(this.getHours(),hour)} >${hour}</option>`).reduce((a,b) => a+b,'')}
+			 					${Calendar.HOURS_OF_DAY.map(hour => `<option value="${hour}" ${selected(this._selected.getHours(),hour)} >${hour}</option>`).reduce((a,b) => a+b,'')}
 							</select>
 						</div>
 					</div><div class="form-group">
@@ -2519,13 +2523,13 @@ class Calendar {
 						</div>
 						<div class="input">
 							<select id="minute" name="minute" class="form-select">
-								${Calendar.MINUTES_OF_HOUR.map(minute => `<option value="${minute}" ${selected(this.getMinutes(),minute)} >${minute}</option>`).reduce((a,b) => a+b,'')}
+								${Calendar.MINUTES_OF_HOUR.map(minute => `<option value="${minute}" ${selected(this._selected.getMinutes(),minute)} >${minute}</option>`).reduce((a,b) => a+b,'')}
 			 				</select>
 						</div>
 					</div>
 				</div>`;
 	}
-	
+
 	/**
 	 * Renders the calendar date section.
 	 */
@@ -2543,14 +2547,14 @@ class Calendar {
 			if(this._date.getMonth() != this._selected.getMonth()){
 				return '';
 			}
-			
+
 			return this._selected.getDate() == date ? 'selected' : '';
 		}.bind(this);
-		
+
 		for(let i=1; i <= this.getDaysInMonth(); i++){
 			dayElements.push(`<span class="${selected(i)} day">${i}</span>`);
 		}
-		
+
 		return `<div>
 					<div class="month">
 						<span id="previous" class="control">&#10094;</span><div>
@@ -2579,7 +2583,7 @@ class Calendar {
 												${this._mode != 'date' ? this._renderTime() : ''}
 											<button class="btn btn-sm btn-block" style="margin-top: 10px" id="apply">Apply</button>
 		 								</div> ` : ''}
-		 		</div>`; 
+		 		</div>`;
 
 	};
 
@@ -2587,14 +2591,14 @@ class Calendar {
 	 * Sets the selected date.
 	 * @param {Number} year the full year
 	 * @param {Number} month the month, starting with 0 for January and ending with 11 for December
-	 * @param {Number} date the day in month 
+	 * @param {Number} date the day in month
 	 */
 	setDate(year,month,date){
 		this._selected.setFullYear(year);
 		this._selected.setMonth(month);
 		this._selected.setDate(date);
 	}
-	
+
 	/**
 	 * Sets the selected hours.
 	 * @param {Number} hours the hours in the day.
@@ -2602,7 +2606,7 @@ class Calendar {
 	setHours(hours){
 		this._selected.setHours(hours,this._selected.getMinutes(),0,0);
 	}
-	
+
 	/**
 	 * Sets the selected minutes.
 	 * @param {Number} minutes the minute.
@@ -2610,7 +2614,7 @@ class Calendar {
 	setMinutes(minutes){
 		this._selected.setHours(this._selected.getHours(),minutes,0,0);
 	}
-	
+
 	/**
 	 * Returns the selected date.
 	 * @returns {Date} the selected date.
@@ -2618,7 +2622,7 @@ class Calendar {
 	getSelectedDate(){
 		return this._selected;
 	}
-	
+
 }
 
 /**
