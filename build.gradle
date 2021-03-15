@@ -1,9 +1,7 @@
 plugins {
     // Activate sonarqube plugin to run static code analysis
-    id "org.sonarqube" version "2.7.1"
+    id "org.sonarqube" version "3.0"
 }
-
-def allTestCoverageFile = "$buildDir/jacoco/allTestCoverage.exec"
 
 allprojects {
     group = 'io.leitstand.ui'
@@ -11,22 +9,23 @@ allprojects {
     apply plugin: 'jacoco'
     apply plugin: 'java'
     apply plugin: 'maven-publish'
-}
 
-jacoco {
-    toolVersion = '0.8.1'
-    reportsDir = file('$buildDir/customJacocoReportDir')
-}
+    repositories {
+        jcenter()
+        mavenLocal()
+    }
 
-task jacocoMerge(type: JacocoMerge){
-   destinationFile = file(allTestCoverageFile)
-   executionData = project.fileTree(dir:'.',include:'**/build/jacoco/test.exec')
+    jacocoTestReport {
+        reports {
+           xml.enabled true
+        }
+    }
+
 }
 
 sonarqube {
     properties {
         property 'sonar.sourceEncoding', 'UTF-8'
-    	property 'sonar.jacoco.reportPaths', allTestCoverageFile
     }
 }
 
@@ -35,11 +34,6 @@ subprojects {
         def version = findProperty('versions.leitstand-ui')
         println 'Project version ('+project.name+'): ' + version
         project.setVersion(version)
-    }
-
-    repositories {
-        jcenter()
-        mavenLocal()
     }
 
     publishing {
@@ -51,7 +45,6 @@ subprojects {
     sonarqube {
         properties {
             property 'sonar.sources', 'src/main/java'
-            property 'sonar.jacoco.reportPaths', allTestCoverageFile
         }
     }
 }
