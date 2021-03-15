@@ -309,22 +309,36 @@ export class UIElement extends HTMLElement {
 	 */
 	connectedCallback(){
 		this.renderDom();
-		const when = this.getAttribute('when');
+		let when = this.getAttribute('when');
 		if(when){
-			if(!!!this.viewModel.getProperty(when)){
-				this.classList.add('hidden');
-			}
-			const form = document.querySelector('ui-form');
-			if(form){
-				form.addEventListener('UIViewModelUpdate',(evt) => {
-					if(!!this.viewModel.getProperty(when)){
-						this.classList.remove('hidden');
-					} else {
-						this.classList.add('hidden');
-					}
-				});
-			}
+            if(!!!this.viewModel.getProperty(when)){
+                this.classList.add('hidden');
+            }
+            if(this.form){
+                this.form.addEventListener('UIViewModelUpdate',(evt) => {
+                    if(!!this.viewModel.getProperty(when)){
+                        this.classList.remove('hidden');
+                    } else {
+                        this.classList.add('hidden');
+                    }
+                });
+            }		        
 		}
+		when = this.when;
+        if(when){
+            if(!when()){
+                this.classList.add('hidden');
+            }
+            if(this.form){
+                this.form.addEventListener('UIViewModelUpdate',(evt) => {
+                    if(when()){
+                        this.classList.remove('hidden');
+                    } else {
+                        this.classList.add('hidden');
+                    }
+                });
+            }                   
+        }
 	}
 
 	
@@ -1473,21 +1487,41 @@ class RadioButton extends InputControl {
 	 * Renders the DOM.
 	 */
 	renderDom(){
+	    
 		const value = this.getAttribute('value');
 		const checkedByDefault = this.isFlagSet('default');
 		const checked = (this.viewModel.contains(this.binding) && this.viewModel.test(this.binding,value) || !this.viewModel.contains(this.binding) && checkedByDefault ) ? 'checked' : '';
-		this.innerHTML=	html `<div class="form-checkbox">
-						        <label>
-						          <input type="radio" 
-						                 class="form-control" ${this.readonly} ${this.disabled}
-						                 name="${this.name}"  
-						                 value="$${value}" ${checked}>${this.label}
-		                          ${this.note ? `<p class="note">${this.note}</p>` : ''}
-						        </label> 
-						      </div>`;
-		this.addEventListener('change',function(evt){
-			this.viewModel.setProperty(this.binding,evt.target.value);
-		}.bind(this));
+        let conditional = this.querySelector('ui-checked');
+
+        this.innerHTML= html `<div class="form-checkbox">
+                                <label>
+                                  <input type="radio" 
+                                         class="form-control" ${this.readonly} ${this.disabled}
+                                         name="${this.name}"
+                                         value="$${value}" 
+                                         ${checked}>${this.label}
+                                  <p class="note">${this.note}</p>
+                                </label> 
+                              </div>`;
+        
+        if(conditional) {
+            const container = document.createElement("ui-element");
+            container.innerHTML = conditional.innerHTML;
+            container.when = () => {
+                return this.viewModel.test(this.name,value);
+            };
+            this.querySelector('div').appendChild(container);
+        }
+
+        
+        
+        
+        this.addEventListener('change',(evt) => {
+            if(evt.target.name==this.name){
+                this.viewModel.setProperty(this.binding,evt.target.value);
+                this.form.dispatchEvent(new CustomEvent('UIViewModelUpdate'));
+            }
+        });
 	}
 
 }
