@@ -1933,30 +1933,24 @@ class MainMenu extends HTMLElement {
 	connectedCallback(){
 		const render = function(menu){
 		    const user = UserContext.get();
-			return  html `<div class="header">
-						    <h1 id="title"></h1>
-						    <p id="subtitle" class="lead"></p>
-					      </div>
-					      <div class="tabnav" role="tablist">
-						    <nav class="tabnav-tabs" style="position:relative">
-							  <a class="btn btn-outline btn-sm right" 
-							     style="margin-left: 10px; margin-top:5px" 
+			return  html `<header class="header">
+						    <nav class="main" style="position:relative">
+							  <a class="btn btn-sm right" 
 							     href="/api/v1/_logout">
 							     Logout</a>
 							  ${menu.filter(item => user.scopesIncludeOneOf(item.scopes_allowed)) 
-							        .map(item => html `<a class="tabnav-tab ${item.position ? item.position : ''}" 
-												          role="tab" 
+							        .map(item => html `<a class="main-menu-item ${item.position ? item.position : ''}" 
 												          href="/ui/views${item.path}" 
 												          title="${item.subtitle}" 
 												          data-title="$${item.title}" 
 												          data-module="${item.module}">
 												          $${item.label}</a>`)
 								  .reduce((a,b)=>a+b,'')}
-					 	</nav>
-					 </div>
-			        <ui-module-container>
-			            <!-- Module content ... -->
-			        </ui-module-container>
+					 	    </nav>
+					     </header>
+			            <ui-module-container>
+			                <!-- Module content ... -->
+			            </ui-module-container>
 					 `;
 		};
 		
@@ -1981,8 +1975,8 @@ class MainMenu extends HTMLElement {
 	}
 	
 	select(tab){	
-		const selected = document.querySelector(".tabnav-tabs a[class~='selected']");
-		const select = document.querySelector(`.tabnav-tabs a[data-module='${tab}']`);
+		const selected = document.querySelector("nav.main a[class~='selected']");
+		const select = document.querySelector(`nav.main a[data-module='${tab}']`);
 	
 		if(selected == select){
 			return false; // No changes needed.
@@ -1995,8 +1989,6 @@ class MainMenu extends HTMLElement {
 	
 		select.classList.add("selected");
 		select.setAttribute("aria-selected","true");
-		document.querySelector("h1").innerHTML = select.getAttribute("data-title");
-		document.querySelector("#subtitle").innerHTML = select.getAttribute("title");
 		return true;
 	}
 
