@@ -969,9 +969,10 @@ function clearFlashMessages(all) {
 	    }
 	}
 	
-	container.classList.add('hidden');
-	clear.forEach(message => container.removeChild(message));
-	container.classList.remove('hidden');
+	
+    container.classList.add('hidden');
+    clear.forEach(message => message.remove());
+    container.classList.remove('hidden');	    
 }
 
 /**

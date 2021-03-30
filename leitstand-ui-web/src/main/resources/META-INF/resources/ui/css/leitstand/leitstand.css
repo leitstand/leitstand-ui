@@ -10,9 +10,8 @@
 .container {
     width: 1200px !important;
     margin-right: auto;
-    margin-left: auto
+    margin-left: auto;
 }
-
 
 /* Declare menu items as list items.*/
 nav li {
@@ -574,6 +573,7 @@ div.package .details{
     text-align:center;
 }
 
+.RETIRED,
 .UNKNOWN,
 .DEBUG{
     background-color: #767676;
@@ -590,6 +590,7 @@ div.package .details{
 .CACHED,
 .SUPERSEDED,
 .READY,
+.WAITING,
 .INIT{
 	background-color: #767676;
 	color: white;
