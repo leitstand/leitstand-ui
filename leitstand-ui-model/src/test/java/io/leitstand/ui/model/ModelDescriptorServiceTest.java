@@ -18,7 +18,6 @@ package io.leitstand.ui.model;
 import static io.leitstand.ui.model.ModuleDescriptor.newModuleDescriptor;
 import static io.leitstand.ui.model.ModuleMenu.newModuleMenu;
 import static io.leitstand.ui.model.ModuleMenuItem.newModuleMenuItem;
-import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
@@ -32,7 +31,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
