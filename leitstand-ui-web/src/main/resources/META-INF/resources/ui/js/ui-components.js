@@ -1934,7 +1934,7 @@ class MainMenu extends HTMLElement {
 		const render = function(menu){
 		    const user = UserContext.get();
 			return  html `<header class="header">
-						    <nav class="main" style="position:relative">
+						    <nav class="main">
 							  <a class="btn btn-sm right" 
 							     href="/api/v1/_logout">
 							     Logout</a>

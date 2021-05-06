@@ -133,6 +133,11 @@ nav li:last-child {
 	margin: 0 0 6px
 } 
 
+.form-group textarea.form-control {
+	width: 100%; 
+	max-width: 800px;
+}
+
 /*--------------------------------------------------------*/
 /* Common UI styles */
 /*--------------------------------------------------------*/
@@ -165,7 +170,6 @@ ui-module-menu{
 	text-align: center;
 }
 
-/* Main menu */
 nav.main{
 	background-color: #333;
 	font-weight: bold;
@@ -224,16 +228,24 @@ nav.main a.main-menu-item.selected{
 	background-repeat: no-repeat;
 	background-size:100px;
 	background-color: #333;
-	padding: 5px;
-	margin: 0px;
+    position: fixed;
+    width: 100%;
+    height: 45px;
+    overflow: hidden;
+    z-index: 100;
+}
+
+ui-module {
+	padding-top: 45px;
+    display: block;
 }
 
 /* Module section */
-ui-module.split-layout .row {
+ui-module.split_layout .row {
 	position: relative;
 }
 
-ui-module.split-layout div.pane.navigation {
+ui-module.split_layout div.pane.navigation {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -245,7 +257,7 @@ ui-module.split-layout div.pane.navigation {
     z-index: 1;
 }
 
-ui-module.split-layout div.pane.content {
+ui-module.split_layout div.pane.content {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -998,4 +1010,3 @@ ui-composition::after{
     padding: 2px;
     margin: -2px;
 }
-
