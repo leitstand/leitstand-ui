@@ -68,11 +68,15 @@ nav li:last-child {
 .popup_menu {
     border-left: 2px solid #333;
     cursor: pointer;
+    display: inline-block;
+    position: relative; 
+    padding: 5px 10px;
 }
 
 .popup_menu:first-of-type {
     border: none;
-    margin-left: -10px;
+    margin-left: 5px;
+    display: inline-block;
 }
 
 .popup_menu nav{
@@ -173,7 +177,7 @@ nav.main{
 nav.main a.btn {
 	color: #333;
 	margin-right: 10px; 
-	margin-top:5px;
+	margin-top:6px;
 	background-color: #FFF !important;
 	border: 1px solid #333;
 	background-image:none;
@@ -182,7 +186,7 @@ nav.main a.btn {
 nav.main a.btn:hover {
     color: #FFF;
     margin-right: 10px; 
-    margin-top:5px;
+    margin-top:6px;
     background-color: #333 !important;
     background-image:none;
     border: 2px solid #FFF;
@@ -192,35 +196,75 @@ nav.main a.main-menu-item {
 	display: inline-block;
 	text-decoration:none;
 	position: relative;
-    padding: 8px 10px;
+    padding: 5px 10px;
+    font-weight: normal;
 	color: white;
-	font-weight: bold;
 	border: none;
 	font-size: larger;
+	margin-top: 3px;
 }
 
 nav.main a.main-menu-item:hover, 
 nav.main a.main-menu-item.selected{
     display: inline-block;
-    font-weight: bold;
+    font-weight: normal;
     border: none;
     text-shadow: none;
     font-size: larger;
     background-color: #333;
-    border-bottom: 4px solid white;
+    border-bottom: 3px solid white;
     border-radius:none;
 }
 
 /* Header section */
 .header {
 	background-image: url('/ui/images/header/logo.png'); /* Header uses intentionally a different logo!*/
-	background-position: 10px;
+	background-position: 30px;
 	background-repeat: no-repeat;
 	background-size:100px;
 	background-color: #333;
 	padding: 5px;
 	margin: 0px;
 }
+
+/* Module section */
+ui-module.split-layout .row {
+	position: relative;
+}
+
+ui-module.split-layout div.pane.navigation {
+	position: absolute;
+	top: 0;
+	left: 0;
+	margin-left: 15px;
+	margin-right: 15px;
+	width: 250px;
+	margin-top: 0px;
+    margin-bottom: 0px;
+    z-index: 1;
+}
+
+ui-module.split-layout div.pane.content {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	padding-left: 265px;
+	margin-right: 15px;
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+
+ui-module div.column.main ui-view {
+    max-width: 1200px;
+    min-width: 800px;
+    margin: auto;
+}
+
+
+
+div.view {}
+
 
 /** A hidden element that is displayed dynamically by the controller.*/
 .hidden{
@@ -276,28 +320,38 @@ table.list thead th:FIRST-CHILD {
 }
 
 table.list th.check, 
-table.list td.check {
+table.list td.check,
+table.details th.check, 
+table.details td.check {
 	width: 2%
 }
 
 table.list th.tiny, 
-table.list td.tiny {
+table.list td.tiny,
+table.details td.tiny,
+table.details td.tiny {
 	width: 8%
 }
 
 table.list th.extra-small, 
-table.list td.extra-small {
+table.list td.extra-small,
+table.details th.extra-small, 
+table.details td.extra-small {
 	width: 12.5%
 }
 
 
 table.list th.small,
-table.list td.small{
+table.list td.small,
+table.details th.small, 
+table.details td.small{
 	width: 25%;	
 }
 
 table.list th.medium,
-table.list td.medium {
+table.list td.medium,
+table.details th.medium, 
+table.details td.medium {
 	width: 50%;
 }
 
@@ -396,11 +450,6 @@ table.details td ol {
 table.details td ul {
 	list-style-type: square;
 	margin-left: 15px;
-}
-
-table.details td code {
-	margin: -1em;
-	border: none;
 }
 
 table.details td span{
@@ -925,3 +974,27 @@ ui-composition::after{
 	border: 1px solid #d8d8d8;
 	min-height: 40em;
 }
+
+.flag.false {
+	border: 2px solid #767676;
+	color: #767676;
+    font-weight: bold;
+    text-transform: capitalize;
+    display: block;
+    width: 4em;
+    padding: 2px;
+    margin: -2px;
+}
+
+.flag.true {
+	border: 2px solid #767676;
+	background-color: #767676;
+    color: white;
+    font-weight: bold;
+    text-transform: capitalize;
+    display: block;
+    width: 4em;
+    padding: 2px;
+    margin: -2px;
+}
+

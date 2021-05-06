@@ -2089,7 +2089,7 @@ class ModuleMenu extends HTMLElement {
             return html `<li><a class="menu-item" id="${item.view}" title="${item.title}" href="${item.viewpath}" ${item.target ? `target="${item.target}"` :''}>${item.label}</a></li>`;
         };
         let menuDom = menus.filter((menu) => !menu.selected)
-                           .map((menu) => `<div style="display: inline-block; position: relative; padding: 0.5em 1em;" class="popup_menu">    
+                           .map((menu) => `<div class="popup_menu">    
                                              ${menu.items.length > 1 
                                              ? html `<h4 class="chevron bottom">
                                                        ${menu.label}
@@ -2107,6 +2107,12 @@ class ModuleMenu extends HTMLElement {
                                            </div>`)
                              .reduce(concat,'');
      
+        if (!menuDom) {
+           // Add an empty popup menu to for vertical spacing.
+           this.innerHTML = '<div class="popup_menu"><h4>&nbsp;</h4></div>'
+           return;
+        }
+        
         const selected = menus.filter((menu) => menu.selected);
         if (menuDom && selected && selected.length){
             menuDom += html `<div style="display: inline-block; position: relative; padding: 0.5em 1em;" class="entity">

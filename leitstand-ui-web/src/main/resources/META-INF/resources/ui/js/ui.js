@@ -960,19 +960,21 @@ document.querySelector("div[class~='flash-messages']").addEventListener('click',
  */
 function clearFlashMessages(all) {
 	const container = document.querySelector("div[class~='flash-messages']");
-	const clear = [];
-	const messages = container.querySelectorAll('div');
-	for(let i=0; i < messages.length; i++){
-	    const message = messages[i];
-	    if(all || !message.querySelector('button')){
-	        clear.push(message);
+	if (container) {
+	    const clear = [];
+	    const messages = container.querySelectorAll('div');
+	    for(let i=0; i < messages.length; i++){
+	        const message = messages[i];
+	        if(all || !message.querySelector('button')){
+	            clear.push(message);
+	        }
 	    }
+	    
+	    
+	    container.classList.add('hidden');
+	    clear.forEach(message => message.remove());
+	    container.classList.remove('hidden');	    
 	}
-	
-	
-    container.classList.add('hidden');
-    clear.forEach(message => message.remove());
-    container.classList.remove('hidden');	    
 }
 
 /**
