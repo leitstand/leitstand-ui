@@ -182,7 +182,7 @@ nav.main{
 nav.main a.btn {
 	color: #333;
 	margin-right: 10px; 
-	margin-top:6px;
+	margin-top:9px;
 	background-color: #FFF !important;
 	border: 1px solid #333;
 	background-image:none;
@@ -191,7 +191,7 @@ nav.main a.btn {
 nav.main a.btn:hover {
     color: #FFF;
     margin-right: 10px; 
-    margin-top:6px;
+    margin-top:9px;
     background-color: #333 !important;
     background-image:none;
     border: 2px solid #FFF;
@@ -201,12 +201,16 @@ nav.main a.main-menu-item {
 	display: inline-block;
 	text-decoration:none;
 	position: relative;
-    padding: 5px 10px;
+    padding: 2px 5px;
     font-weight: normal;
+    font-size: 12px;
 	color: white;
 	border: none;
 	font-size: larger;
-	margin-top: 3px;
+	margin-top: 10px; 
+	margin-left: 10px; 
+	margin-bottom: 2px;
+	margin-right: 10px;
 }
 
 nav.main a.main-menu-item:hover, 
@@ -274,6 +278,10 @@ ui-module div.pane.content ui-view {
     padding: 0px 15px;
 }
 
+ui-actions {
+    margin-bottom: 15px;
+    display: block
+}
 
 
 div.view {}
@@ -605,6 +613,7 @@ div.package .details{
 .config.ACTIVE,
 .admin.ACTIVE,
 .bgp.ESTABLISHED,
+.ospf.FULL,
 .ENABLED,
 .administrative .ACTIVE,
 .platform .ACTIVE {
@@ -779,6 +788,7 @@ span.ACTIVE,
 .MAINTENANCE,
 .platform .CACHED,
 .bgp.IDLE,
+.ospf,
 .UNKNOWN{
 	background-color:#2d5c9b; /*#4078c0;*/
 	color: white;
