@@ -36,9 +36,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+
+import javax.json.bind.annotation.JsonbTransient;
+
+import io.leitstand.commons.model.StringUtil;
 
 
 /**
@@ -184,12 +190,12 @@ public class ModuleDescriptor {
 				requires(getClass(), "name", descriptor.module);
 				requires(getClass(), "navigation", descriptor.menus);
 				contributions.stream()
-							 .filter(c -> c.contributesTo(descriptor))
-							 .forEach(c -> {
+						     .filter(c -> c.contributesTo(descriptor))
+						     .forEach(c -> {
 								 descriptor.addApplication(newModuleApplication()
-										 				   .withApplicationName(isNonEmptyString(c.getName()) ? c.getName() : c.getBaseUri())
-										 				   .withController(c.getBaseUri()+"/"+c.getController())
-										 				   .build());
+										                   .withApplicationName(isNonEmptyString(c.getName()) ? c.getName() : c.getBaseUri())
+										                   .withController(c.getBaseUri()+"/"+c.getController())
+										                   .build());
 								 descriptor.addExtensions(c.getExtensions());
 							 });
 				
@@ -206,6 +212,8 @@ public class ModuleDescriptor {
 	private String module;
 	private Set<ModuleApplication> applications = emptySet();
 	private List<ModuleMenu> menus = emptyList();
+	@JsonbTransient
+	private Map<ModuleMenu,List<ExtensionPoint>> moduleExtensions = new LinkedHashMap<>();
 	private Set<String> scopesAllowed;
 
 	/**
@@ -224,8 +232,6 @@ public class ModuleDescriptor {
 	public Set<ModuleApplication> getApplications() {
 		return unmodifiableSet(applications);
 	}
-	
-	
 	
 	/**
 	 * Returns the set of scopes allowed to access this module.
@@ -249,24 +255,25 @@ public class ModuleDescriptor {
 		return unmodifiableList(menus);
 	}
 
-	void addExtensions(Extension... contributions) {
-		addExtensions(asList(contributions));
+	void addExtensions(Extension... extensions) {
+		addExtensions(asList(extensions));
 	}
 	
 	void addExtensions(List<Extension> extensions) {
 		// Add all menus
-		LinkedHashMap<ModuleMenu,ExtensionPoint> moduleExtensions = new LinkedHashMap<>();
+        Set<ModuleMenu> newMenus = new LinkedHashSet<>();
 		for(Extension extension : extensions) {
 			if(extension.isModuleExtension()) {
 				ExtensionPoint point = extension.getExtensionPoint();
 				for(ModuleMenu menu : extension.getMenus()) {
-					moduleExtensions.put(menu,point);
-					// Preserve order of contributed menus 
-					point = new ExtensionPoint().module(point.getModule()).after(menu.getMenu());
+				    List<ExtensionPoint> points = moduleExtensions.computeIfAbsent(menu, m -> new LinkedList<>());
+                    points.add(point);
+                    newMenus.add(menu);
 				}
 			}
 		}
-		this.menus.addAll(moduleExtensions.keySet());
+		
+		this.menus.addAll(newMenus);
 		// Rearrange all menus according to the after and before constraints
 		ExtensionSorter<ModuleMenu> sort = new ExtensionSorter<>(moduleExtensions,this.menus);
 		this.menus = sort.sort(); 
