@@ -312,10 +312,10 @@ class ViewModelPropertyMatcher{
 			return !value;
 		}
 		if(this.matcher.matches){
-			return value && value.matches && value.matches(this.matcher.matches); 
+			return value && value.match && value.match(this.matcher.matches); 
 		}
-		if(this.matcher.matches_not){
-			return !value || !value.matches || !value.matches(this.matcher.matches_not);
+		if(this.matcher.matchesNot){
+			return !value || !value.match || !value.match(this.matcher.matchesNot);
 		}
 		
 		// A matcher without any settings accepts everything.
