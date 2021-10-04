@@ -309,7 +309,7 @@ export class UIElement extends HTMLElement {
 	 */
 	connectedCallback(){
 		this.renderDom();
-		let when = this.getAttribute('when');
+		const when = this.getAttribute('when');
 		if(when){
             if(!!!this.viewModel.getProperty(when)){
                 this.classList.add('hidden');
@@ -324,14 +324,13 @@ export class UIElement extends HTMLElement {
                 });
             }		        
 		}
-		when = this.when;
-        if(when){
-            if(!when()){
+        if(this.when){
+            if(!this.when()){
                 this.classList.add('hidden');
             }
             if(this.form){
                 this.form.addEventListener('UIViewModelUpdate',(evt) => {
-                    if(when()){
+                    if(this.when()){
                         this.classList.remove('hidden');
                     } else {
                         this.classList.add('hidden');
