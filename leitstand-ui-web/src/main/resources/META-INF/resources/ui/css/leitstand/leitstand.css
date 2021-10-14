@@ -142,6 +142,10 @@ nav li:last-child {
 /* Common UI styles */
 /*--------------------------------------------------------*/
 
+div.flash {
+	left: 15px
+}
+
 ui-view,
 ui-view-menu {
     display: block;
