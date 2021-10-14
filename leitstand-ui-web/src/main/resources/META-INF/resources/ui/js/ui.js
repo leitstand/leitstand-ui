@@ -322,6 +322,18 @@ export class Controller extends Dom {
 					                                response);
 				}
 			});
+            resource.onAccepted((state) => {
+                displayFlashMessages.call(this, state);
+                if (controllerConfig.onAccepted) {
+                    controllerConfig.onAccepted.call(this, state);
+                    return;
+                }
+                if (controllerConfig.onSuccess){
+                    controllerConfig.onSuccess.call(this, state);
+                    return;
+                }
+            });
+			
 			resource.onRemoved((state) => {
 				displayFlashMessages.call(this, state);
 				if (controllerConfig.onRemoved) {
@@ -556,6 +568,7 @@ export class Controller extends Dom {
 		}
 		return null;
 	}
+	
 	
 	/**
 	 * Loads the primary resource.
@@ -816,14 +829,13 @@ export class Controller extends Dom {
 	}
 	
 	/**
-	 * Renders the module menu for the specified view model.
+	 * Renders the current view.
 	 * @param {Object} {model} the view model. Defaults to {@link #getViewModel()} if not specified.
 	 */
 	renderView(model){
 		if(!model){
 			model = this.getViewModel();
 		}
-
 		const html = this.template().html(model);
 		const container = this.element("ui-view");
 		container.html(html);
