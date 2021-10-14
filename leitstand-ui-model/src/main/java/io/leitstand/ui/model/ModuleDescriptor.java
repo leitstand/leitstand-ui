@@ -44,8 +44,6 @@ import java.util.TreeSet;
 
 import javax.json.bind.annotation.JsonbTransient;
 
-import io.leitstand.commons.model.StringUtil;
-
 
 /**
  * The <code>ModuleDescriptor</code> describes a UI module.

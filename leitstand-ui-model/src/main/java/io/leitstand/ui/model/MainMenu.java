@@ -20,7 +20,6 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -49,7 +48,7 @@ public class MainMenu extends ValueObject{
 	}
 	
 	/**
-	 * Returns the menu items of the EMS main menu as unmodifiable list.
+	 * Returns the menu items of the leitstand main menu as unmodifiable list.
 	 * @return the main menu items.
 	 */
 	public List<MainMenuItem> getItems() {
