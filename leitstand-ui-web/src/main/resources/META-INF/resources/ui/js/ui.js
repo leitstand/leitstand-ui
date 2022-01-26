@@ -1020,23 +1020,25 @@ function displayFlashMessages(messages) {
  * @param {String} text the human-friendly message text
  */
 function displayFlashMessage(severity, reason, text) {
-	const message = document.createElement('div');
-	message.classList.add('flash');
-	let button = '';
-	if (severity === 'WARNING') {
-		message.classList.add('flash-warn');
-        button = '<ui-button small class="right" danger>Dismiss</ui-button>';       
-	} else if (severity === 'ERROR') {
-		message.classList.add('flash-error');
-        button = '<ui-button small class="right" danger>Dismiss</ui-button>';       
+	if(text){
+	    const message = document.createElement('div');
+	    message.classList.add('flash');
+	    let button = '';
+	    if (severity === 'WARNING') {
+	        message.classList.add('flash-warn');
+	        button = '<ui-button small class="right" danger>Dismiss</ui-button>';       
+	    } else if (severity === 'ERROR') {
+	        message.classList.add('flash-error');
+	        button = '<ui-button small class="right" danger>Dismiss</ui-button>';       
+	    }
+	    if(reason){
+	        message.innerHTML = html `<div>$${reason} - $${text}&nbsp;${button}</div>`;
+	    } else {
+	        message.innerHTML = html `<p>$${text}&nbsp;${button}</p>`;
+	    }
+	    document.querySelector("div[class~='flash-messages']")
+	    .appendChild(message);
 	}
-	if(reason){
-		message.innerHTML = html `<div>$${reason} - $${text}&nbsp;${button}</div>`;
-	} else {
-		message.innerHTML = html `<p>$${text}&nbsp;${button}</p>`;
-	}
-	document.querySelector("div[class~='flash-messages']")
-			.appendChild(message);
 }
 
 const CTRL_KEY = 17;
