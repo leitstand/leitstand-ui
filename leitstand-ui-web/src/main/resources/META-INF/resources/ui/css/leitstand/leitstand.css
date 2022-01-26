@@ -616,6 +616,7 @@ div.package .details{
 .VALID,
 .config.ACTIVE,
 .admin.ACTIVE,
+.isis.ACTIVE,
 .bgp.ESTABLISHED,
 .ospf.FULL,
 .ENABLED,
@@ -1023,4 +1024,12 @@ ui-composition::after{
     width: 4em;
     padding: 2px;
     margin: -2px;
+}
+
+.capitalize-first-letter:first-letter{
+	text-transform: uppercase
+}
+
+.capitalize-first-letter{
+    text-transform: lowercase
 }
