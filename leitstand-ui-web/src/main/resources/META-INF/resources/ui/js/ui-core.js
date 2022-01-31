@@ -134,7 +134,7 @@ export class UserContext {
 		} else {
 			this._user = JSON.parse(window.sessionStorage.getItem("user"));
 			if(this._user == null){
-			    window.location.href="/api/v1/_logout";
+			    window.location.href="/api/v1/logout";
 			}
 		}
 	}

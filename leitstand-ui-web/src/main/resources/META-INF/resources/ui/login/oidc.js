@@ -19,7 +19,7 @@ import {Location, UserContext} from '/ui/js/ui-core.js';
 
 class OidcAuthenticationFlow extends Resource {
 	login(code,view){
-		return this.json('/api/v1/login/oidc/_authentication_flow?code={{code}}&redirect_uri={{view}}',{"code":code,"view":view})
+		return this.json('/api/v1/login/oidc/authenticate?code={{code}}&redirect_uri={{view}}',{"code":code,"view":view})
 				   .POST();
 	}
 }
