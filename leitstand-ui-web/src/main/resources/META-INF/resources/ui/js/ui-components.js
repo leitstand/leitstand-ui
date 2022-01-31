@@ -1935,7 +1935,7 @@ class MainMenu extends HTMLElement {
 			return  html `<header class="header">
 						    <nav class="main">
 							  <a class="btn btn-sm right" 
-							     href="/api/v1/_logout">
+							     href="/api/v1/logout">
 							     Logout</a>
 							  ${menu.filter(item => user.scopesIncludeOneOf(item.scopes_allowed)) 
 							        .map(item => html `<a class="main-menu-item ${item.position ? item.position : ''}" 
@@ -2757,6 +2757,58 @@ class RefreshButton extends Button {
     
 }
 
+
+const randomStringAlphabet = 'AaBbCcDdEeFfGgHhIiJjKkLlMmMnOoPpQqRrSsTtUuVvWwXxYyZz'
+const randomStringAlphabetSize = randomStringAlphabet.length
+
+function random_string(size){
+	let s = "";
+	for ( let i = 0; i < size; i++ ) {
+      s += randomStringAlphabet.charAt(Math.floor(Math.random() * randomStringAlphabetSize));
+   	}
+	return s;
+}
+
+/**
+ * The copy button copies a value to the clipboard. 
+ * The value is read from the value attribute.
+ */
+class CopyButton extends Button {
+	
+	constructor(){
+		super()
+	}
+	
+    get name(){
+        let name = super.name;
+        if(name){
+			return name;
+		}
+		name='copy_'+random_string(5);
+		this.setAttribute("name",name);
+		console.log(name);
+		return name;
+    }
+
+	
+	renderDom(){
+		const form = this.form;
+		super.renderDom();
+		form.querySelector(`button#${this.name}`).addEventListener('click',(evt)=>{
+			alert("Try to copy access key");
+			const value = this.getAttribute("value");
+			if (value){
+				navigator.clipboard.writeText(value);
+				alert(this.value)	
+			}
+			evt.stopPropagation();
+			evt.preventDefault();
+		})
+	}
+		
+}
+
+
 class Paginator extends UIElement {
     
     renderDom(){
@@ -2822,6 +2874,7 @@ customElements.define('ui-view-header',ViewHeader);
 customElements.define('ui-label',Label);
 customElements.define('ui-note',Note);
 customElements.define('ui-refresh',RefreshButton);
+customElements.define('ui-copy',CopyButton);
 customElements.define('ui-paginator',Paginator);
 
 //html escape function
