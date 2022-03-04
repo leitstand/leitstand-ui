@@ -907,6 +907,18 @@ export class Controller extends Dom {
 		window.history.pushState(state, null, path);
 	}
 
+
+	/**
+	 * Displays an info flash message.
+	 * @param {String} message the human-friendly message text
+	 */
+	info(message) {
+		displayFlashMessages([ {
+			"severity" : "INFO",
+			"message" : message
+		} ]);
+	}
+
 	/**
 	 * Displays an error flash message.
 	 * @param {String} message the human-friendly message text
