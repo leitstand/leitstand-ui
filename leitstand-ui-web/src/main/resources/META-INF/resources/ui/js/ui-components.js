@@ -76,6 +76,7 @@
 import {UserContext,Location,router} from './ui-core.js';
 import {Modules} from './ui-modules.js';
 import {Json} from './client.js';
+import {Element} from './ui-dom.js';
 
 /**
  * View model decorator that provides convenience functions to read and update view model properties.
@@ -369,7 +370,7 @@ export class UIElement extends HTMLElement {
 				const stylesheets = head.querySelectorAll("link[rel='stylesheet']");
 				for(let i=0; i < stylesheets.length; i++){
 					const stylesheet = stylesheets[i];
-					if(stylesheet.href == href){
+					if(stylesheet.href.endsWith(href)){
 						return;
 					}
 				}
@@ -383,7 +384,7 @@ export class UIElement extends HTMLElement {
 				const scripts = head.querySelectorAll('script');
 				for(let i=0; i < scripts.length; i++){
 					const script = scripts[i];
-					if(script.src == src){
+					if(script.src.endsWith(src)){
 						return;
 					}
 				}
@@ -567,11 +568,25 @@ class ViewHeader extends UIElement{
 		} else {
 			subtitle = '';	
 		}
-		this.innerHTML = `<div class="title">
+		
+		const stylesheets = [...this.querySelectorAll('ui-stylesheet')].map(s => s.getAttribute("href")).filter(s => s != "");
+		if (stylesheets && stylesheets.length > 0){
+			this.requires({'stylesheets':stylesheets})
+			    .then(()=>{
+						this.innerHTML = `<div class="title">
 		                    ${breadcrumb}
 		                    ${title}
 		                    ${subtitle}
 		                  </div>`;
+				});
+		} else {
+			this.innerHTML = `<div class="title">
+			                    ${breadcrumb}
+			                    ${title}
+			                    ${subtitle}
+			                  </div>`;			
+		}
+		
 	}
 	
 }
@@ -1174,7 +1189,11 @@ class InputText extends InputControl {
 	 */
 	renderDom(){
 		// Search for buttons to be displayed next to the input field.
-		const buttons = this.querySelectorAll('ui-button');
+		let buttons = [...this.querySelectorAll('ui-button')];
+		const copy = this.querySelector('ui-copy');
+		if(copy){
+			buttons = buttons.concat(copy);
+		}
 		
 		this.innerHTML=html `<div class="form-group">
 		                       <div class="label">
@@ -2779,6 +2798,14 @@ class CopyButton extends Button {
 		super()
 	}
 	
+	get disabled(){
+		return false
+	}
+	
+	get readonly(){
+		return false
+	}
+	
     get name(){
         let name = super.name;
         if(name){
@@ -2786,24 +2813,49 @@ class CopyButton extends Button {
 		}
 		name='copy_'+random_string(5);
 		this.setAttribute("name",name);
-		console.log(name);
 		return name;
     }
 
-	
 	renderDom(){
 		const form = this.form;
 		super.renderDom();
 		form.querySelector(`button#${this.name}`).addEventListener('click',(evt)=>{
-			alert("Try to copy access key");
-			const value = this.getAttribute("value");
-			if (value){
-				navigator.clipboard.writeText(value);
-				alert(this.value)	
-			}
 			evt.stopPropagation();
 			evt.preventDefault();
-		})
+			let value = this.getAttribute("value");
+			if (!value){
+				// Check if this copy button is nested into a input control
+				let element = new Element(evt.target);
+				element = element.up("ui-input,ui-select");
+				value = element.value();
+			}
+			if (value){
+				if (navigator.clipboard && window.isSecureContext){
+					navigator.clipboard.writeText(value);
+				} else {
+					// text area method
+			        const textArea = document.createElement("textarea");
+			        textArea.value = value;
+			        // make the textarea out of viewport
+			        try {
+				        textArea.style.position = "fixed";
+				        textArea.style.left = "-999999px";
+				        textArea.style.top = "-999999px";
+				        document.body.appendChild(textArea);
+				        textArea.focus();
+				        textArea.select();
+				        document.execCommand('copy');
+					} finally {
+				        textArea.remove();
+					}	
+				}
+				
+				if (value.length > 15 ){
+					value = value.substring(0,15)+'...';
+				}
+				this.controller.info(html `"$${value}" copied to clipboard`);
+			}
+		});
 	}
 		
 }
