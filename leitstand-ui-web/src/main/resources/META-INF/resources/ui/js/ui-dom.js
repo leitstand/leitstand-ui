@@ -462,12 +462,12 @@ export class Element extends Dom{
 	
 	/**
 	 * Walks up the DOM tree to find an element with the given tag name.
-	 * @param {String} name the name of the searched parent element
+	 * @param {String} selector a CSS selector to match the expected parent element
 	 * @returns {ui-dom~Element} the matching parent element or <code>null</code> if no match exists.
 	 */
-	up(name) {
+	up(selector) {
 		let parent = this._element.parentNode;
-		while (parent && parent.tagName !== name.toUpperCase()) {
+		while (parent && !parent.matches(selector)) {
 			parent = parent.parentNode;
 		}
 		if (parent) {
