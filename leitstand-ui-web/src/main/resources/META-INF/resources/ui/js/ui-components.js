@@ -1952,7 +1952,7 @@ class MainMenu extends HTMLElement {
 		const render = function(menu){
 		    const user = UserContext.get();
 			return  html `<header class="header">
-						    <nav class="main">
+						    <nav class="main" style="positon:relative;">
 							  <a class="btn btn-sm right" 
 							     href="/api/v1/logout">
 							     Logout</a>
@@ -1964,8 +1964,10 @@ class MainMenu extends HTMLElement {
 												          data-module="${item.module}">
 												          $${item.label}</a>`)
 								  .reduce((a,b)=>a+b,'')}
+								<label for="go">Go:</label>
+								<input id="go" class="form-control" autofocus type="text" name="gsearch"></input>
 					 	    </nav>
-					     </header>
+						</header>
 			            <ui-module-container>
 			                <!-- Module content ... -->
 			            </ui-module-container>
@@ -1973,9 +1975,64 @@ class MainMenu extends HTMLElement {
 		};
 		
 		const loader = new Json('/api/v1/ui/modules');
+		
 		loader.load()
 			  .then((menu) => {
 				  this.innerHTML = render(menu);
+				 	const header = this.querySelector("header");
+				 	header.addEventListener("keyup",(evt)=>{
+						const v = this.querySelector("#go").value;
+						if (evt.code == "Enter"){
+						const d = v.indexOf(":")
+						let p = "e";
+						if (d > 0){
+						 	p =v.substring(0,d)
+						}
+						const q = v.substring(d+1);
+						let target = ""
+						switch(p.toLowerCase()){
+							case "facility":
+							case "f":{
+								target=`/ui/views/inventory/facility/facilities.html?filter=${q}`
+								break;
+							}
+							case "pod":
+							case "p":
+							case "group":
+							case "g":{
+								target=`/ui/views/inventory/pods.html?filter=${q}`
+								break;
+							}
+							case "serial":
+							case "serialnumber":
+							case "sn":{
+								target=`/ui/views/inventory/elements.html?filter=${q}&by=serial`
+								break;
+							}
+							case "ip":
+							case "host":{
+								target=`/ui/views/inventory/elements.html?filter=${q}&by=ip`
+								break;
+							}
+							case "image":
+							case "i":{
+								target=`/ui/views/image/image-meta.html?image=${q}`
+								break;
+							}
+							case "job":
+							case "j":{
+								target=`http://localhost/ui/views/job/tasks.html?job=${q}`
+								break;
+							}
+							case "element":
+							case "e":
+							default: {
+								target=`/ui/views/inventory/elements.html?filter=${q}&by=tag`
+							}
+						}
+						router.navigate(new Location(target));
+						}
+					});
 				  router.navigate(new Location(window.location.href));
 			  })
 			  .catch((e) => {
