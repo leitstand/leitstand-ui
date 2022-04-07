@@ -1964,25 +1964,30 @@ class MainMenu extends HTMLElement {
 												          data-module="${item.module}">
 												          $${item.label}</a>`)
 								  .reduce((a,b)=>a+b,'')}
-								<label for="go">Go:</label>
+								<label for="go">Search:</label>
 								<span style="position:relative">
-								<input id="go" class="form-control" autofocus type="text" name="gsearch"></input>
-					 	    			<div class="instructions">
-										<pre><b>e</b>lement<b>: </b><i>name</i></pre>
-										<span class="note">Search for elements by name.</span>
-										<pre><b>mac: </b><i>address</i></pre> 
+								<input id="go" class="form-control" type="text" name="gsearch"></input>
+					 	    		<div class="instructions">
+										<pre><b>e</b>lement<b>: </b><i>name</i> | <i>alias</i></pre>
+										<span class="note">Search for elements by name or alias.</span>
+										<pre><b>host: </b><i>hostname</i> | <i>IP address</i></pre>
+										<span class="note">Search for elements by hostname or management IP address.</span>
+										<pre><b>mac: </b><i>MAC address</i></pre> 
 										<span class="note">Search for elements by MAC address.</span>
-										<pre><b>sn :</b><i>serialnumber</i></pre>
-										<span class="note">Search for elements by serialnumber.</span>
+										<pre><b>sn: </b><i>serial number</i></pre>
+										<span class="note">Search for elements by serial number.</span>
 										<pre><b>p</b>od<b>: </b><i>name</i></pre>
 										<span class="note">Search for pods by name.</span>
-										<pre><b>f</b>acility<b>:</b><i>name</i></pre> 
+										<pre><b>m</b>etric<b>: </b><i>name</i> | <i>display name</i></pre>
+										<span class="note">Search for metrics by name or display name.</span>
+										<pre><b>f</b>acility<b>: </b><i>name</i></pre> 
 										<span class="note">Search for facilities by name.</span>
 										<pre><b>i</b>mage<b>: </b><i>uuid</i></pre>
 										<span class="note">Lookup image by image ID.</span>
 										<pre><b>j</b>ob<b>: </b><i>uuid</i></pre> 
-										<span class="note">Lookup job by job ID.</pre>
-		</div>
+										<span class="note">Lookup job by job ID.</span>
+										<p class="note"><b>Hint:</b> Press the <span class="key">s</span> key to quickly access this search function.</p>
+									</div>
 					 	    	</span>
 					 	    </nav>
 						</header>
@@ -2000,14 +2005,19 @@ class MainMenu extends HTMLElement {
 				 	const header = this.querySelector("header");
 				 	const input = header.querySelector("input");
 				 	const instructions = header.querySelector(".instructions")
+ 					document.addEventListener("keyup",(evt) => {
+						if (evt.target.nodeName != "INPUT" && evt.target.nodeName != "TEXTAREA" && evt.target.nodeName != "SELECT" && evt.code=="KeyS"){
+							input.focus();						
+						}
+					});
+				
 				 	input.addEventListener("blur", (evt) => {
 						instructions.style.display="none";
 					});
 					input.addEventListener("focus", (evt) => {
 						instructions.style.display="block";
 					});
-					
-					
+							
 				 	header.addEventListener("keyup",(evt)=>{
 						const v = this.querySelector("#go").value;
 						if (evt.code == "Enter"){
@@ -2016,7 +2026,7 @@ class MainMenu extends HTMLElement {
 						if (d > 0){
 						 	p =v.substring(0,d)
 						}
-						const q = v.substring(d+1);
+						const q = v.substring(d+1).trim();
 						let target = ""
 						switch(p.toLowerCase()){
 							case "facility":
@@ -2049,7 +2059,12 @@ class MainMenu extends HTMLElement {
 							}
 							case "job":
 							case "j":{
-								target=`http://localhost/ui/views/job/tasks.html?job=${q}`
+								target=`/ui/views/job/tasks.html?job=${q}`
+								break;
+							}
+							case "metric":
+							case "m":{
+								target=`/ui/views/metrics/metrics.html?filter=${q}`
 								break;
 							}
 							case "element":
