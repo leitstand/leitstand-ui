@@ -1965,7 +1965,25 @@ class MainMenu extends HTMLElement {
 												          $${item.label}</a>`)
 								  .reduce((a,b)=>a+b,'')}
 								<label for="go">Go:</label>
+								<span style="position:relative">
 								<input id="go" class="form-control" autofocus type="text" name="gsearch"></input>
+					 	    			<div class="instructions">
+										<pre><b>e</b>lement<b>: </b><i>name</i></pre>
+										<span class="note">Search for elements by name.</span>
+										<pre><b>mac: </b><i>address</i></pre> 
+										<span class="note">Search for elements by MAC address.</span>
+										<pre><b>sn :</b><i>serialnumber</i></pre>
+										<span class="note">Search for elements by serialnumber.</span>
+										<pre><b>p</b>od<b>: </b><i>name</i></pre>
+										<span class="note">Search for pods by name.</span>
+										<pre><b>f</b>acility<b>:</b><i>name</i></pre> 
+										<span class="note">Search for facilities by name.</span>
+										<pre><b>i</b>mage<b>: </b><i>uuid</i></pre>
+										<span class="note">Lookup image by image ID.</span>
+										<pre><b>j</b>ob<b>: </b><i>uuid</i></pre> 
+										<span class="note">Lookup job by job ID.</pre>
+		</div>
+					 	    	</span>
 					 	    </nav>
 						</header>
 			            <ui-module-container>
@@ -1980,6 +1998,16 @@ class MainMenu extends HTMLElement {
 			  .then((menu) => {
 				  this.innerHTML = render(menu);
 				 	const header = this.querySelector("header");
+				 	const input = header.querySelector("input");
+				 	const instructions = header.querySelector(".instructions")
+				 	input.addEventListener("blur", (evt) => {
+						instructions.style.display="none";
+					});
+					input.addEventListener("focus", (evt) => {
+						instructions.style.display="block";
+					});
+					
+					
 				 	header.addEventListener("keyup",(evt)=>{
 						const v = this.querySelector("#go").value;
 						if (evt.code == "Enter"){

@@ -164,6 +164,25 @@ header nav label {
 	background-color:#fafafa;
 }
 
+.instructions {
+ 	position: absolute;
+ 	top: 30px;
+ 	left: 0px;
+ 	color: black;
+ 	background: white;
+ 	width: 30em;
+ 	padding: 7px 5px;
+ 	font-weight: normal; 	
+ 	display:none;
+}
+ 
+.instructions pre {
+	padding-bottom:2px;
+	padding-top: 7px;
+	margin:0px;
+	color: #333
+}
+
 /*--------------------------------------------------------*/
 /* Common UI styles */
 /*--------------------------------------------------------*/
