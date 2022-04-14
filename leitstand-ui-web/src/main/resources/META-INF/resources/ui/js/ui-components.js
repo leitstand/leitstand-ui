@@ -2805,19 +2805,29 @@ class TagEditor extends InputControl{
         }
 		
 		const renderTags = function(){
-			const tags = this.viewModel.getProperty(this.binding);
+			let tags = this.viewModel.getProperty(this.binding);
+			if (!tags){
+				tags = this.getAttribute("tags");
+				console.log(tags);
+				if (tags) {
+					tags = tags.split(/\s*,\s*/)		
+				}
+			}
 			if(this.readonly){
-				return html `<ol class="tags">
-							   ${tags && tags.map(tag => html `<li class="tag">$${tag}</li>`).reduce((a,b) => a+b,'')}
-						     </ol>`;
+				if (tags){
+					return html `<ol class="tags">
+								   ${tags && tags.map(tag => html `<li class="tag">$${tag}</li>`).reduce((a,b) => a+b,'')}
+							     </ol>`;					
+				}
+				return "";
 			}
 			
 			return `<div class="tag-editor">
 			          ${label}
-					  <ol class="tags">
-						  ${tags && tags.length > 0 ? tags.map(tag => html `<li class="tag"><span>$${tag}</span><button name="remove-tag" class="btn btn-sm btn-danger" title="Remove tag $${tag}" data-tag="$${tag}">-</button></li>`).reduce((a,b) => a+b) : ''}
-					  </ol>
-					  <span style="position:relative"><input type="text" name="new-tag"><button name="add-tag" title="Add new tag" class="btn btn-sm btn-outline">+</button></span>
+					  <div class="tags">
+						  ${tags && tags.length > 0 ? tags.map(tag => html `<div><span>$${tag}</span><button name="remove-tag" class="btn btn-sm btn-danger" title="Remove tag $${tag}" data-tag="$${tag}">-</button></div>`).reduce((a,b) => a+b) : ''}
+						  <div class="tag"><input class="form-control" type="text" name="new-tag"></input><button name="add-tag" title="Add new tag" class="btn btn-sm btn-outline">+</button></div>
+					  </div>
 				    </div>
 					<p class="note">${note}</p>`;
 		}.bind(this);
