@@ -1,5 +1,7 @@
 package io.leitstand.ui.model;
 
+import static java.lang.String.format;
+
 class ExtensionPoint {
 
 	private String module;
@@ -49,6 +51,15 @@ class ExtensionPoint {
 	
 	boolean isModuleMenuExtension() {
 		return module != null && menu != null;
+	}
+	
+	@Override
+	public String toString() {
+	    return format("ExtensionPoint [module=%s, menu=%s, after=%s, before=%s]", 
+	                  module,
+	                  menu, 
+	                  after, 
+	                  before);
 	}
 	
 }

@@ -15,6 +15,7 @@
  */
 package io.leitstand.ui.model;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 
@@ -47,7 +48,7 @@ public class MainMenu extends ValueObject{
 	}
 	
 	/**
-	 * Returns the menu items of the EMS main menu as unmodifiable list.
+	 * Returns the menu items of the leitstand main menu as unmodifiable list.
 	 * @return the main menu items.
 	 */
 	public List<MainMenuItem> getItems() {
@@ -55,9 +56,9 @@ public class MainMenu extends ValueObject{
 	}
 	
 	public void addExtensions(List<Extension> extensions) {
-		LinkedHashMap<MainMenuItem,ExtensionPoint> points = new LinkedHashMap<>();
+		LinkedHashMap<MainMenuItem,List<ExtensionPoint>> points = new LinkedHashMap<>();
 		for(Extension extension : extensions) {
-			points.put(extension.getItem(),extension.getExtensionPoint());
+			points.put(extension.getItem(),asList(extension.getExtensionPoint()));
 		}
 		menu.addAll(points.keySet());
 		

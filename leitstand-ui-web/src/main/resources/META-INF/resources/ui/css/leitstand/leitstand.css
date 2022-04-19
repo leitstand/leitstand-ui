@@ -6,9 +6,13 @@
 /* Primer accessibility enhancements */
 /*--------------------------------------------------------*/
 
+body {
+	min-width:1200px;
+}
+
 /* Override Primer default width.*/
 .container {
-    width: 1200px !important;
+    width: 100% !important;
     margin-right: auto;
     margin-left: auto;
 }
@@ -58,7 +62,7 @@ nav li:last-child {
 }
 
 .entity {
-	border-left: 2px solid #d26911;
+	border-left: 2px solid #333;
 }
 
 .entity h4{
@@ -66,19 +70,23 @@ nav li:last-child {
 }
 
 .popup_menu {
-    border-left: 2px solid #d26911;
+    border-left: 2px solid #333;
     cursor: pointer;
+    display: inline-block;
+    position: relative; 
+    padding: 5px 10px;
 }
 
 .popup_menu:first-of-type {
     border: none;
-    margin-left: -10px;
+    margin-left: 5px;
+    display: inline-block;
 }
 
 .popup_menu nav{
     display: none;
 }
-
+ 
 .popup_menu h4 a{
 	color: black;
 	background: none;
@@ -125,15 +133,37 @@ nav li:last-child {
 	margin: 0 0 6px
 } 
 
+.form-group textarea.form-control {
+	width: 100%; 
+	max-width: 800px;
+}
+
 /*--------------------------------------------------------*/
 /* Common UI styles */
 /*--------------------------------------------------------*/
+
+div.flash {
+	left: 15px
+}
 
 ui-view,
 ui-view-menu {
     display: block;
 }
 
+ui-view{
+	max-width: 1400px;
+	margin: auto;
+}
+
+ui-view-menu {
+	margin-left: 15px;
+    display: block;
+}
+
+ui-module-menu{
+	margin-left: 15px;
+}
 
 .error-page h1 {
 	background-image: url('/ui/images/logo.png');
@@ -144,15 +174,122 @@ ui-view-menu {
 	text-align: center;
 }
 
+nav.main{
+	background-color: #333;
+	font-weight: bold;
+	color:white;
+	margin-left: 200px;
+	vertical-align:center;
+	height: 40px;
+}
+
+nav.main a.btn {
+	color: #333;
+	margin-right: 10px; 
+	margin-top:9px;
+	background-color: #FFF !important;
+	border: 1px solid #333;
+	background-image:none;
+}
+
+nav.main a.btn:hover {
+    color: #FFF;
+    margin-right: 10px; 
+    margin-top:9px;
+    background-color: #333 !important;
+    background-image:none;
+    border: 2px solid #FFF;
+}
+
+nav.main a.main-menu-item {
+	display: inline-block;
+	text-decoration:none;
+	position: relative;
+    padding: 2px 5px;
+    font-weight: normal;
+    font-size: 12px;
+	color: white;
+	border: none;
+	font-size: larger;
+	margin-top: 10px; 
+	margin-left: 10px; 
+	margin-bottom: 2px;
+	margin-right: 10px;
+}
+
+nav.main a.main-menu-item:hover, 
+nav.main a.main-menu-item.selected{
+    display: inline-block;
+    font-weight: normal;
+    border: none;
+    text-shadow: none;
+    font-size: larger;
+    background-color: #333;
+    border-bottom: 3px solid white;
+    border-radius:none;
+}
+
 /* Header section */
 .header {
 	background-image: url('/ui/images/header/logo.png'); /* Header uses intentionally a different logo!*/
-	background-position: right;
+	background-position: 30px;
 	background-repeat: no-repeat;
-	background-size:200px;
-	min-height: 80px;
-	margin: -5px 0px;
+	background-size:100px;
+	background-color: #333;
+    position: fixed;
+    width: 100%;
+    height: 45px;
+    overflow: hidden;
+    z-index: 100;
 }
+
+ui-module {
+	padding-top: 45px;
+    display: block;
+}
+
+/* Module section */
+ui-module.split_layout .row {
+	position: relative;
+}
+
+ui-module.split_layout div.pane.navigation {
+	position: absolute;
+	top: 0;
+	left: 0;
+	margin-left: 15px;
+	margin-right: 15px;
+	width: 250px;
+	margin-top: 0px;
+    margin-bottom: 0px;
+    z-index: 1;
+}
+
+ui-module.split_layout div.pane.content {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	padding-left: 265px;
+	margin-right: 15px;
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+
+ui-module div.pane.content ui-view {
+    max-width: 1400px;
+    margin: auto;
+    padding: 0px 15px;
+}
+
+ui-actions {
+    margin-bottom: 15px;
+    display: block
+}
+
+
+div.view {}
+
 
 /** A hidden element that is displayed dynamically by the controller.*/
 .hidden{
@@ -208,28 +345,38 @@ table.list thead th:FIRST-CHILD {
 }
 
 table.list th.check, 
-table.list td.check {
+table.list td.check,
+table.details th.check, 
+table.details td.check {
 	width: 2%
 }
 
 table.list th.tiny, 
-table.list td.tiny {
+table.list td.tiny,
+table.details td.tiny,
+table.details td.tiny {
 	width: 8%
 }
 
 table.list th.extra-small, 
-table.list td.extra-small {
+table.list td.extra-small,
+table.details th.extra-small, 
+table.details td.extra-small {
 	width: 12.5%
 }
 
 
 table.list th.small,
-table.list td.small{
+table.list td.small,
+table.details th.small, 
+table.details td.small{
 	width: 25%;	
 }
 
 table.list th.medium,
-table.list td.medium {
+table.list td.medium,
+table.details th.medium, 
+table.details td.medium {
 	width: 50%;
 }
 
@@ -328,11 +475,6 @@ table.details td ol {
 table.details td ul {
 	list-style-type: square;
 	margin-left: 15px;
-}
-
-table.details td code {
-	margin: -1em;
-	border: none;
 }
 
 table.details td span{
@@ -475,6 +617,7 @@ div.package .details{
 .config.ACTIVE,
 .admin.ACTIVE,
 .bgp.ESTABLISHED,
+.ospf.FULL,
 .ENABLED,
 .administrative .ACTIVE,
 .platform .ACTIVE {
@@ -649,6 +792,7 @@ span.ACTIVE,
 .MAINTENANCE,
 .platform .CACHED,
 .bgp.IDLE,
+.ospf,
 .UNKNOWN{
 	background-color:#2d5c9b; /*#4078c0;*/
 	color: white;
@@ -856,4 +1000,27 @@ ui-composition::after{
 .CodeMirror {
 	border: 1px solid #d8d8d8;
 	min-height: 40em;
+}
+
+.flag.false {
+	border: 2px solid #767676;
+	color: #767676;
+    font-weight: bold;
+    text-transform: capitalize;
+    display: block;
+    width: 4em;
+    padding: 2px;
+    margin: -2px;
+}
+
+.flag.true {
+	border: 2px solid #767676;
+	background-color: #767676;
+    color: white;
+    font-weight: bold;
+    text-transform: capitalize;
+    display: block;
+    width: 4em;
+    padding: 2px;
+    margin: -2px;
 }

@@ -22,7 +22,7 @@ public class Contributions implements StartupListener{
 	
 	@Inject
 	private Instance<Contribution> builtinContributions;
-	
+		
 	@Inject
 	private Environment env;
 	
@@ -59,7 +59,7 @@ public class Contributions implements StartupListener{
 				// Register bootstrapper
 				ModuleApplication app = newModuleApplication()
 										.withApplicationName(contrib.getName())
-										.withDefer(false)
+										.withDefer(true)
 										.withController(contrib.getBaseUri()+"/"+contrib.getController())
 										.build();
 				

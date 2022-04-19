@@ -1,5 +1,6 @@
 package io.leitstand.ui.model;
 
+import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 
 import java.util.List;
@@ -42,4 +43,8 @@ class Extension {
 		return mainMenu;
 	}
 	
+	@Override
+	public String toString() {
+	    return format("Extension[point=%s, is_module_extension=%s, is_menu_exteion=%s]",extend,isModuleExtension(),isModuleMenuExtension());
+	}
 }

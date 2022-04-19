@@ -16,6 +16,7 @@
 package io.leitstand.ui.model;
 
 import static io.leitstand.commons.model.BuilderUtil.assertNotInvalidated;
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableList;
@@ -306,6 +307,11 @@ public abstract class BaseModuleItem implements Named {
 			return null;
 		}
 		return unmodifiableMap(config);
+	}
+	
+	@Override
+	public String toString() {
+	    return format("%s (%s)", getName(),getLabel());
 	}
 	
 }

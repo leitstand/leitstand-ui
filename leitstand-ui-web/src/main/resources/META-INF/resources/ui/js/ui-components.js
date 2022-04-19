@@ -309,7 +309,7 @@ export class UIElement extends HTMLElement {
 	 */
 	connectedCallback(){
 		this.renderDom();
-		let when = this.getAttribute('when');
+		const when = this.getAttribute('when');
 		if(when){
             if(!!!this.viewModel.getProperty(when)){
                 this.classList.add('hidden');
@@ -324,14 +324,13 @@ export class UIElement extends HTMLElement {
                 });
             }		        
 		}
-		when = this.when;
-        if(when){
-            if(!when()){
+        if(this.when){
+            if(!this.when()){
                 this.classList.add('hidden');
             }
             if(this.form){
                 this.form.addEventListener('UIViewModelUpdate',(evt) => {
-                    if(when()){
+                    if(this.when()){
                         this.classList.remove('hidden');
                     } else {
                         this.classList.add('hidden');
@@ -1933,30 +1932,24 @@ class MainMenu extends HTMLElement {
 	connectedCallback(){
 		const render = function(menu){
 		    const user = UserContext.get();
-			return  html `<div class="header">
-						    <h1 id="title"></h1>
-						    <p id="subtitle" class="lead"></p>
-					      </div>
-					      <div class="tabnav" role="tablist">
-						    <nav class="tabnav-tabs" style="position:relative">
-							  <a class="btn btn-outline btn-sm right" 
-							     style="margin-left: 10px; margin-top:5px" 
+			return  html `<header class="header">
+						    <nav class="main">
+							  <a class="btn btn-sm right" 
 							     href="/api/v1/_logout">
 							     Logout</a>
 							  ${menu.filter(item => user.scopesIncludeOneOf(item.scopes_allowed)) 
-							        .map(item => html `<a class="tabnav-tab ${item.position ? item.position : ''}" 
-												          role="tab" 
+							        .map(item => html `<a class="main-menu-item ${item.position ? item.position : ''}" 
 												          href="/ui/views${item.path}" 
 												          title="${item.subtitle}" 
 												          data-title="$${item.title}" 
 												          data-module="${item.module}">
 												          $${item.label}</a>`)
 								  .reduce((a,b)=>a+b,'')}
-					 	</nav>
-					 </div>
-			        <ui-module-container>
-			            <!-- Module content ... -->
-			        </ui-module-container>
+					 	    </nav>
+					     </header>
+			            <ui-module-container>
+			                <!-- Module content ... -->
+			            </ui-module-container>
 					 `;
 		};
 		
@@ -1981,8 +1974,8 @@ class MainMenu extends HTMLElement {
 	}
 	
 	select(tab){	
-		const selected = document.querySelector(".tabnav-tabs a[class~='selected']");
-		const select = document.querySelector(`.tabnav-tabs a[data-module='${tab}']`);
+		const selected = document.querySelector("nav.main a[class~='selected']");
+		const select = document.querySelector(`nav.main a[data-module='${tab}']`);
 	
 		if(selected == select){
 			return false; // No changes needed.
@@ -1995,8 +1988,6 @@ class MainMenu extends HTMLElement {
 	
 		select.classList.add("selected");
 		select.setAttribute("aria-selected","true");
-		document.querySelector("h1").innerHTML = select.getAttribute("data-title");
-		document.querySelector("#subtitle").innerHTML = select.getAttribute("title");
 		return true;
 	}
 
@@ -2097,7 +2088,7 @@ class ModuleMenu extends HTMLElement {
             return html `<li><a class="menu-item" id="${item.view}" title="${item.title}" href="${item.viewpath}" ${item.target ? `target="${item.target}"` :''}>${item.label}</a></li>`;
         };
         let menuDom = menus.filter((menu) => !menu.selected)
-                           .map((menu) => `<div style="display: inline-block; position: relative; padding: 0.5em 1em;" class="popup_menu">    
+                           .map((menu) => `<div class="popup_menu">    
                                              ${menu.items.length > 1 
                                              ? html `<h4 class="chevron bottom">
                                                        ${menu.label}
@@ -2115,6 +2106,12 @@ class ModuleMenu extends HTMLElement {
                                            </div>`)
                              .reduce(concat,'');
      
+        if (!menuDom) {
+           // Add an empty popup menu to for vertical spacing.
+           this.innerHTML = '<div class="popup_menu"><h4>&nbsp;</h4></div>'
+           return;
+        }
+        
         const selected = menus.filter((menu) => menu.selected);
         if (menuDom && selected && selected.length){
             menuDom += html `<div style="display: inline-block; position: relative; padding: 0.5em 1em;" class="entity">

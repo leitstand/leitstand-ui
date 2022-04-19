@@ -24,8 +24,11 @@ import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.json.bind.annotation.JsonbTransient;
 
@@ -131,6 +134,8 @@ public class ModuleMenu extends BaseModuleItem {
 	
 	private String menu;
  	private List<ModuleMenuItem> items = new LinkedList<>();
+ 	@JsonbTransient
+ 	private Map<ModuleMenuItem,List<ExtensionPoint>> menuExtensions = new LinkedHashMap<>();
  	private String expand;
  	private String entity;
  	
@@ -155,29 +160,32 @@ public class ModuleMenu extends BaseModuleItem {
 	}
 	
 	void addExtensions(List<Extension> extensions) {
-		LinkedHashMap<ModuleMenuItem,ExtensionPoint> points = new LinkedHashMap<>();
+	    Set<ModuleMenuItem> newItems = new LinkedHashSet<>();
 		for(Extension extension : extensions) {
 			// Create an extension point for each menu item to 
 			// preserve the order of the contributed menu items.
 			List<ModuleMenuItem> items = extension.getItems();
 			if(!items.isEmpty()) {
+			    newItems.addAll(items);
 				ModuleMenuItem item = items.get(0);
-				points.put(item, extension.getExtensionPoint());
-			}
-			// All additional menu items are linked to the previous item to preserve ordering
-			for(int j=0,i=1; i < items.size(); j++,i++) {
-				points.put(items.get(i),
-						   new ExtensionPoint().after(items.get(j).getName()));
+	            List<ExtensionPoint> itemPoints = menuExtensions.computeIfAbsent(item, k -> new LinkedList<>());
+	            itemPoints.add(extension.getExtensionPoint());
+	            
+	            // All additional menu items are linked to the previous item to preserve the configured order
+	            for(int j=0,i=1; i < items.size(); j++,i++) {
+	                item = items.get(i);
+	                itemPoints.add(new ExtensionPoint().after(items.get(j).getName()));
+	            }
 			}
 		}
 		// Add all contributed items.
 		if(this.items == null) {
 			this.items = new LinkedList<>();
 		}
-		items.addAll(points.keySet());
+		items.addAll(newItems);
 		
 		// Sort all points according to the injection point hints!
-		ExtensionSorter<ModuleMenuItem> sorter = new ExtensionSorter<>(points, items);
+		ExtensionSorter<ModuleMenuItem> sorter = new ExtensionSorter<>(menuExtensions, items);
 		this.items = sorter.sort();
 	}
 	

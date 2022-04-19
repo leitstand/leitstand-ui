@@ -53,7 +53,7 @@ public class ContributionSorterTest {
 	
 	
 	private ExtensionSorter<Named> sorter;
-	private LinkedHashMap<Named,ExtensionPoint> points;
+	private LinkedHashMap<Named,List<ExtensionPoint>> points;
 	
 	@Test
 	public void arrange_item_contribution_by_after_constraint() {
@@ -65,7 +65,7 @@ public class ContributionSorterTest {
 		items.add(named("c"));
 		points = new LinkedHashMap<>();
 		ExtensionPoint point = new ExtensionPoint().after("b");
-		points.put(named("c"),point);
+		points.put(named("c"),asList(point));
 		
 		// Sort menu according to the injection point
 		sorter = new ExtensionSorter<>(points, items);
@@ -90,7 +90,7 @@ public class ContributionSorterTest {
 		items.add(named("d"));
 		points = new LinkedHashMap<>();
 		ExtensionPoint point = new ExtensionPoint().after("d");
-		points.put(named("d"),point);
+		points.put(named("d"),asList(point));
 		
 		// Sort menu according to the injection point
 		sorter = new ExtensionSorter<>(points, items);
@@ -115,7 +115,7 @@ public class ContributionSorterTest {
 		items.add(named("c"));
 		points = new LinkedHashMap<>();
 		ExtensionPoint point = new ExtensionPoint().before("d");
-		points.put(named("c"),point);
+		points.put(named("c"),asList(point));
 		
 		// Sort menu according to the injection point
 		sorter = new ExtensionSorter<>(points, items);
@@ -138,7 +138,7 @@ public class ContributionSorterTest {
 		items.add(named("a"));
 		points = new LinkedHashMap<>();
 		ExtensionPoint point = new ExtensionPoint().before("b");
-		points.put(named("a"),point);
+		points.put(named("a"),asList(point));
 		
 		// Sort menu according to the injection point
 		sorter = new ExtensionSorter<>(points, items);
@@ -161,7 +161,7 @@ public class ContributionSorterTest {
 		items.add(named("d"));
 		points = new LinkedHashMap<>();
 		ExtensionPoint point = new ExtensionPoint().after("c");
-		points.put(named("d"),point);
+		points.put(named("d"),asList(point));
 		
 		// Sort menu according to the injection point
 		sorter = new ExtensionSorter<>(points, items);
@@ -184,9 +184,9 @@ public class ContributionSorterTest {
 								  named("c"));
 		points = new LinkedHashMap<>();
 		// a -> b -> c -> a
-		points.put(named("a"),new ExtensionPoint().after("c"));
-		points.put(named("b"),new ExtensionPoint().after("a"));
-		points.put(named("c"),new ExtensionPoint().after("b"));
+		points.put(named("a"),asList(new ExtensionPoint().after("c")));
+		points.put(named("b"),asList(new ExtensionPoint().after("a")));
+		points.put(named("c"),asList(new ExtensionPoint().after("b")));
 		
 		
 		// Sort menu according to the injection point
@@ -212,9 +212,9 @@ public class ContributionSorterTest {
 								  named("c"));
 		points = new LinkedHashMap<>();
 		// a -> b -> c -> a
-		points.put(named("a"),new ExtensionPoint().before("b"));
-		points.put(named("b"),new ExtensionPoint().before("c"));
-		points.put(named("c"),new ExtensionPoint().before("a"));
+		points.put(named("a"),asList(new ExtensionPoint().before("b")));
+		points.put(named("b"),asList(new ExtensionPoint().before("c")));
+		points.put(named("c"),asList(new ExtensionPoint().before("a")));
 		
 		
 		// Sort menu according to the injection point
@@ -225,9 +225,9 @@ public class ContributionSorterTest {
 		// b was before c -> no change
 		// c was not before a -> c is moved to a.
 		// Result: c, a, b
-		assertEquals(asList(named("c"),
-							named("a"),
-							named("b")),
+		assertEquals(asList(named("b"),
+							named("c"),
+							named("a")),
 					 sorter.sort());
 	}
 	
@@ -241,7 +241,7 @@ public class ContributionSorterTest {
 		items.add(named("c"));
 		points = new LinkedHashMap<>();
 		ExtensionPoint point = new ExtensionPoint().before("d").after("d");
-		points.put(named("c"),point);
+		points.put(named("c"),asList(point));
 		
 		// Sort menu according to the injection point
 		sorter = new ExtensionSorter<>(points, items);
@@ -263,7 +263,7 @@ public class ContributionSorterTest {
 		items.add(named("c"));
 		points = new LinkedHashMap<>();
 		ExtensionPoint point = new ExtensionPoint().after("unknown");
-		points.put(named("c"),point);
+		points.put(named("c"),asList(point));
 		
 		// Sort menu according to the injection point
 		sorter = new ExtensionSorter<>(points, items);
@@ -285,7 +285,7 @@ public class ContributionSorterTest {
 		items.add(named("c"));
 		points = new LinkedHashMap<>();
 		ExtensionPoint point = new ExtensionPoint().before("unknown");
-		points.put(named("c"),point);
+		points.put(named("c"),asList(point));
 		
 		// Sort menu according to the injection point
 		sorter = new ExtensionSorter<>(points, items);
