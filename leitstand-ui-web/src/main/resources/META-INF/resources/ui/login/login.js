@@ -19,7 +19,7 @@ import {UserContext,Location} from '/ui/js/ui-core.js';
 
 class User extends Resource {
 	login(userName,password){
-		return this.json("/api/v1/login/_login")
+		return this.json("/api/v1/login")
 				   .POST({"user_name":userName,
 				          "password":password});
 	}
@@ -27,7 +27,7 @@ class User extends Resource {
 
 class LoginConfiguration extends Resource {
 	load(){
-		return this.json("/api/v1/login/config")
+		return this.json("/system/login/config")
 				   .GET();
 	}
 	

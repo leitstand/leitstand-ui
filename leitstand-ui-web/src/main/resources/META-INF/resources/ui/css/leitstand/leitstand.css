@@ -138,6 +138,66 @@ nav li:last-child {
 	max-width: 800px;
 }
 
+header nav label {
+	font-weight: normal;
+	font-size: larger;
+	padding: 2px 5px;	
+}
+
+#go {
+	font-size:larger;
+	font-size: larger;
+	margin-top: -3px;
+	padding: 0px;
+	padding-left: 5px;
+	background-color:#444;
+	border-color:#333;
+	color:#444;
+}
+
+#go:focus {
+	font-size:larger;
+	font-size: larger;
+	margin-top: -3px;
+	padding: 0px;
+	padding-left: 5px;
+	background-color:#fafafa;
+}
+
+.instructions {
+ 	position: absolute;
+ 	top: 30px;
+ 	left: 0px;
+ 	color: black;
+ 	background: white;
+ 	width: 30em;
+ 	padding: 7px 5px;
+ 	font-weight: normal; 	
+ 	display:none;
+ 	border: 1px solid #d8d8d8;
+ 	border-radius: 3px;
+}
+ 
+.instructions pre:first-child{
+	padding-top:0px;
+}
+ 
+.instructions pre {
+	padding-bottom:2px;
+	padding-top: 7px;
+	margin:0px;
+	color: #333
+}
+
+.instructions .key {
+	text-transform: uppercase;
+	border-radius: 3px;
+	border: 1px solid #a8a8a8;	
+	width: 20px;
+	display: inline-block;
+	text-align: center;
+}
+
 /*--------------------------------------------------------*/
 /* Common UI styles */
 /*--------------------------------------------------------*/
@@ -163,6 +223,23 @@ ui-view-menu {
 
 ui-module-menu{
 	margin-left: 15px;
+}
+
+td .copy_on_hover {
+	position: relative;
+	display: block;
+	width: 100%;
+}
+
+td .copy_on_hover:hover button{
+	position: absolute;
+	display: inline-block;
+	top: -4px;
+	margin-left: 8px;
+}
+
+td .copy_on_hover button {
+	display: none;	
 }
 
 .error-page h1 {
@@ -239,7 +316,6 @@ nav.main a.main-menu-item.selected{
     position: fixed;
     width: 100%;
     height: 45px;
-    overflow: hidden;
     z-index: 100;
 }
 
@@ -489,10 +565,11 @@ ol.tags {
 	vertical-align: middle;
 }
 
-ul.tags li,
-ol.tags li{
+ul.tags li.tag,
+ol.tags li.tag {
 	display:inline;
-	background-color: #2d5c9b; /*#4078c0;*/
+	background-color: #2d5c9b;
+	border-radius: 2px;
 	list-style-type: none;
 	padding: 2px 5px;
 	margin: 0px 5px;
@@ -500,68 +577,49 @@ ol.tags li{
 	font-weight: bold;
 }
 
-.tag-editor ol.tags{
-	display: inline;	
-	vertical-align: middle;
-}
 
-.tag-editor ol.tags li.tag{
-	display:inline;
-	background-color: white; 
-	list-style-type: none;
-	margin: 0px 3px;
-	position: relative;
-}
-
-.tag-editor ol.tags li.tag{
-	position:relative;
-	background-color: #2d5c9b; /*#4078c0; */
+.tag-editor div.tags div {
 	display: inline-block;
-	height: 26px;
-	border-radius: 3px;
+	background-color: #2d5c9b;
+	border-radius: 4px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	padding-left: 10px;
 	margin-right: 10px;
-	padding: 5px;
-	margin-top: 10px;
+	vertical-align:middle;
+	cursor: default;
 }
 
-.tag-editor ol.tags li span{
-	margin-right: 30px;
+.tag-editor div.tags div span {
 	display: inline-block;
 	vertical-align: middle;
-	margin-top: -4px;
+	font-weight: bold;
+	color: white;
 }
 
-.tag-editor ol.tags li.tag button{
-	position:absolute;
-	top: 0;
-	right: 0;
-	border-radius: 0px 3px 3px 0px;
+.tag-editor div.tags div input.form-control{
+	background-color: #fafafa;
 }
 
-.tag-editor span{
+.tag-editor div.tags div input.form-control:focus{
+	background-color: #fff;
+}
+
+.tag-editor div.tags div button {
+	vertical-align: middle;
 	display: inline-block;
-	margin-top: 10px;
-}
-
-.tag-editor span button{
+	height: 34px;
+	width: 34px;
 	border-radius: 0px 3px 3px 0px;
-	position: absolute;
-	top: -1px;
-	right: 0px;
+	margin-left: 10px;
 }
 
-.tag-editor span input{
-	width: 100%;
-	display: block;
-	border-radius: 3px;
-	border: 1px solid #e5e5e5;
-	padding: 7px 30px 7px 8px;
-	width: 7em;
-	display:inline-block; 
-	vertical-align: middle; 
-	height: 26px;
-	padding-right: 30px;
-	margin-top: -1px;
+.tag-editor div.tags div:last-child {
+	padding-left: 0px;
+}
+
+.tag-editor div.tags div:last-child button {
+	margin-left: -2px;
 }
 
 /** Image and package details*/
@@ -616,6 +674,7 @@ div.package .details{
 .VALID,
 .config.ACTIVE,
 .admin.ACTIVE,
+.isis.ACTIVE,
 .bgp.ESTABLISHED,
 .ospf.FULL,
 .ENABLED,
@@ -1023,4 +1082,12 @@ ui-composition::after{
     width: 4em;
     padding: 2px;
     margin: -2px;
+}
+
+.capitalize-first-letter:first-letter{
+	text-transform: uppercase
+}
+
+.capitalize-first-letter{
+    text-transform: lowercase
 }

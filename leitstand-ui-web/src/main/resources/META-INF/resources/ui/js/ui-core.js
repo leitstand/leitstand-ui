@@ -134,7 +134,7 @@ export class UserContext {
 		} else {
 			this._user = JSON.parse(window.sessionStorage.getItem("user"));
 			if(this._user == null){
-			    window.location.href="/api/v1/_logout";
+			    window.location.href="/api/v1/logout";
 			}
 		}
 	}
@@ -470,7 +470,12 @@ window.addEventListener('InternalServerError',function(){
  * Delegate event processing to the browser if the router is not able to navigate to the specified target.
  */
 const onclick = function(event) {
-	if(event.target.href && router.navigate(new Location(event.target.href))){
+	let element = event.target
+	if (!element.href) {
+		// Walk up DOM tree to support anchor containing inline elements.
+		element = element.parentNode
+	}
+	if(element.href && router.navigate(new Location(element.href))){
 		// Stop event processing because router has opened the specified target.
 		event.stopPropagation();
 		event.preventDefault();

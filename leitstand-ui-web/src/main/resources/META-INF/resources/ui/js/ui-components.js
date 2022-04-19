@@ -76,6 +76,7 @@
 import {UserContext,Location,router} from './ui-core.js';
 import {Modules} from './ui-modules.js';
 import {Json} from './client.js';
+import {Element} from './ui-dom.js';
 
 /**
  * View model decorator that provides convenience functions to read and update view model properties.
@@ -369,7 +370,7 @@ export class UIElement extends HTMLElement {
 				const stylesheets = head.querySelectorAll("link[rel='stylesheet']");
 				for(let i=0; i < stylesheets.length; i++){
 					const stylesheet = stylesheets[i];
-					if(stylesheet.href == href){
+					if(stylesheet.href.endsWith(href)){
 						return;
 					}
 				}
@@ -383,7 +384,7 @@ export class UIElement extends HTMLElement {
 				const scripts = head.querySelectorAll('script');
 				for(let i=0; i < scripts.length; i++){
 					const script = scripts[i];
-					if(script.src == src){
+					if(script.src.endsWith(src)){
 						return;
 					}
 				}
@@ -567,11 +568,25 @@ class ViewHeader extends UIElement{
 		} else {
 			subtitle = '';	
 		}
-		this.innerHTML = `<div class="title">
+		
+		const stylesheets = [...this.querySelectorAll('ui-stylesheet')].map(s => s.getAttribute("href")).filter(s => s != "");
+		if (stylesheets && stylesheets.length > 0){
+			this.requires({'stylesheets':stylesheets})
+			    .then(()=>{
+						this.innerHTML = `<div class="title">
 		                    ${breadcrumb}
 		                    ${title}
 		                    ${subtitle}
 		                  </div>`;
+				});
+		} else {
+			this.innerHTML = `<div class="title">
+			                    ${breadcrumb}
+			                    ${title}
+			                    ${subtitle}
+			                  </div>`;			
+		}
+		
 	}
 	
 }
@@ -1174,7 +1189,11 @@ class InputText extends InputControl {
 	 */
 	renderDom(){
 		// Search for buttons to be displayed next to the input field.
-		const buttons = this.querySelectorAll('ui-button');
+		let buttons = [...this.querySelectorAll('ui-button')];
+		const copy = this.querySelector('ui-copy');
+		if(copy){
+			buttons = buttons.concat(copy);
+		}
 		
 		this.innerHTML=html `<div class="form-group">
 		                       <div class="label">
@@ -1933,9 +1952,9 @@ class MainMenu extends HTMLElement {
 		const render = function(menu){
 		    const user = UserContext.get();
 			return  html `<header class="header">
-						    <nav class="main">
+						    <nav class="main" style="positon:relative;">
 							  <a class="btn btn-sm right" 
-							     href="/api/v1/_logout">
+							     href="/api/v1/logout">
 							     Logout</a>
 							  ${menu.filter(item => user.scopesIncludeOneOf(item.scopes_allowed)) 
 							        .map(item => html `<a class="main-menu-item ${item.position ? item.position : ''}" 
@@ -1945,8 +1964,33 @@ class MainMenu extends HTMLElement {
 												          data-module="${item.module}">
 												          $${item.label}</a>`)
 								  .reduce((a,b)=>a+b,'')}
+								<label for="go">Search:</label>
+								<span style="position:relative">
+								<input id="go" class="form-control" type="text" name="gsearch"></input>
+					 	    		<div class="instructions">
+										<pre><b>e</b>lement<b>: </b><i>name</i> | <i>alias</i></pre>
+										<span class="note">Search for elements by name or alias.</span>
+										<pre><b>host: </b><i>hostname</i> | <i>IP address</i></pre>
+										<span class="note">Search for elements by hostname or management IP address.</span>
+										<pre><b>mac: </b><i>MAC address</i></pre> 
+										<span class="note">Search for elements by MAC address.</span>
+										<pre><b>sn: </b><i>serial number</i></pre>
+										<span class="note">Search for elements by serial number.</span>
+										<pre><b>p</b>od<b>: </b><i>name</i></pre>
+										<span class="note">Search for pods by name.</span>
+										<pre><b>m</b>etric<b>: </b><i>name</i> | <i>display name</i></pre>
+										<span class="note">Search for metrics by name or display name.</span>
+										<pre><b>f</b>acility<b>: </b><i>name</i></pre> 
+										<span class="note">Search for facilities by name.</span>
+										<pre><b>i</b>mage<b>: </b><i>uuid</i></pre>
+										<span class="note">Lookup image by image ID.</span>
+										<pre><b>j</b>ob<b>: </b><i>uuid</i></pre> 
+										<span class="note">Lookup job by job ID.</span>
+										<p class="note"><b>Hint:</b> Press the <span class="key">s</span> key to quickly access this search function.</p>
+									</div>
+					 	    	</span>
 					 	    </nav>
-					     </header>
+						</header>
 			            <ui-module-container>
 			                <!-- Module content ... -->
 			            </ui-module-container>
@@ -1954,9 +1998,84 @@ class MainMenu extends HTMLElement {
 		};
 		
 		const loader = new Json('/api/v1/ui/modules');
+		
 		loader.load()
 			  .then((menu) => {
 				  this.innerHTML = render(menu);
+				 	const header = this.querySelector("header");
+				 	const input = header.querySelector("input");
+				 	const instructions = header.querySelector(".instructions")
+ 					document.addEventListener("keyup",(evt) => {
+						if (evt.target.nodeName != "INPUT" && evt.target.nodeName != "TEXTAREA" && evt.target.nodeName != "SELECT" && evt.code=="KeyS"){
+							input.focus();						
+						}
+					});
+				
+				 	input.addEventListener("blur", (evt) => {
+						instructions.style.display="none";
+					});
+					input.addEventListener("focus", (evt) => {
+						instructions.style.display="block";
+					});
+							
+				 	header.addEventListener("keyup",(evt)=>{
+						const v = this.querySelector("#go").value;
+						if (evt.code == "Enter"){
+						const d = v.indexOf(":")
+						let p = "e";
+						if (d > 0){
+						 	p =v.substring(0,d)
+						}
+						const q = v.substring(d+1).trim();
+						let target = ""
+						switch(p.toLowerCase()){
+							case "facility":
+							case "f":{
+								target=`/ui/views/inventory/facility/facilities.html?filter=${q}`
+								break;
+							}
+							case "pod":
+							case "p":
+							case "group":
+							case "g":{
+								target=`/ui/views/inventory/pods.html?filter=${q}`
+								break;
+							}
+							case "serial":
+							case "serialnumber":
+							case "sn":{
+								target=`/ui/views/inventory/elements.html?filter=${q}&by=serial`
+								break;
+							}
+							case "ip":
+							case "host":{
+								target=`/ui/views/inventory/elements.html?filter=${q}&by=ip`
+								break;
+							}
+							case "image":
+							case "i":{
+								target=`/ui/views/image/image-meta.html?image=${q}`
+								break;
+							}
+							case "job":
+							case "j":{
+								target=`/ui/views/job/tasks.html?job=${q}`
+								break;
+							}
+							case "metric":
+							case "m":{
+								target=`/ui/views/metrics/metrics.html?filter=${q}`
+								break;
+							}
+							case "element":
+							case "e":
+							default: {
+								target=`/ui/views/inventory/elements.html?filter=${q}&by=tag`
+							}
+						}
+						router.navigate(new Location(target));
+						}
+					});
 				  router.navigate(new Location(window.location.href));
 			  })
 			  .catch((e) => {
@@ -2686,19 +2805,29 @@ class TagEditor extends InputControl{
         }
 		
 		const renderTags = function(){
-			const tags = this.viewModel.getProperty(this.binding);
+			let tags = this.viewModel.getProperty(this.binding);
+			if (!tags){
+				tags = this.getAttribute("tags");
+				console.log(tags);
+				if (tags) {
+					tags = tags.split(/\s*,\s*/)		
+				}
+			}
 			if(this.readonly){
-				return html `<ol class="tags">
-							   ${tags && tags.map(tag => html `<li class="tag">$${tag}</li>`).reduce((a,b) => a+b,'')}
-						     </ol>`;
+				if (tags){
+					return html `<ol class="tags">
+								   ${tags && tags.map(tag => html `<li class="tag">$${tag}</li>`).reduce((a,b) => a+b,'')}
+							     </ol>`;					
+				}
+				return "";
 			}
 			
 			return `<div class="tag-editor">
 			          ${label}
-					  <ol class="tags">
-						  ${tags && tags.length > 0 ? tags.map(tag => html `<li class="tag"><span>$${tag}</span><button name="remove-tag" class="btn btn-sm btn-danger" title="Remove tag $${tag}" data-tag="$${tag}">-</button></li>`).reduce((a,b) => a+b) : ''}
-					  </ol>
-					  <span style="position:relative"><input type="text" name="new-tag"><button name="add-tag" title="Add new tag" class="btn btn-sm btn-outline">+</button></span>
+					  <div class="tags">
+						  ${tags && tags.length > 0 ? tags.map(tag => html `<div><span>$${tag}</span><button name="remove-tag" class="btn btn-sm btn-danger" title="Remove tag $${tag}" data-tag="$${tag}">-</button></div>`).reduce((a,b) => a+b) : ''}
+						  <div class="tag"><input class="form-control" type="text" name="new-tag"></input><button name="add-tag" title="Add new tag" class="btn btn-sm btn-outline">+</button></div>
+					  </div>
 				    </div>
 					<p class="note">${note}</p>`;
 		}.bind(this);
@@ -2756,6 +2885,91 @@ class RefreshButton extends Button {
     }
     
 }
+
+
+const randomStringAlphabet = 'AaBbCcDdEeFfGgHhIiJjKkLlMmMnOoPpQqRrSsTtUuVvWwXxYyZz'
+const randomStringAlphabetSize = randomStringAlphabet.length
+
+function random_string(size){
+	let s = "";
+	for ( let i = 0; i < size; i++ ) {
+      s += randomStringAlphabet.charAt(Math.floor(Math.random() * randomStringAlphabetSize));
+   	}
+	return s;
+}
+
+/**
+ * The copy button copies a value to the clipboard. 
+ * The value is read from the value attribute.
+ */
+class CopyButton extends Button {
+	
+	constructor(){
+		super()
+	}
+	
+	get disabled(){
+		return false
+	}
+	
+	get readonly(){
+		return false
+	}
+	
+    get name(){
+        let name = super.name;
+        if(name){
+			return name;
+		}
+		name='copy_'+random_string(5);
+		this.setAttribute("name",name);
+		return name;
+    }
+
+	renderDom(){
+		const form = this.form;
+		super.renderDom();
+		form.querySelector(`button#${this.name}`).addEventListener('click',(evt)=>{
+			evt.stopPropagation();
+			evt.preventDefault();
+			let value = this.getAttribute("value");
+			if (!value){
+				// Check if this copy button is nested into a input control
+				let element = new Element(evt.target);
+				element = element.up("ui-input,ui-select");
+				value = element.value();
+			}
+			if (value){
+				if (navigator.clipboard && window.isSecureContext){
+					navigator.clipboard.writeText(value);
+				} else {
+					// text area method
+			        const textArea = document.createElement("textarea");
+			        textArea.value = value;
+			        // make the textarea out of viewport
+			        try {
+				        textArea.style.position = "fixed";
+				        textArea.style.left = "-999999px";
+				        textArea.style.top = "-999999px";
+				        document.body.appendChild(textArea);
+				        textArea.focus();
+				        textArea.select();
+				        document.execCommand('copy');
+					} finally {
+				        textArea.remove();
+					}	
+				}
+				
+				if (value.length > 15 ){
+					value = value.substring(0,15)+'...';
+				}
+				this.controller.info(html `"$${value}" copied to clipboard`);
+			}
+		});
+	}
+		
+}
+
 
 class Paginator extends UIElement {
     
@@ -2822,6 +3036,7 @@ customElements.define('ui-view-header',ViewHeader);
 customElements.define('ui-label',Label);
 customElements.define('ui-note',Note);
 customElements.define('ui-refresh',RefreshButton);
+customElements.define('ui-copy',CopyButton);
 customElements.define('ui-paginator',Paginator);
 
 //html escape function
