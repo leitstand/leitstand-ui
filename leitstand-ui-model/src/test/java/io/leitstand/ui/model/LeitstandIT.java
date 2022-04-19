@@ -30,6 +30,12 @@ public class LeitstandIT extends JpaIT {
 		try (Connection c = ds.getConnection()) {
 			// Create empty schemas to enable JPA to create all tables. 
 			c.createStatement().execute("CREATE SCHEMA leitstand;");
+			c.createStatement().execute("CREATE TABLE leitstand.tag ("+
+					"name varchar NOT NULL, "+
+					"color varchar NULL, "+
+					"tsmodified timestamp(0) NOT NULL DEFAULT now(), "+
+					"CONSTRAINT tag_pk PRIMARY KEY (name)"+
+				")");
 		} 
 	}
 	

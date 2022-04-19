@@ -34,7 +34,7 @@ import io.leitstand.ui.service.DictionaryService;
 import io.leitstand.ui.service.DictionarySettings;
 
 @RequestScoped
-@Path("/api/v1/directorys")
+@Path("/system/directorys")
 @Consumes(APPLICATION_JSON)
 @Produces(APPLICATION_JSON)
 public class DictionaryResource {

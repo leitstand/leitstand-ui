@@ -13,7 +13,8 @@ public enum ReasonCode implements Reason{
 	
 	LUI0001E_DICTIONARY_NOT_FOUND,
 	LUI0002I_DICTIONARY_STORED,
-	LUI0003I_DICTIONARY_REMOVED;
+	LUI0003I_DICTIONARY_REMOVED,
+	LUI0010I_TAG_NOT_FOUND;
 
 	private static final ResourceBundle MESSAGES = ResourceBundle.getBundle("UIMessages");
 	
