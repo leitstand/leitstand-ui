@@ -57,7 +57,7 @@ public class DefaultTagService implements TagService{
 		Date now = new Date();
 		db.executeUpdate(prepare("INSERT INTO leitstand.tag (name,color,tsmodified) "+
 								 "VALUES (?,?,?) "+
-								 "ON CONFLICT name "+
+								 "ON CONFLICT (name) "+
 								 "DO UPDATE "+
 								 "SET color=?", 
 								 tag.getName(), 

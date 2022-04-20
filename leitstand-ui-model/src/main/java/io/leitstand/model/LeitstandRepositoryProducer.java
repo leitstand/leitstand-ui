@@ -3,6 +3,7 @@
  */
 package io.leitstand.model;
 
+import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
 import javax.persistence.EntityManagerFactory;
@@ -14,9 +15,10 @@ import io.leitstand.commons.model.Repository;
 /**
  * Produces transaction-scoped repositories for the leitstand module.
  */
+@Dependent
 public class LeitstandRepositoryProducer {
 
-	@PersistenceUnit(unitName="inventory")
+	@PersistenceUnit(unitName="leitstand")
 	private EntityManagerFactory emf;
 	
 	/**

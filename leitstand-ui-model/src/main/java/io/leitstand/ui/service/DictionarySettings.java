@@ -6,10 +6,13 @@ package io.leitstand.ui.service;
 import static io.leitstand.commons.model.BuilderUtil.assertNotInvalidated;
 import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.unmodifiableSortedSet;
 import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Dictionary settings.
@@ -39,9 +42,9 @@ public class DictionarySettings extends DictionaryInfo {
 		 * @return a reference to this builder to continue with the object creation
 		 */
 		public Builder withEntries(DictionaryEntry.Builder... entries) {
-			return withEntries(stream(entries)
+			return withEntries(new TreeSet<>(stream(entries)
 							   .map(DictionaryEntry.Builder::build)
-							   .collect(toList()));
+							   .collect(toList())));
 		}
 		
 		/**
@@ -49,22 +52,22 @@ public class DictionarySettings extends DictionaryInfo {
 		 * @param entries the dictionary entries
 		 * @return a reference to this builder to continue with the object creation
 		 */
-		public Builder withEntries(List<DictionaryEntry> entries) {
+		public Builder withEntries(SortedSet<DictionaryEntry> entries) {
 			assertNotInvalidated(getClass(), dictionary);
-			((DictionarySettings)dictionary).entries = new ArrayList<>(entries);
+			((DictionarySettings)dictionary).entries = new TreeSet<>(entries);
 			return this;
 		}
 		
 	}
 	
-	private List<DictionaryEntry> entries;
+	private SortedSet<DictionaryEntry> entries;
 	
 	/**
 	 * Returns the entries of this dictionary as immutable list.
 	 * @return the dictionary entries.
 	 */
-	public List<DictionaryEntry> getEntries() {
-		return unmodifiableList(entries);
+	public SortedSet<DictionaryEntry> getEntries() {
+		return unmodifiableSortedSet(entries);
 	}
 	
 	

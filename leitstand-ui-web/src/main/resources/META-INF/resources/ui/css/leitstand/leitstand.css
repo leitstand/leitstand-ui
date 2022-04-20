@@ -577,24 +577,27 @@ ol.tags li.tag {
 	font-weight: bold;
 }
 
+.tag-editor {
+	position: relative;
+}
 
 .tag-editor div.tags div {
 	display: inline-block;
-	background-color: #2d5c9b;
 	border-radius: 4px;
 	padding-top: 0px;
 	padding-bottom: 0px;
 	padding-left: 10px;
 	margin-right: 10px;
 	vertical-align:middle;
+	background-color: #2d5c9b;
 	cursor: default;
+	color: white;
 }
 
 .tag-editor div.tags div span {
 	display: inline-block;
 	vertical-align: middle;
 	font-weight: bold;
-	color: white;
 }
 
 .tag-editor div.tags div input.form-control{
@@ -621,6 +624,88 @@ ol.tags li.tag {
 .tag-editor div.tags div:last-child button {
 	margin-left: -2px;
 }
+
+ol.tags li.tag.yellow,
+ul.tags li.tag.yellow,
+.tag-editor div.tags div.yellow,
+#tag-color-picker div.yellow {
+	background-color: #FFE900;
+	color: #333;
+}
+
+
+ul.tags li.tag.orange,
+ol.tags li.tag.orange,
+.tag-editor div.tags div.orange,
+#tag-color-picker div.orange {
+	background-color: #ff9300; !important
+	color: #333;
+}
+
+
+ul.tags li.tag.red,
+ol.tags li.tag.red,
+.tag-editor div.tags div.red,
+#tag-color-picker div.red {
+	background-color: #e82000;
+	color: white;
+}
+
+ul.tags li.tag.green,
+ol.tags li.tag.green,
+.tag-editor div.tags div.green,
+#tag-color-picker div.green {
+	background-color: #308720;
+	color: white;
+}
+
+ul.tags li.tag.purple,
+ol.tags li.tag.purple,
+.tag-editor div.tags div.purple,
+#tag-color-picker div.purple {
+	background-color: #62248a;
+	color: white;
+}
+
+ul.tags li.tag.default,
+ol.tags li.tag.default,
+.tag-editor div.tags div.default,
+#tag-color-picker div.default {
+	background-color: #2d5c9b;
+	color: white;
+}
+
+ul.tags li.tag.grey,
+ol.tags li.tag.grey,
+.tag-editor div.tags div.grey,
+#tag-color-picker div.grey {	
+	background-color: #404e4d;
+	color: white;
+}
+
+ul.tags li.tag.petrol,
+ol.tags li.tag.petrol,
+.tag-editor div.tags div.petrol,
+#tag-color-picker div.petrol{	
+	background-color: #06e5ff;
+	color: #333;
+}
+
+#tag-color-picker {
+	position: absolute;
+	top: 54px;
+	z-index: 100;
+	display: none;
+}
+
+
+#tag-color-picker > div {
+	height: 36px;
+	width: 8em;
+	margin-top: 4px;
+	margin-bottom: 4px;
+}
+
 
 /** Image and package details*/
 div.image,

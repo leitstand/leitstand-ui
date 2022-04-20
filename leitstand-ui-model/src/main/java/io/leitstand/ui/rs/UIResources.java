@@ -40,10 +40,11 @@ public class UIResources implements ApiResourceProvider{
 	@Override
 	public Set<Class<?>> getResources(){
 		return asSet(MainMenuResource.class,
-                             DictionaryResource.class,
-                             ModuleDescriptorResource.class,
-                             LogoutResource.class,
-                             JsonMessageBodyWriter.class);
+                     DictionaryResource.class,
+                     TagResource.class,
+                     ModuleDescriptorResource.class,
+                     LogoutResource.class,
+                     JsonMessageBodyWriter.class);
 	}
 
 }

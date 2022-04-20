@@ -1369,15 +1369,25 @@ export class Select extends InputControl {
 	 * @returns {String} option list in HTML format
 	 */
 	get _options(){
-		const binding = this.getAttribute('options');
-		let options = this.viewModel.getProperty(binding);
+	
+		const defaultOptions = () => {
+			return [...this.querySelectorAll('ui-option')]
+				   .map(option => ({'value':option.getAttribute('value'),
+							 		'label':option.innerHTML,
+							 		'default':(option.getAttribute('default') == '' || option.getAttribute('default') == 'true')}));
+		};
 		
+		const dictionary = this.getAttribute('dictionary');
+		if(dictionary){
+			// Lookup dictionary values.
+			const resource = new Json(`/api/v1/ui/dictionarys/${dictionary}`)
+			return resource.load().then(d => d.entries).catch(e => defaultOptions());
+		}
+		
+		const binding = this.getAttribute('options');
+		const options = this.viewModel.getProperty(binding);
 		if(!options){
-			options = [];
-			this.querySelectorAll('ui-option')
-				.forEach(option => options.push({'value':option.getAttribute('value'),
-												 'label':option.innerHTML,
-												 'default':(option.getAttribute('default') == '' || option.getAttribute('default') == 'true')}));
+			return defaultOptions();
 		}
 		return options;
 	}
@@ -1429,13 +1439,41 @@ export class Select extends InputControl {
 		const name = this.name;
 		const note = this.note;
 	    // Search for buttons to be displayed next to the input field.
-        const buttons = this.querySelectorAll('ui-button');
-
+        let buttons = this.querySelectorAll('ui-button');
+		const copy = this.querySelector('ui-copy');
+		if(copy){
+			buttons = buttons.concat(copy);
+		}
+		
 		this.options()
 			.then((options) => {
-			    if(this.noOptions && (!options || !options.length)){
-			        this.noOptions();
-			        return;
+			    if(!options || !options.length){
+			        if (this.getAttribute('dictionary')) {
+						// Render input field if dictionary does not exist or is empty
+						this.innerHTML=html `<div class="form-group">
+		        				               <div class="label">
+    		                    				 <label for="${name}">${label}</label>
+    		                   				   </div>
+    		                                   <div class="input">
+    		                                     <input id="${this.name}" 
+                                                        type="text" ${this.readonly} ${this.disabled}
+                                        				class="form-control" 
+                                        				name="${name}" 
+                                        				value="$${this.value}" 
+                                        				placeholder="$${this.placeholder}">							
+                                        		 ${[...buttons].map(button => button.outerHTML).reduce((a,b)=>a+b,'')}
+    				           				   </div>
+    		                  				 ${note ? `<p class="note">${note}</p>` : ''}
+						     				</div>`;
+						this.addEventListener("change",(evt) => {
+							this.viewModel.setProperty(this.binding,evt.target.value);
+						});
+						return;
+					}
+			        if (this.noOptions){
+				        this.noOptions();
+				        return;
+					}
 			    }
 			    
 			    const size = this.multiple ? Math.max(2,options.length) : 1;
@@ -1531,9 +1569,6 @@ class RadioButton extends InputControl {
             this.querySelector('div').appendChild(container);
         }
 
-        
-        
-        
         this.addEventListener('change',(evt) => {
             if(evt.target.name==this.name){
                 this.viewModel.setProperty(this.binding,evt.target.value);
@@ -2775,6 +2810,48 @@ class Calendar {
 
 }
 
+
+class Tags extends Json {
+	
+	constructor(){
+		super();
+		this._tags = {};
+		this._dateRead = 0;	
+	}
+	
+	tags() {
+		console.log(this._dateRead, Date.now());
+		if (this._dateRead < Date.now()) {
+			return this.json('/api/v1/ui/tags')
+					   .GET()
+			   	   	   .then(tags => {
+							tags.forEach((t) => {this._tags[t.tag]=t.color});
+							this._dateRead = Date.now() + 5000;
+							return this;
+							}	
+						);
+		}
+		return Promise.resolve(this);
+	}
+
+	getColor(tag){
+		const color = this._tags[tag];
+		if (color){
+			return color;
+		}
+		return 'default';
+	}
+
+	setColor(tag, color){
+		this._tags[tag]=color;
+		this.json('/api/v1/ui/tags').POST([{'tag':tag,'color':color}]);
+	}
+	
+}
+
+const TAGS = new Tags();
+
+
 /**
  * Tag editor component.
  * <p>
@@ -2790,6 +2867,10 @@ class Calendar {
  */
 class TagEditor extends InputControl{
 	
+	constructor(){
+		super();
+	}
+	
 	/**
 	 * Renders the DOM.
 	 */
@@ -2804,36 +2885,49 @@ class TagEditor extends InputControl{
                     </div>`;
         }
 		
-		const renderTags = function(){
-			let tags = this.viewModel.getProperty(this.binding);
-			if (!tags){
-				tags = this.getAttribute("tags");
-				console.log(tags);
-				if (tags) {
-					tags = tags.split(/\s*,\s*/)		
+		TAGS.tags().then((colors) => {
+				let tags = this.viewModel.getProperty(this.binding);
+				if (!tags){
+					tags = this.getAttribute("tags");
+					if (tags) {
+						tags = tags.split(/\s*,\s*/)		
+					}
 				}
-			}
-			if(this.readonly){
-				if (tags){
-					return html `<ol class="tags">
-								   ${tags && tags.map(tag => html `<li class="tag">$${tag}</li>`).reduce((a,b) => a+b,'')}
-							     </ol>`;					
+				if(this.readonly){
+					if (tags){
+						this.innerHTML = html `<ol class="tags">
+									   			${tags && tags.map(tag => html `<li class="tag ${colors.getColor(tag)}">$${tag}</li>`).reduce((a,b) => a+b,'')}
+								     		   </ol>`;					
+						return;
+					} 
+					this.innerHTML='';
+					return;
 				}
-				return "";
-			}
-			
-			return `<div class="tag-editor">
+
+		
+				this.innerHTML = `<div class="tag-editor">
 			          ${label}
 					  <div class="tags">
-						  ${tags && tags.length > 0 ? tags.map(tag => html `<div><span>$${tag}</span><button name="remove-tag" class="btn btn-sm btn-danger" title="Remove tag $${tag}" data-tag="$${tag}">-</button></div>`).reduce((a,b) => a+b) : ''}
+						  ${tags && tags.length > 0 ? tags.map(tag => html `<div class="tag ${colors.getColor(tag)}"><span>$${tag}</span><button name="remove-tag" class="btn btn-sm btn-danger" title="Remove tag $${tag}" data-tag="$${tag}">-</button></div>`).reduce((a,b) => a+b) : ''}
 						  <div class="tag"><input class="form-control" type="text" name="new-tag"></input><button name="add-tag" title="Add new tag" class="btn btn-sm btn-outline">+</button></div>
 					  </div>
+						<div id="tag-color-picker">
+							<div class="yellow">&nbsp;</div>
+							<div class="orange">&nbsp;</div>
+							<div class="red">&nbsp;</div>
+							<div class="purple">&nbsp;</div>
+							<div class="green">&nbsp;</div>
+							<div class="petrol">&nbsp;</div>
+							<div class="default">&nbsp;</div>
+							<div class="grey">&nbsp;</div>
+						 </div>
 				    </div>
-					<p class="note">${note}</p>`;
-		}.bind(this);
-		
-		this.innerHTML = renderTags();
-		
+					<p class="note">${note}</p>
+					`;
+				
+		});
+			
+				
 		this.addEventListener('click',(evt) => {
 			evt.stopPropagation();
 			evt.preventDefault();
@@ -2853,8 +2947,50 @@ class TagEditor extends InputControl{
 					tags.push(tag)
 					this.innerHTML = renderTags();
 				}
-			}
+			} else {
+				// Lookup color picker
+				const colors = this.querySelector("#tag-color-picker");
+				let tag = null;
+				if(evt.target.classList.contains('tag')) {
+					tag = evt.target.querySelector('span').innerText;
+				} else if(evt.target.nodeName == 'SPAN'){
+					tag = evt.target.innerText;
+				}
+				if(tag){
+					// User clicked on a tag.
+					colors.setAttribute('data-tag',tag);
+					colors.style.left=(evt.target.offsetLeft-10)+"px";
+					colors.style.display='block';
+					return;
+				}
 			
+				const color = evt.target.classList[0];
+				if(color && colors.style.display=='block'){
+					if(['yellow','orange','red','purple','green','grey','petrol','grey','default'].includes(color)){
+						const tag = colors.getAttribute('data-tag');
+						colors.setAttribute('data-tag','');
+						colors.style.display='none';			
+						TAGS.setColor(tag,color);
+					}
+				}
+			}
+		});
+		
+		this.addEventListener('mouseover',(evt)=>{
+			const color = evt.target.classList[0];
+			if(['yellow','orange','red','purple','green','grey','petrol','grey','default'].includes(color)){
+				const tag = this.querySelector('#tag-color-picker').getAttribute('data-tag');
+				this.querySelectorAll("div.tags div span").forEach(t => {
+					if (t.innerText == tag){
+						if (t.parentNode.classList[1]) {
+							t.parentNode.classList.replace(t.parentNode.classList[1],color);
+						} else {
+							t.parentNode.classList.add(color);
+						}
+						
+					}
+				})
+			}
 		});
 	}
 	

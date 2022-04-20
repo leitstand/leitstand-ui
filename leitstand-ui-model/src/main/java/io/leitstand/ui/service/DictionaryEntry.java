@@ -8,15 +8,17 @@ import static io.leitstand.commons.model.BuilderUtil.assertNotInvalidated;
 import java.io.Serializable;
 
 import javax.json.bind.annotation.JsonbProperty;
+import javax.persistence.Convert;
 import javax.persistence.Embeddable;
 
+import io.leitstand.commons.jpa.BooleanConverter;
 import io.leitstand.commons.model.ValueObject;
 
 /**
  * A dictionary value. 
  */
 @Embeddable
-public class DictionaryEntry extends ValueObject implements Serializable{
+public class DictionaryEntry extends ValueObject implements Serializable, Comparable<DictionaryEntry>{
 
 	private static final long serialVersionUID = 1L;
 
@@ -88,6 +90,7 @@ public class DictionaryEntry extends ValueObject implements Serializable{
 	private String label;
 	
 	@JsonbProperty("default")
+	@Convert(converter = BooleanConverter.class)
 	private boolean defaultValue;
 
 	/**
@@ -116,6 +119,21 @@ public class DictionaryEntry extends ValueObject implements Serializable{
 	 */
 	public boolean isDefaultValue() {
 		return defaultValue;
+	}
+
+	/**
+	 * Compares two directory entries by their label and values.
+	 * @param entry the entry to be compared with this entry.
+	 * @returns a negative integer, zero or a positive depending on whether this entry is less than, equal or larger than the given entry. 
+	 */
+	@Override
+	public int compareTo(DictionaryEntry entry) {
+		int l = getLabel().compareTo(entry.getLabel());
+		if (l != 0) {
+			return l;
+		}
+		return getValue().compareTo(entry.getValue());
+		
 	}
 	
 }

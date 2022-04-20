@@ -3,9 +3,12 @@
  */
 package io.leitstand.ui.model;
 
-import static java.util.Collections.unmodifiableList;
+import static io.leitstand.ui.service.DictionaryId.dictionaryId;
+import static java.util.Collections.unmodifiableSortedSet;
 
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.persistence.AttributeOverride;
 import javax.persistence.CollectionTable;
@@ -59,9 +62,9 @@ public class Dictionary extends VersionableEntity {
 	private DictionaryName name;
 	private String description;
 	@ElementCollection
-	@AttributeOverride(name="defaultValue", column=@Column(name="default"))
+	@AttributeOverride(name="defaultValue", column=@Column(name="\"default\""))
 	@CollectionTable(schema="leitstand", name="dictionary_entry")
-	private List<DictionaryEntry> entries;
+	private TreeSet<DictionaryEntry> entries = new TreeSet<>();
 	
 	protected Dictionary() {
 		super();
@@ -75,7 +78,7 @@ public class Dictionary extends VersionableEntity {
 	
 	
 	public DictionaryId getDictionaryId() {
-		return DictionaryId.valueOf(getUuid());
+		return dictionaryId(getUuid());
 	}
 	
 	public void setDictionaryName(DictionaryName name) {
@@ -94,12 +97,13 @@ public class Dictionary extends VersionableEntity {
 		return description;
 	}
 	
-	public void setEntries(List<DictionaryEntry> entries) {
-		this.entries = entries;
+	public void setEntries(SortedSet<DictionaryEntry> entries) {
+		this.entries.clear();
+		this.entries.addAll(entries);
 	}
 	
-	public List<DictionaryEntry> getEntries() {
-		return unmodifiableList(entries);
+	public SortedSet<DictionaryEntry> getEntries() {
+		return unmodifiableSortedSet(entries);
 	}
 	
 }

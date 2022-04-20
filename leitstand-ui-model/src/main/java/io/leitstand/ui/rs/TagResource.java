@@ -10,12 +10,13 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 
+import io.leitstand.commons.rs.Public;
 import io.leitstand.commons.rs.Resource;
 import io.leitstand.ui.service.TagInfo;
 import io.leitstand.ui.service.TagService;
 
 @Resource
-@Path("/system/tags")
+@Path("/ui/tags")
 public class TagResource {
 
 	private TagService service;
@@ -28,12 +29,14 @@ public class TagResource {
 	public TagResource(TagService service) {
 		this.service = service;
 	}
-	
+
+	@Public
 	@GET
 	public SortedSet<TagInfo> getTags(){
 		return service.getTags();
 	}
 	
+	@Public
 	@GET
 	@Path("/{tag}")
 	public TagInfo getTag(@PathParam("tag") String name) {
@@ -44,7 +47,6 @@ public class TagResource {
 	public void storeTags(Set<TagInfo> tags) {
 		service.storeTags(tags);
 	}
-	
 		
 	@DELETE
 	@Path("/{tag}")
