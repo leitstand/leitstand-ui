@@ -2817,21 +2817,22 @@ class Tags extends Json {
 		super();
 		this._tags = {};
 		this._dateRead = 0;	
+		this._load = null;
 	}
 	
 	tags() {
 		console.log(this._dateRead, Date.now());
 		if (this._dateRead < Date.now()) {
-			return this.json('/api/v1/ui/tags')
-					   .GET()
-			   	   	   .then(tags => {
-							tags.forEach((t) => {this._tags[t.tag]=t.color});
-							this._dateRead = Date.now() + 5000;
-							return this;
+			this._dateRead = Date.now() + 5000;
+			this._load = this.json('/api/v1/ui/tags')
+					    	 .GET()
+			   	   	   	  	 .then(tags => {
+									tags.forEach((t) => {this._tags[t.tag]=t.color});
+									return this;
 							}	
 						);
 		}
-		return Promise.resolve(this);
+		return this._load;
 	}
 
 	getColor(tag){
@@ -2885,48 +2886,51 @@ class TagEditor extends InputControl{
                     </div>`;
         }
 		
-		TAGS.tags().then((colors) => {
-				let tags = this.viewModel.getProperty(this.binding);
-				if (!tags){
-					tags = this.getAttribute("tags");
-					if (tags) {
-						tags = tags.split(/\s*,\s*/)		
+		const renderTags = function() {
+			TAGS.tags().then((colors) => {
+					let tags = this.viewModel.getProperty(this.binding);
+					if (!tags){
+						tags = this.getAttribute("tags");
+						if (tags) {
+							tags = tags.split(/\s*,\s*/)		
+						}
 					}
-				}
-				if(this.readonly){
-					if (tags){
-						this.innerHTML = html `<ol class="tags">
-									   			${tags && tags.map(tag => html `<li class="tag ${colors.getColor(tag)}">$${tag}</li>`).reduce((a,b) => a+b,'')}
-								     		   </ol>`;					
+					if(this.readonly){
+						if (tags){
+							this.innerHTML = html `<ol class="tags">
+										   			${tags && tags.map(tag => html `<li class="tag ${colors.getColor(tag)}">$${tag}</li>`).reduce((a,b) => a+b,'')}
+									     		   </ol>`;					
+							return;
+						} 
+						this.innerHTML='';
 						return;
-					} 
-					this.innerHTML='';
-					return;
-				}
-
-		
-				this.innerHTML = `<div class="tag-editor">
-			          ${label}
-					  <div class="tags">
-						  ${tags && tags.length > 0 ? tags.map(tag => html `<div class="tag ${colors.getColor(tag)}"><span>$${tag}</span><button name="remove-tag" class="btn btn-sm btn-danger" title="Remove tag $${tag}" data-tag="$${tag}">-</button></div>`).reduce((a,b) => a+b) : ''}
-						  <div class="tag"><input class="form-control" type="text" name="new-tag"></input><button name="add-tag" title="Add new tag" class="btn btn-sm btn-outline">+</button></div>
-					  </div>
-						<div id="tag-color-picker">
-							<div class="yellow">&nbsp;</div>
-							<div class="orange">&nbsp;</div>
-							<div class="red">&nbsp;</div>
-							<div class="purple">&nbsp;</div>
-							<div class="green">&nbsp;</div>
-							<div class="petrol">&nbsp;</div>
-							<div class="default">&nbsp;</div>
-							<div class="grey">&nbsp;</div>
-						 </div>
-				    </div>
-					<p class="note">${note}</p>
-					`;
-				
-		});
+					}
+	
 			
+					this.innerHTML = `<div class="tag-editor">
+				          ${label}
+						  <div class="tags">
+							  ${tags && tags.length > 0 ? tags.map(tag => html `<div class="tag ${colors.getColor(tag)}"><span>$${tag}</span><button name="remove-tag" class="btn btn-sm btn-danger" title="Remove tag $${tag}" data-tag="$${tag}">-</button></div>`).reduce((a,b) => a+b) : ''}
+							  <div class="tag"><input class="form-control" type="text" name="new-tag"></input><button name="add-tag" title="Add new tag" class="btn btn-sm btn-outline">+</button></div>
+						  </div>
+							<div id="tag-color-picker">
+								<div class="yellow">&nbsp;</div>
+								<div class="orange">&nbsp;</div>
+								<div class="red">&nbsp;</div>
+								<div class="purple">&nbsp;</div>
+								<div class="green">&nbsp;</div>
+								<div class="petrol">&nbsp;</div>
+								<div class="default">&nbsp;</div>
+								<div class="grey">&nbsp;</div>
+							 </div>
+					    </div>
+						<p class="note">${note}</p>
+						`;
+					
+			});
+		}.bind(this);
+		
+		renderTags();	
 				
 		this.addEventListener('click',(evt) => {
 			evt.stopPropagation();
