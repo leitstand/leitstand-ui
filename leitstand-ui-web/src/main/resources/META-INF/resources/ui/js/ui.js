@@ -935,7 +935,12 @@ export class Controller extends Dom {
 	 * @param {Message} the message to be displayed
 	 */
 	message(message){
-		displayFlashMessages([message]);
+		if(message.property){
+			const input = this.input(message.property).unwrap();
+			displayInputError(input, message.severity, message.message);		
+		} else {
+			displayFlashMessages([message]);
+		}
 	}
 
 }
