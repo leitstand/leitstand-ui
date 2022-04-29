@@ -2099,7 +2099,7 @@ class MainMenu extends HTMLElement {
 							}
 							case "metric":
 							case "m":{
-								target=`/ui/views/metrics/metrics.html?filter=${q}`
+								target=`/ui/views/settings/metrics/metrics.html?filter=${q}`
 								break;
 							}
 							case "element":
