@@ -14,7 +14,7 @@ dependencies {
     testImplementation 'io.leitstand:leitstand-test:' + findProperty("versions.leitstand-commons")
     testImplementation 'org.mockito:mockito-all:1.10.9'
     testImplementation 'com.h2database:h2:1.4.200'
-    testRuntimeOnly 'org.eclipse.persistence:eclipselink:2.7.1'
+    testRuntimeOnly 'org.eclipse.persistence:eclipselink:2.7.10'
     testRuntimeOnly 'javax.xml.bind:jaxb-api:2.3.0'
     testRuntimeOnly 'org.hibernate:hibernate-validator:4.2.0.Final'
     testRuntimeOnly 'org.glassfish.jersey.core:jersey-client:2.6'
