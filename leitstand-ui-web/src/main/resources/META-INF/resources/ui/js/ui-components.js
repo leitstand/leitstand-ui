@@ -2114,7 +2114,7 @@ class MainMenu extends HTMLElement {
 				  router.navigate(new Location(window.location.href));
 			  })
 			  .catch((e) => {
-				  console.error("Cannot create Leistand main menu.");
+				  console.error("Cannot create Leitstand main menu.");
 				  console.log(e);
 				  router.redirect('/ui/login/login.html');
 			  });
@@ -2821,7 +2821,6 @@ class Tags extends Json {
 	}
 	
 	tags() {
-		console.log(this._dateRead, Date.now());
 		if (this._dateRead < Date.now()) {
 			this._dateRead = Date.now() + 5000;
 			this._load = this.json('/api/v1/ui/tags')
