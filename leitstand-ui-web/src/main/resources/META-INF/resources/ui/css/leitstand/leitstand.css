@@ -952,7 +952,7 @@ span.ACTIVE,
 	text-align: center;
     width: 8em;
 }
-
+.INFO,
 .INFORMATION{
     background-color:#2d5c9b; /*#4078c0;*/
     color: white;
