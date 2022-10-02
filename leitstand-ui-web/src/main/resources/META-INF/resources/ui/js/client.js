@@ -147,11 +147,25 @@ function http(uri,params) {
 					// Notify client about the REST API invocation outcome.
 					if(200 <= response.status && response.status < 300 ){
 						// Successful REST API invocation
-						resolved(data,context);
-					} else {
-						// Failed REST API invocation
-						rejected(data,context);
+						resolved(data);
+						return;
+					} 
+					if(Array.isArray(data) && data.length > 0 && data[0].severity && data[0].message) {
+						rejected(data)
+						return;	
+					} 
+						
+					if(data.severity && data.message ){
+						rejected(data);
+						return;
 					}
+					// Failed REST API invocation
+					const message = {
+						severity:"ERROR",
+						reason:"WUI0001E",
+						message:"An unexpected error occured ("+response.status+")"
+					}
+					rejected(message);
 				};
 				if(response.headers.get('Content-Type') &&
 				   response.headers.get('Content-Type').indexOf('application/json') >= 0){
