@@ -1991,6 +1991,11 @@ class MainMenu extends HTMLElement {
 							  <a class="btn btn-sm right" 
 							     href="/api/v1/logout">
 							     Logout</a>
+						      <a class="main-menu-item right" 
+						      	 href="/ui/views/profile/me.html"
+						      	 data-module="profile" 
+						         title="Show user profile">Profile</a>
+
 							  ${menu.filter(item => user.scopesIncludeOneOf(item.scopes_allowed)) 
 							        .map(item => html `<a class="main-menu-item ${item.position ? item.position : ''}" 
 												          href="/ui/views${item.path}" 

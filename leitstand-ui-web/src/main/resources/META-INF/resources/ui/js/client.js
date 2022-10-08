@@ -29,12 +29,12 @@
  *				   .GET();
  *	}
  *	saveSettings(ref,settings){
- *		return this.json("/api/v1/users/{{&uuid}}",ref)
+ *		return this.json("/api/v1/users/{{&user_id}}",ref)
  *				   .PUT(settings);
  *	}
  *			
  *	passwd(ref,passwd){
- *		return this.json("/api/v1/users/{{&uuid}}/_passwd",ref)
+ *		return this.json("/api/v1/users/{{&user_id}}/passwd",ref)
  *					.POST(passwd);
  *	}
  *  }
