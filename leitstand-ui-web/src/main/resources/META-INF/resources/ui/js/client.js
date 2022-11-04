@@ -99,8 +99,8 @@
  * @returns {client~HttpRequest} the HTTP request under construction
  */
 function http(uri,params) {
+	const viewparams = {};
 	if(params){
-		const viewparams = {};
 		for(const p in params){
 			const v = params[p];
 			if(v && v.toISOString){
@@ -109,10 +109,10 @@ function http(uri,params) {
 			}
 			viewparams[p]=v;
 		}
-		// Mustache is expected to be pre-loaded.
-		// Mustache is not available as ES6 module.
-		uri = Mustache.render(uri,viewparams);
 	}
+	// Mustache is expected to be pre-loaded.
+	// Mustache is not available as ES6 module.
+	uri = Mustache.render(uri,viewparams);
 	uri = encodeURI(uri).replace('+','%2B');
 	// Request headers
 	const headers = {
