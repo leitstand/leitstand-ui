@@ -1109,7 +1109,7 @@ export class InputControl extends Control {
 			const path = this.binding;
 			// Lookup specified model property.
 			const model = this.viewModel.getProperty(path);
-			if(model){
+			if(model !== null && model !== ""){ //Accept value of 0 and false
 				return model;
 			}
 	
@@ -1120,7 +1120,7 @@ export class InputControl extends Control {
 				return value;
 			}
 			// No value specified. Use '' instead of null
-			return '';
+			return '';			
 		} catch (e){
 			console.log(e);
 			return '';
@@ -1255,10 +1255,15 @@ class InputNumber extends InputControl {
                                ${this.note ? `<p class="note">${this.note}</p>` : ''}
 						     </div>`;
 		this.addEventListener("change",function(evt){
-			this.viewModel.setProperty(this.binding,evt.target.value);
+			const v = evt.target.value;
+			let n = parseInt(v);
+			if (n != v) {
+				n = parseFloat(v);
+			} 
+			this.viewModel.setProperty(this.binding,n);
 		}.bind(this));
 	}
-
+	
 }
 
 /**
