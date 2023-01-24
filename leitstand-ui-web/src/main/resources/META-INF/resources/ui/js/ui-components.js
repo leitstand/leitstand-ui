@@ -1379,7 +1379,7 @@ export class Select extends InputControl {
 			return [...this.querySelectorAll('ui-option')]
 				   .map(option => ({'value':option.getAttribute('value'),
 							 		'label':option.innerHTML,
-							 		'default':(option.getAttribute('default') == '' || option.getAttribute('default') == 'true')}));
+							 		'default':(option.getAttribute('default') == '' || option.getAttribute('default') == 'true' || option.getAttribute('value')==this.getAttribute('default'))}));
 		};
 		
 		const dictionary = this.getAttribute('dictionary');
