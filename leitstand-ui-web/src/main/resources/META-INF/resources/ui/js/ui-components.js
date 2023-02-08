@@ -1109,7 +1109,7 @@ export class InputControl extends Control {
 			const path = this.binding;
 			// Lookup specified model property.
 			const model = this.viewModel.getProperty(path);
-			if(model){
+			if(model !== null && model !== ""){ //Accept value of 0 and false
 				return model;
 			}
 	
@@ -1120,7 +1120,7 @@ export class InputControl extends Control {
 				return value;
 			}
 			// No value specified. Use '' instead of null
-			return '';
+			return '';			
 		} catch (e){
 			console.log(e);
 			return '';
@@ -1255,10 +1255,15 @@ class InputNumber extends InputControl {
                                ${this.note ? `<p class="note">${this.note}</p>` : ''}
 						     </div>`;
 		this.addEventListener("change",function(evt){
-			this.viewModel.setProperty(this.binding,evt.target.value);
+			const v = evt.target.value;
+			let n = parseInt(v);
+			if (n != v) {
+				n = parseFloat(v);
+			} 
+			this.viewModel.setProperty(this.binding,n);
 		}.bind(this));
 	}
-
+	
 }
 
 /**
@@ -1374,7 +1379,7 @@ export class Select extends InputControl {
 			return [...this.querySelectorAll('ui-option')]
 				   .map(option => ({'value':option.getAttribute('value'),
 							 		'label':option.innerHTML,
-							 		'default':(option.getAttribute('default') == '' || option.getAttribute('default') == 'true')}));
+							 		'default':(option.getAttribute('default') == '' || option.getAttribute('default') == 'true' || option.getAttribute('value')==this.getAttribute('default'))}));
 		};
 		
 		const dictionary = this.getAttribute('dictionary');
@@ -1991,6 +1996,11 @@ class MainMenu extends HTMLElement {
 							  <a class="btn btn-sm right" 
 							     href="/api/v1/logout">
 							     Logout</a>
+						      <a class="main-menu-item right" 
+						      	 href="/ui/views/profile/me.html"
+						      	 data-module="profile" 
+						         title="Show user profile">Profile</a>
+
 							  ${menu.filter(item => user.scopesIncludeOneOf(item.scopes_allowed)) 
 							        .map(item => html `<a class="main-menu-item ${item.position ? item.position : ''}" 
 												          href="/ui/views${item.path}" 
@@ -2099,7 +2109,7 @@ class MainMenu extends HTMLElement {
 							}
 							case "metric":
 							case "m":{
-								target=`/ui/views/metrics/metrics.html?filter=${q}`
+								target=`/ui/views/settings/metrics/metrics.html?filter=${q}`
 								break;
 							}
 							case "element":
@@ -2114,7 +2124,7 @@ class MainMenu extends HTMLElement {
 				  router.navigate(new Location(window.location.href));
 			  })
 			  .catch((e) => {
-				  console.error("Cannot create Leistand main menu.");
+				  console.error("Cannot create Leitstand main menu.");
 				  console.log(e);
 				  router.redirect('/ui/login/login.html');
 			  });
@@ -2821,7 +2831,6 @@ class Tags extends Json {
 	}
 	
 	tags() {
-		console.log(this._dateRead, Date.now());
 		if (this._dateRead < Date.now()) {
 			this._dateRead = Date.now() + 5000;
 			this._load = this.json('/api/v1/ui/tags')

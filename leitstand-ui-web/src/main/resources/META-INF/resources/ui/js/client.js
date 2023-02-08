@@ -29,12 +29,12 @@
  *				   .GET();
  *	}
  *	saveSettings(ref,settings){
- *		return this.json("/api/v1/users/{{&uuid}}",ref)
+ *		return this.json("/api/v1/users/{{&user_id}}",ref)
  *				   .PUT(settings);
  *	}
  *			
  *	passwd(ref,passwd){
- *		return this.json("/api/v1/users/{{&uuid}}/_passwd",ref)
+ *		return this.json("/api/v1/users/{{&user_id}}/passwd",ref)
  *					.POST(passwd);
  *	}
  *  }
@@ -99,8 +99,8 @@
  * @returns {client~HttpRequest} the HTTP request under construction
  */
 function http(uri,params) {
+	const viewparams = {};
 	if(params){
-		const viewparams = {};
 		for(const p in params){
 			const v = params[p];
 			if(v && v.toISOString){
@@ -109,10 +109,10 @@ function http(uri,params) {
 			}
 			viewparams[p]=v;
 		}
-		// Mustache is expected to be pre-loaded.
-		// Mustache is not available as ES6 module.
-		uri = Mustache.render(uri,viewparams);
 	}
+	// Mustache is expected to be pre-loaded.
+	// Mustache is not available as ES6 module.
+	uri = Mustache.render(uri,viewparams);
 	uri = encodeURI(uri).replace('+','%2B');
 	// Request headers
 	const headers = {
@@ -147,11 +147,25 @@ function http(uri,params) {
 					// Notify client about the REST API invocation outcome.
 					if(200 <= response.status && response.status < 300 ){
 						// Successful REST API invocation
-						resolved(data,context);
-					} else {
-						// Failed REST API invocation
-						rejected(data,context);
+						resolved(data);
+						return;
+					} 
+					if(Array.isArray(data) && data.length > 0 && data[0].severity && data[0].message) {
+						rejected(data)
+						return;	
+					} 
+						
+					if(data.severity && data.message ){
+						rejected(data);
+						return;
 					}
+					// Failed REST API invocation
+					const message = {
+						severity:"ERROR",
+						reason:"WUI0001E",
+						message:"An unexpected error occured ("+response.status+")"
+					}
+					rejected(message);
 				};
 				if(response.headers.get('Content-Type') &&
 				   response.headers.get('Content-Type').indexOf('application/json') >= 0){
