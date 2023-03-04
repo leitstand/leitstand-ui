@@ -2,7 +2,7 @@
     "name": "leitstand-ui-contrib",
     "version": "1.0.0",
     "devDependencies": {
-        "http-server": "^0.12.1",
+        "http-server": "^0.12.3",
         "jasmine-es6": "^0.4.3",
         "xmldom": "^0.3.0"
     }
